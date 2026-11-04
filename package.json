@@ -1,0 +1,12 @@
+{
+  "name": "laptop-store-frontend",
+  "private": true,
+  "scripts": {
+    "css:build": "tailwindcss -i ./src/main/frontend/input.css -o ./src/main/resources/static/css/app.css -m",
+    "css:watch": "tailwindcss -i ./src/main/frontend/input.css -o ./src/main/resources/static/css/app.css -w"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "tailwindcss": "^4.1.0"
+  }
+}

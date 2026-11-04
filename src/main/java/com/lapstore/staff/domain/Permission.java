@@ -1,7 +1,13 @@
 package com.lapstore.staff.domain;
 
 import com.lapstore.common.persistence.AuditableEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "permission")
@@ -23,17 +29,50 @@ public class Permission extends AuditableEntity {
     @Column(name = "portal", length = 20)
     private String portal;
 
-    public Long getId() { return id; }
+    public Permission() {
+    }
 
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
+    public Permission(Long id, String code, String name, String module, String portal) {
+        this.id = id;
+        this.code = code;
+        this.name = name;
+        this.module = module;
+        this.portal = portal;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getModule() { return module; }
-    public void setModule(String module) { this.module = module; }
+    public String getCode() {
+        return code;
+    }
 
-    public String getPortal() { return portal; }
-    public void setPortal(String portal) { this.portal = portal; }
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
+
+    public String getPortal() {
+        return portal;
+    }
+
+    public void setPortal(String portal) {
+        this.portal = portal;
+    }
 }

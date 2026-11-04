@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (title, content)">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+  <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+  <title th:replace="${title}">Laptop Store</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+<main th:insert="${content}">
+</main>
+</body>
+</html>
