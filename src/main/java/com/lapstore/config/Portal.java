@@ -1,4 +1,4 @@
-package com.lapstore.laptop_store.config;
+package com.lapstore.config;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,8 +12,9 @@ public enum Portal {
     ADMIN(8084, "/admin");
 
     private static final List<String> SHARED =
-            List.of("/css/", "/js/", "/img/", "/webjars/", "/error", "/ws/",
-                    "/login", "/logout", "/actuator");
+        List.of("/css/", "/js/", "/img/", "/webjars/", "/error", "/ws/",
+                "/login", "/logout", "/actuator",
+                "/staff/login", "/staff/logout", "/admin/login", "/admin/logout");
 
     private final int port;
     private final String prefix;

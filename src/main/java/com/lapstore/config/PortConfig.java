@@ -1,4 +1,4 @@
-package com.lapstore.laptop_store.config;
+package com.lapstore.config;
 
 import java.util.List;
 

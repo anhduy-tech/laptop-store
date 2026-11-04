@@ -1,9 +1,9 @@
-package com.lapstore.laptop_store.web;
+package com.lapstore.web;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.lapstore.laptop_store.config.Portal;
+import com.lapstore.config.Portal;
 
 import jakarta.servlet.http.HttpServletRequest;
 
