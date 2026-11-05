@@ -1,0 +1,52 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Thanh toán – Lapstore</title></head>
+<body>
+<section>
+  <h1 class="page-title mb-6">Thanh toán</h1>
+  <form th:action="@{/shop/checkout}" method="post" class="grid gap-6 lg:grid-cols-3">
+    <div class="card space-y-5 lg:col-span-2">
+      <h2 class="font-semibold">Thông tin người nhận</h2>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div th:replace="~{fragments/ui :: field('Họ tên','fullName',${form?.fullName},${errors?.get('fullName')},'text',true)}"></div>
+        <div th:replace="~{fragments/ui :: field('Số điện thoại','phone',${form?.phone},${errors?.get('phone')},'tel',true)}"></div>
+        <div class="sm:col-span-2"><div th:replace="~{fragments/ui :: field('Email','email',${form?.email},${errors?.get('email')},'email',false)}"></div></div>
+      </div>
+      <div>
+        <p class="label">Hình thức nhận hàng</p>
+        <div class="grid gap-3 sm:grid-cols-2">
+          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+            <input type="radio" name="receiveMethod" value="PICKUP" class="accent-brand-600" th:checked="${form?.receiveMethod != 'DELIVERY'}"/>
+            <span><span class="block text-sm font-medium">Nhận tại cửa hàng</span><span class="hint !mt-0">Miễn phí</span></span></label>
+          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+            <input type="radio" name="receiveMethod" value="DELIVERY" class="accent-brand-600" th:checked="${form?.receiveMethod == 'DELIVERY'}"/>
+            <span><span class="block text-sm font-medium">Giao tận nơi</span><span class="hint !mt-0">Nhập địa chỉ bên dưới</span></span></label>
+        </div>
+      </div>
+      <div id="addressBox" hidden="hidden">
+        <label class="label" for="address">Địa chỉ giao hàng <span class="text-red-500">*</span></label>
+        <textarea class="input-field" id="address" name="address" rows="2" th:text="${form?.address}"></textarea>
+        <p th:if="${errors?.get('address')}" class="field-error" th:text="${errors?.get('address')}"></p>
+      </div>
+      <div>
+        <label class="label" for="voucherCode">Mã voucher</label>
+        <input class="input-field uppercase" id="voucherCode" name="voucherCode" th:value="${form?.voucherCode}" placeholder="VD: LAP10"/>
+        <p th:if="${errors?.get('voucherCode')}" class="field-error" th:text="${errors?.get('voucherCode')}"></p>
+      </div>
+    </div>
+
+    <aside class="card h-fit space-y-4">
+      <h2 class="font-semibold">Đơn hàng</h2>
+      <ul class="divide-y divide-slate-100 text-sm">
+        <li th:each="i : ${items}" class="flex justify-between gap-3 py-2">
+          <span><span th:text="${i.variantName}">Variant</span> <span class="text-slate-400">× <span th:text="${i.quantity}">1</span></span></span>
+          <span class="font-medium"><span th:replace="~{fragments/ui :: money(${i.unitPrice * i.quantity})}"></span></span>
+        </li>
+      </ul>
+      <div class="flex justify-between border-t border-slate-200 pt-4"><span class="text-sm text-slate-600">Tổng cộng</span>
+        <span class="text-xl font-extrabold"><span th:replace="~{fragments/ui :: money(${total})}"></span></span></div>
+      <button class="btn-primary btn-lg w-full" type="submit">Đặt hàng</button>
+    </aside>
+  </form>
+</section>
+</body>
+</html>

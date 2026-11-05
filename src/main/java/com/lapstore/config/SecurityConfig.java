@@ -37,10 +37,12 @@ public class SecurityConfig {
                                                 .anyRequest().denyAll())
                                 .formLogin(f -> f.loginPage("/staff/login")
                                                 .loginProcessingUrl("/staff/login")
+                                                .failureUrl("/staff/login?error")
                                                 .successHandler((req, res, auth) -> res.sendRedirect(
                                                                 Portal.byPort(req.getLocalPort()).map(Portal::prefix)
                                                                                 .orElse("/shop"))))
-                                .logout(l -> l.logoutUrl("/staff/logout"));
+                                .logout(l -> l.logoutUrl("/staff/logout")
+                                                .logoutSuccessUrl("/staff/login?logout"));
                 return http.build();
         }
 

@@ -1,0 +1,31 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Bán quầy – Lapstore</title></head>
+<body><section>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Bán quầy</h1><p class="page-sub">Mở đơn, quét serial, thu tiền.</p></div><form th:action="@{/staff/sales/counter/open}" method="post"><button class="btn-primary" type="submit">Mở đơn mới</button></form></div>
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="card space-y-4 lg:col-span-2">
+      <div class="flex items-center justify-between"><h2 class="font-semibold">Đơn đang mở</h2>
+        <span th:if="${order != null}" class="badge badge-blue" th:text="${order.code}">CT-001</span></div>
+      <form th:action="@{/staff/sales/counter/hold}" method="post" class="flex gap-2">
+        <input class="input-field font-mono" name="serial" placeholder="Quét / nhập serial..." autofocus="autofocus" th:disabled="${order == null}"/>
+        <button class="btn-primary" type="submit" th:disabled="${order == null}">Giữ</button>
+      </form>
+      <th:block th:if="${order == null}"><div th:replace="~{fragments/ui :: empty('Chưa có đơn — bấm “Mở đơn mới”')}"></div></th:block>
+      <th:block th:if="${order != null and order.lines.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa quét máy nào')}"></div></th:block>
+      <ul th:if="${order != null and !order.lines.isEmpty()}" class="divide-y divide-slate-100">
+        <li th:each="l : ${order.lines}" class="flex items-center justify-between gap-3 py-3 text-sm">
+          <span><span class="font-mono font-semibold" th:text="${l.serial}">SN001</span> · <span th:text="${l.variantName}">Variant</span></span>
+          <span class="font-semibold"><span th:replace="~{fragments/ui :: money(${l.price})}"></span></span>
+        </li>
+      </ul>
+    </div>
+    <form th:action="@{/staff/sales/counter/complete}" method="post" class="card h-fit space-y-4">
+      <h2 class="font-semibold">Khách &amp; thanh toán</h2>
+      <div><label class="label" for="customerName">Tên khách</label><input class="input-field" id="customerName" name="customerName" th:disabled="${order == null}"/></div>
+      <div><label class="label" for="phone">SĐT</label><input class="input-field" id="phone" name="phone" type="tel" th:disabled="${order == null}"/></div>
+      <div class="flex items-center justify-between border-t border-slate-200 pt-4"><span class="text-sm text-slate-600">Tổng</span>
+        <span class="text-2xl font-extrabold text-brand-700"><span th:replace="~{fragments/ui :: money(${order != null ? order.total : 0})}"></span></span></div>
+      <button class="btn-primary btn-lg w-full" type="submit" th:disabled="${order == null or order.lines.isEmpty()}">Thu tiền &amp; hoàn tất</button>
+    </form>
+  </div>
+</section></body></html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+  <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"/>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <title>Không có quyền truy cập – Lapstore</title>
+</head>
+<body class="grid min-h-screen place-items-center p-4">
+<div class="max-w-md text-center">
+  <p class="text-8xl font-extrabold tracking-tight text-amber-500">403</p>
+  <h1 class="mt-4 text-2xl font-bold">Không có quyền truy cập</h1>
+  <p class="mt-2 text-slate-500">Tài khoản của bạn chưa được cấp quyền cho trang này. Hãy đăng nhập bằng tài khoản phù hợp.</p>
+  <div class="mt-8 flex justify-center gap-3">
+    <a th:href="@{/shop}" class="btn-primary">Về trang cửa hàng</a>
+    <a th:href="@{/staff/login}" class="btn-secondary">Đăng nhập nhân viên</a>
+  </div>
+</div>
+</body>
+</html>

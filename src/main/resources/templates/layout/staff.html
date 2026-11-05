@@ -1,18 +1,56 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (title, content)">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}" />
-    <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}" />
-    <title th:replace="${title}">Staff layout</title>
-    <link rel="stylesheet" th:href="@{/css/app.css}" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+  <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"/>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <title th:replace="${title}">Lapstore Staff</title>
 </head>
+<!-- Controller cần set model "nav": sales | consult | warehouse | admin (để tô sáng menu) -->
+<body class="flex min-h-screen">
+<aside class="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-gradient-to-b from-brand-950 to-[#073b26] px-3 py-5">
+  <a th:href="@{/}" class="mb-6 flex items-center gap-2 px-2 text-lg font-bold tracking-tight text-white">
+    <span class="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-600"><svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg></span>
+    Lap<span class="text-brand-300">store</span>
+  </a>
+  <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60">Nhân viên</p>
+  <nav class="flex flex-1 flex-col gap-1">
+    <a data-path="/staff/sales" data-port="8081" th:href="@{/staff/sales}" class="nav-link" th:classappend="${nav == 'sales'} ? 'nav-active'"
+       th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_SALES'')')}">
+      <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Bán hàng</a>
+    <a data-path="/staff/consult" data-port="8082" th:href="@{/staff/consult}" class="nav-link" th:classappend="${nav == 'consult'} ? 'nav-active'"
+       th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_CONSULT'')')}">
+      <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg>Tư vấn</a>
+    <a data-path="/staff/warehouse" data-port="8083" th:href="@{/staff/warehouse}" class="nav-link" th:classappend="${nav == 'warehouse'} ? 'nav-active'"
+       th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
+      <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Kho &amp; KM</a>
+    <a data-path="/admin" data-port="8084" th:href="@{/admin}" class="nav-link" th:classappend="${nav == 'admin'} ? 'nav-active'"
+       th:if="${preview == true or #authorization.expression('hasAuthority(''ADMIN_ACCESS'')')}">
+      <svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg>Admin</a>
+  </nav>
+  <form th:action="@{${nav == 'admin' ? '/admin/logout' : '/staff/logout'}}" method="post">
+    <button type="submit" class="nav-link w-full cursor-pointer"><svg th:replace="~{fragments/ui :: icon('logout','size-5')}"></svg>Đăng xuất</button>
+  </form>
+</aside>
 
-<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
-    <main th:insert="${content}">
-    </main>
+<main class="min-w-0 flex-1 overflow-x-auto">
+  <div class="mx-auto max-w-7xl p-6 lg:p-8">
+    <div class="mb-6 flex items-center justify-between">
+      <div class="relative"><input class="input-field w-80 rounded-full pl-9" type="search" placeholder="Tìm nhanh..."/>
+        <span class="pointer-events-none absolute left-3 top-2.5 text-slate-400"><svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg></span></div>
+      <div class="flex items-center gap-3 text-sm text-slate-500">Xin chào,
+        <b class="text-slate-900" th:text="${preview == true ? 'Nguyễn Thị Lan' : (#authentication != null ? #authentication.name : 'Nhân viên')}">Nhân viên</b>
+        <span class="grid size-10 place-items-center rounded-full bg-brand-100 font-bold text-brand-700">N</span></div>
+    </div>
+    <div th:replace="~{fragments/alerts :: flash}"></div>
+    <th:block th:insert="${content}"></th:block>
+  </div>
+</main>
+<script th:src="@{/js/app.js}" defer="defer"></script>
 </body>
-
 </html>

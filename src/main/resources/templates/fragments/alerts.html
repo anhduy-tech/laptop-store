@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Flash sau POST (PRG): model "success" / "error" -->
+<div th:fragment="flash">
+  <div th:if="${success}" class="alert alert-success" role="status">
+    <svg th:replace="~{fragments/ui :: icon('check','size-5')}"></svg><span th:text="${success}">Thành công</span>
+  </div>
+  <div th:if="${error}" class="alert alert-error" role="alert">
+    <svg th:replace="~{fragments/ui :: icon('alert','size-5')}"></svg><span th:text="${error}">Có lỗi</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Kho &amp; Khuyến mãi – Lapstore</title></head>
+<body><section>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Kho &amp; Khuyến mãi</h1><p class="page-sub">Chọn nghiệp vụ cần thực hiện.</p></div></div>
+  <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <a th:href="@{/staff/warehouse/receipts}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600"><svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg></span><p class="font-semibold">Nhập kho</p><p class="hint">Phiếu nhập từ NCC, gắn serial</p></a>
+    <a th:href="@{/staff/warehouse/transfers}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><svg th:replace="~{fragments/ui :: icon('swap','size-5')}"></svg></span><p class="font-semibold">Chuyển kho</p><p class="hint">Giữa các chi nhánh</p></a>
+    <a th:href="@{/staff/warehouse/campaigns}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-amber-50 text-amber-600"><svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg></span><p class="font-semibold">Campaign &amp; voucher</p><p class="hint">Khuyến mãi, mã giảm giá</p></a>
+    <a th:href="@{/staff/warehouse/prices}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-violet-50 text-violet-600"><svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg></span><p class="font-semibold">Đề xuất giá</p><p class="hint">Gửi admin duyệt</p></a>
+  </div>
+</section></body></html>

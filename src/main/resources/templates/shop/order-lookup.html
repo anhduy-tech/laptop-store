@@ -1,0 +1,29 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Tra cứu đơn hàng – Lapstore</title></head>
+<body>
+<section class="mx-auto max-w-2xl">
+  <h1 class="page-title">Tra cứu đơn hàng</h1>
+  <p class="page-sub mb-6">Nhập mã đơn và số điện thoại đã dùng khi đặt hàng.</p>
+  <form th:action="@{/shop/orders/lookup}" method="get" class="card grid gap-4 sm:grid-cols-3 sm:items-end">
+    <div><label class="label" for="code">Mã đơn</label><input class="input-field" id="code" name="code" th:value="${code}" required="required" placeholder="LS2611-0001"/></div>
+    <div><label class="label" for="phone">Số điện thoại</label><input class="input-field" id="phone" name="phone" th:value="${phone}" required="required" type="tel"/></div>
+    <button class="btn-primary" type="submit"><svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg>Tra cứu</button>
+  </form>
+
+  <div th:if="${notFound}" class="alert alert-error mt-6" role="alert">Không tìm thấy đơn hàng. Vui lòng kiểm tra lại mã đơn và số điện thoại.</div>
+
+  <div th:if="${order != null}" class="card mt-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div><p class="text-xs text-slate-500">Mã đơn</p><p class="text-xl font-bold" th:text="${order.code}">LS-0001</p></div>
+      <span th:replace="~{fragments/ui :: badge(${order.status})}"></span>
+    </div>
+    <div class="table-wrap shadow-none"><table class="tbl">
+      <thead><tr><th>Sản phẩm</th><th class="text-center">SL</th><th class="text-right">Thành tiền</th></tr></thead>
+      <tbody><tr th:each="i : ${order.items}"><td th:text="${i.variantName}">Variant</td><td class="text-center" th:text="${i.quantity}">1</td>
+        <td class="text-right"><span th:replace="~{fragments/ui :: money(${i.unitPrice * i.quantity})}"></span></td></tr></tbody>
+    </table></div>
+    <p class="text-right text-lg font-extrabold"><span class="mr-2 text-sm font-medium text-slate-500">Tổng:</span><span th:replace="~{fragments/ui :: money(${order.total})}"></span></p>
+  </div>
+</section>
+</body>
+</html>

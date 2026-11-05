@@ -1,0 +1,16 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Nhập kho – Lapstore</title></head>
+<body><section class="max-w-3xl">
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Nhập kho</h1><p class="page-sub">Tạo phiếu nhập hàng.</p></div><a th:href="@{/staff/warehouse}" class="btn-ghost btn-sm">← Menu kho</a></div>
+  <form th:action="@{/staff/warehouse/receipts}" method="post" class="card space-y-4">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="supplierId">Nhà cung cấp *</label><select class="input-field" id="supplierId" name="supplierId" required="required"><option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}">NCC</option></select></div>
+      <div><label class="label" for="branchId">Chi nhánh *</label><select class="input-field" id="branchId" name="branchId" required="required"><option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">CN</option></select></div>
+    </div>
+    <div><label class="label" for="note">Ghi chú</label><input class="input-field" id="note" name="note"/></div>
+    <div><label class="label" for="lines">Dòng hàng (JSON) *</label>
+      <textarea class="input-field font-mono text-xs" id="lines" name="lines" rows="9" required="required" placeholder='[{"variantId":1,"quantity":2,"unitCost":18500000,"serials":["SN001","SN002"]}]'></textarea>
+      <p class="hint">Mỗi dòng: variantId, quantity, unitCost (giá vốn), serials.</p></div>
+    <div class="flex justify-end gap-2"><button class="btn-secondary" type="submit" name="action" value="draft">Lưu nháp</button><button class="btn-primary" type="submit" name="action" value="confirm">Xác nhận nhập</button></div>
+  </form>
+</section></body></html>

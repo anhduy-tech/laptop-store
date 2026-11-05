@@ -1,0 +1,15 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Chat – Lapstore</title></head>
+<body><section class="flex h-[calc(100vh-4rem)] flex-col">
+  <div class="flex items-center justify-between rounded-t-2xl border border-slate-200 bg-white px-5 py-3">
+    <h1 class="font-semibold" th:text="${chat.customerName}">Khách XYZ</h1>
+    <a th:href="@{/staff/consult}" class="btn-ghost btn-sm">← Danh sách</a></div>
+  <div id="chatLog" class="flex flex-1 flex-col gap-3 overflow-y-auto border-x border-slate-200 bg-slate-50 p-5">
+    <p th:if="${messages.isEmpty()}" class="m-auto text-sm text-slate-400">Chưa có tin nhắn</p>
+    <div th:each="m : ${messages}" class="bubble" th:classappend="${m.sender == 'STAFF'} ? 'bubble-staff' : (${m.sender == 'AI'} ? 'bubble-ai' : 'bubble-guest')">
+      <p th:text="${m.content}">Nội dung</p><p class="mt-1 text-[11px] opacity-60" th:text="${m.time}">10:30</p></div>
+  </div>
+  <form th:action="@{/staff/consult/sessions/{id}/messages(id=${chat.id})}" method="post" class="flex gap-2 rounded-b-2xl border border-slate-200 bg-white p-3">
+    <input class="input-field" name="content" placeholder="Nhập tin nhắn..." required="required" autocomplete="off"/>
+    <button class="btn-primary" type="submit"><svg th:replace="~{fragments/ui :: icon('send','size-5')}"></svg>Gửi</button></form>
+</section></body></html>

@@ -1,0 +1,13 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Phiên tư vấn – Lapstore</title></head>
+<body><section>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Phiên tư vấn</h1><p class="page-sub">Các cuộc trò chuyện với khách.</p></div></div>
+  <th:block th:if="${sessions.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có phiên chat nào')}"></div></th:block>
+  <div class="grid gap-3 md:grid-cols-2">
+    <a th:each="s : ${sessions}" th:href="@{/staff/consult/sessions/{id}(id=${s.id})}" class="card card-hover flex items-center gap-4">
+      <span class="grid size-11 place-items-center rounded-full bg-brand-100 font-bold text-brand-700" th:text="${#strings.substring(s.customerName,0,1)}">K</span>
+      <div class="min-w-0 flex-1"><p class="truncate font-semibold" th:text="${s.customerName}">Khách</p><p class="text-xs text-slate-500" th:text="${s.lastAt}">10:30</p></div>
+      <div class="flex flex-col items-end gap-1"><span th:replace="~{fragments/ui :: badge(${s.mode})}"></span><span th:replace="~{fragments/ui :: badge(${s.status})}"></span></div>
+    </a>
+  </div>
+</section></body></html>

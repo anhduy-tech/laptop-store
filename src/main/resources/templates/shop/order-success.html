@@ -1,0 +1,16 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Đặt hàng thành công – Lapstore</title></head>
+<body>
+<section class="mx-auto max-w-md py-8 text-center">
+  <span class="mx-auto grid size-20 place-items-center rounded-full bg-emerald-100 text-emerald-600"><svg th:replace="~{fragments/ui :: icon('check','!size-10')}\"></svg></span>
+  <h1 class="mt-6 text-2xl font-bold">Đặt hàng thành công!</h1>
+  <p class="page-sub">Cảm ơn bạn. Hãy lưu lại mã đơn để tra cứu.</p>
+  <div class="card mt-6"><p class="text-xs uppercase tracking-wider text-slate-500">Mã đơn hàng</p>
+    <p class="mt-1 text-3xl font-extrabold tracking-wider text-brand-700" th:text="${orderCode}">LS2611-0001</p></div>
+  <div class="mt-6 flex justify-center gap-3">
+    <a th:href="@{/shop/orders/lookup(code=${orderCode})}" class="btn-primary">Tra cứu đơn</a>
+    <a th:href="@{/shop}" class="btn-secondary">Về trang cửa hàng</a>
+  </div>
+</section>
+</body>
+</html>

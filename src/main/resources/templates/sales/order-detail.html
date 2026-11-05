@@ -1,0 +1,31 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="'Đơn ' + ${order.code} + ' – Lapstore'">Chi tiết đơn</title></head>
+<body><section>
+  <a th:href="@{/staff/sales/orders}" class="mb-3 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand-600"><svg th:replace="~{fragments/ui :: icon('back','!size-4')}\"></svg>Danh sách đơn</a>
+  <div class="mb-6 flex items-center gap-3"><h1 class="page-title" th:text="${order.code}">LS-0001</h1><span th:replace="~{fragments/ui :: badge(${order.status})}"></span></div>
+  <div class="grid gap-6 lg:grid-cols-3">
+    <div class="space-y-6 lg:col-span-2">
+      <div class="card"><h2 class="mb-2 font-semibold">Khách hàng</h2>
+        <p class="text-sm text-slate-600"><span th:text="${order.customerName}">Tên</span> · <span th:text="${order.phone}">0900</span></p>
+        <p th:if="${order.address}" class="mt-1 text-sm text-slate-500" th:text="${order.address}"></p></div>
+      <div class="card space-y-4"><h2 class="font-semibold">Dòng hàng &amp; serial</h2>
+        <div th:each="i : ${order.items}" class="rounded-xl border border-slate-200 p-4">
+          <div class="flex justify-between gap-3 text-sm"><span class="font-medium"><span th:text="${i.variantName}">Variant</span> <span class="text-slate-400">× <span th:text="${i.quantity}">1</span></span></span>
+            <span class="font-semibold"><span th:replace="~{fragments/ui :: money(${i.unitPrice * i.quantity})}"></span></span></div>
+          <div class="mt-2 flex flex-wrap gap-1"><span th:each="s : ${i.serials}" class="badge badge-green font-mono" th:text="${s}">SN001</span>
+            <span th:if="${i.serials.isEmpty()}" class="text-xs text-slate-400">Chưa gán serial</span></div>
+          <form th:if="${order.status == 'NEW' or order.status == 'CONFIRMED'}" th:action="@{/staff/sales/orders/{id}/items/{item}/serial(id=${order.id},item=${i.id})}" method="post" class="mt-3 flex gap-2">
+            <input class="input-field font-mono" name="serial" placeholder="Nhập serial..."/><button class="btn-secondary" type="submit">Gán</button></form>
+        </div>
+      </div>
+    </div>
+    <aside class="card h-fit space-y-3">
+      <div class="flex justify-between"><span class="text-sm text-slate-600">Tổng</span><span class="text-xl font-extrabold"><span th:replace="~{fragments/ui :: money(${order.total})}"></span></span></div>
+      <form th:if="${order.status == 'NEW'}" th:action="@{/staff/sales/orders/{id}/confirm(id=${order.id})}" method="post"><button class="btn-primary w-full" type="submit">Xác nhận đơn</button></form>
+      <form th:if="${order.status == 'CONFIRMED'}" th:action="@{/staff/sales/orders/{id}/complete(id=${order.id})}" method="post"><button class="btn-primary w-full" type="submit">Hoàn tất</button></form>
+      <form th:if="${order.status == 'NEW' or order.status == 'CONFIRMED'}" th:action="@{/staff/sales/orders/{id}/cancel(id=${order.id})}" method="post" data-confirm="Hủy đơn này?" class="space-y-2 border-t border-slate-200 pt-3">
+        <textarea class="input-field" name="reason" rows="2" placeholder="Lý do hủy *" required="required"></textarea>
+        <button class="btn-danger w-full" type="submit">Hủy đơn</button></form>
+    </aside>
+  </div>
+</section></body></html>

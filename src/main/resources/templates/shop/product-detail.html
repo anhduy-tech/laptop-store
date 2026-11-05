@@ -1,0 +1,39 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="${product.name} + ' – Lapstore'">Chi tiết</title></head>
+<body>
+<section>
+  <a th:href="@{/shop}" class="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-brand-600"><svg th:replace="~{fragments/ui :: icon('back','!size-4')}\"></svg>Danh sách laptop</a>
+  <div class="grid gap-8 md:grid-cols-2">
+    <div class="grid aspect-[4/3] place-items-center overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-100 to-brand-50">
+      <img th:if="${product.thumbnail}" th:src="${product.thumbnail}" th:alt="${product.name}" class="size-full object-cover"/>
+      <span th:unless="${product.thumbnail}" class="text-brand-300"><svg th:replace="~{fragments/ui :: icon('laptop','!size-32')}\"></svg></span>
+    </div>
+    <div>
+      <span class="text-xs font-semibold uppercase tracking-wider text-brand-600" th:text="${product.brand}">ASUS</span>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight" th:text="${product.name}">Tên sản phẩm</h1>
+      <p class="mt-3 leading-relaxed text-slate-600" th:text="${product.description}">Mô tả…</p>
+
+      <form class="mt-6 space-y-5" th:action="@{/shop/cart/items}" method="post" th:if="${!variants.isEmpty()}">
+        <div>
+          <label class="label" for="variantId">Cấu hình</label>
+          <select class="input-field" id="variantId" name="variantId">
+            <option th:each="v : ${variants}" th:value="${v.id}" th:data-price="${v.currentPrice}" th:text="${v.variantName}">i7 / 16GB / 512GB</option>
+          </select>
+        </div>
+        <p class="text-3xl font-extrabold text-brand-700" id="variantPrice">—</p>
+        <div class="flex items-end gap-3">
+          <div class="w-28"><label class="label" for="quantity">Số lượng</label>
+            <input class="input-field" id="quantity" name="quantity" type="number" min="1" max="10" value="1"/></div>
+          <button class="btn-primary btn-lg flex-1" type="submit"><svg th:replace="~{fragments/ui :: icon('cart','size-5')}"></svg>Thêm vào giỏ</button>
+        </div>
+      </form>
+      <th:block th:if="${variants.isEmpty()}"><div class="mt-6" th:replace="~{fragments/ui :: empty('Sản phẩm tạm hết hàng')}"></div></th:block>
+
+      <ul class="mt-8 grid grid-cols-3 gap-3 text-center text-xs text-slate-600">
+        <li class="card !p-3">Chính hãng 100%</li><li class="card !p-3">Bảo hành tận nơi</li><li class="card !p-3">Đổi trả 7 ngày</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</body>
+</html>

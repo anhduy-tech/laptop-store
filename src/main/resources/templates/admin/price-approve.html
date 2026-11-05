@@ -1,0 +1,13 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Duyệt giá – Lapstore Admin</title></head>
+<body><section>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Duyệt giá</h1><p class="page-sub">Các đề xuất giá đang chờ (PENDING).</p></div></div>
+  <th:block th:if="${proposals.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có đề xuất nào chờ duyệt')}"></div></th:block>
+  <div th:unless="${proposals.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>SKU</th><th class="text-right">Giá đề xuất</th><th>Hiệu lực từ</th><th>Lý do</th><th></th></tr></thead>
+    <tbody><tr th:each="p : ${proposals}"><td class="font-mono font-semibold" th:text="${p.sku}">SKU</td>
+      <td class="text-right font-semibold"><span th:replace="~{fragments/ui :: money(${p.newPrice})}"></span></td><td th:text="${p.effectiveFrom}">01/12</td><td class="max-w-xs text-slate-600" th:text="${p.reason}">Lý do</td>
+      <td><div class="flex justify-end gap-2">
+        <form th:action="@{/admin/prices/{id}/approve(id=${p.id})}" method="post"><button class="btn-primary btn-sm" type="submit">Duyệt</button></form>
+        <form th:action="@{/admin/prices/{id}/reject(id=${p.id})}" method="post" data-confirm="Từ chối đề xuất này?"><button class="btn-danger btn-sm" type="submit">Từ chối</button></form></div></td></tr></tbody></table></div>
+</section></body></html>

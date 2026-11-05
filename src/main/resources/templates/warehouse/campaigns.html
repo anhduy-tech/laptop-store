@@ -1,0 +1,24 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Campaign &amp; voucher – Lapstore</title></head>
+<body><section class="space-y-8">
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Campaign &amp; voucher</h1><p class="page-sub">Quản lý chương trình khuyến mãi.</p></div><a th:href="@{/staff/warehouse}" class="btn-ghost btn-sm">← Menu kho</a></div>
+  <details class="card">
+    <summary class="cursor-pointer font-semibold text-brand-700">+ Tạo campaign</summary>
+    <form th:action="@{/staff/warehouse/campaigns}" method="post" class="mt-4 grid gap-4 sm:grid-cols-4">
+      <div class="sm:col-span-2"><label class="label" for="name">Tên *</label><input class="input-field" id="name" name="name" required="required"/></div>
+      <div><label class="label" for="type">Loại</label><select class="input-field" id="type" name="type"><option value="PERCENT">Giảm %</option><option value="AMOUNT">Giảm tiền</option></select></div>
+      <div><label class="label" for="value">Giá trị</label><input class="input-field" id="value" name="value" type="number" min="0"/></div>
+      <div><label class="label" for="startAt">Từ ngày</label><input class="input-field" id="startAt" name="startAt" type="date"/></div>
+      <div><label class="label" for="endAt">Đến ngày</label><input class="input-field" id="endAt" name="endAt" type="date"/></div>
+      <div class="flex items-end"><button class="btn-primary" type="submit">Tạo</button></div>
+    </form>
+  </details>
+  <div><h2 class="mb-3 font-semibold">Campaign</h2>
+    <th:block th:if="${campaigns.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có campaign')}"></div></th:block>
+    <div th:unless="${campaigns.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Tên</th><th>Loại</th><th>Hiệu lực</th><th>Trạng thái</th></tr></thead>
+      <tbody><tr th:each="c : ${campaigns}"><td class="font-medium" th:text="${c.name}">KM</td><td th:text="${c.type}">PERCENT</td><td th:text="${c.period}">01/11 – 30/11</td><td><span th:replace="~{fragments/ui :: badge(${c.status})}"></span></td></tr></tbody></table></div></div>
+  <div><h2 class="mb-3 font-semibold">Voucher</h2>
+    <th:block th:if="${vouchers.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có voucher')}"></div></th:block>
+    <div th:unless="${vouchers.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Mã</th><th class="text-center">Đã dùng</th><th class="text-center">Đang giữ</th><th class="text-center">Giới hạn</th><th>Trạng thái</th></tr></thead>
+      <tbody><tr th:each="v : ${vouchers}"><td class="font-mono font-semibold" th:text="${v.code}">LAP10</td><td class="text-center" th:text="${v.used}">0</td><td class="text-center" th:text="${v.reserved}">0</td><td class="text-center" th:text="${v.limit}">100</td><td><span th:replace="~{fragments/ui :: badge(${v.status})}"></span></td></tr></tbody></table></div></div>
+</section></body></html>

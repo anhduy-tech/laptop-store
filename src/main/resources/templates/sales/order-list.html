@@ -1,0 +1,21 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Danh sách đơn – Lapstore</title></head>
+<body><section>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Danh sách đơn</h1><p class="page-sub">Tra cứu và xử lý đơn hàng.</p></div></div>
+  <form th:action="@{/staff/sales/orders}" method="get" class="card mb-5 flex flex-wrap items-end gap-3">
+    <div><label class="label" for="status">Trạng thái</label>
+      <select class="input-field w-44" id="status" name="status"><option value="">Tất cả</option>
+        <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == status}">NEW</option></select></div>
+    <div class="min-w-48 flex-1"><label class="label" for="q">Mã đơn / SĐT</label><input class="input-field" id="q" name="q" th:value="${q}"/></div>
+    <button class="btn-primary" type="submit">Lọc</button>
+  </form>
+  <th:block th:if="${orders.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có dữ liệu')}"></div></th:block>
+  <div th:unless="${orders.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Mã đơn</th><th>Kênh</th><th>Khách</th><th class="text-right">Tổng</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody><tr th:each="o : ${orders}">
+      <td class="font-mono font-semibold" th:text="${o.code}">LS-0001</td><td th:text="${o.channel}">ONLINE</td><td th:text="${o.customerName}">Khách</td>
+      <td class="text-right font-medium"><span th:replace="~{fragments/ui :: money(${o.total})}"></span></td>
+      <td><span th:replace="~{fragments/ui :: badge(${o.status})}"></span></td>
+      <td class="text-right"><a class="btn-secondary btn-sm" th:href="@{/staff/sales/orders/{id}(id=${o.id})}">Chi tiết</a></td></tr></tbody>
+  </table></div>
+</section></body></html>

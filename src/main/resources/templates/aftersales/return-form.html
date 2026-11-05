@@ -1,0 +1,26 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Yêu cầu đổi trả – Lapstore</title></head>
+<body>
+<section class="mx-auto max-w-xl">
+  <h1 class="page-title">Yêu cầu đổi trả</h1>
+  <p class="page-sub mb-6">Gửi yêu cầu, nhân viên sẽ liên hệ xử lý trong thời gian sớm nhất.</p>
+  <form th:action="@{/shop/returns}" method="post" class="card space-y-4">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div th:replace="~{fragments/ui :: field('Mã đơn','orderCode',${form?.orderCode},${errors?.get('orderCode')},'text',true)}"></div>
+      <div th:replace="~{fragments/ui :: field('Số điện thoại','phone',${form?.phone},${errors?.get('phone')},'tel',true)}"></div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="type">Loại yêu cầu</label>
+        <select class="input-field" id="type" name="type">
+          <option value="RETURN" th:selected="${form?.type == 'RETURN'}">Trả hàng</option>
+          <option value="EXCHANGE" th:selected="${form?.type == 'EXCHANGE'}">Đổi hàng</option></select></div>
+      <div th:replace="~{fragments/ui :: field('Số serial máy','serial',${form?.serial},${errors?.get('serial')},'text',true)}"></div>
+    </div>
+    <div><label class="label" for="reason">Lý do <span class="text-red-500">*</span></label>
+      <textarea class="input-field" id="reason" name="reason" rows="4" required="required" th:text="${form?.reason}"></textarea>
+      <p th:if="${errors?.get('reason')}" class="field-error" th:text="${errors?.get('reason')}"></p></div>
+    <button class="btn-primary w-full" type="submit">Gửi yêu cầu</button>
+  </form>
+</section>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Đề xuất giá – Lapstore</title></head>
+<body><section class="max-w-xl">
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Đề xuất giá</h1><p class="page-sub">Giá mới sẽ ở trạng thái chờ admin duyệt.</p></div><a th:href="@{/staff/warehouse}" class="btn-ghost btn-sm">← Menu kho</a></div>
+  <form th:action="@{/staff/warehouse/prices}" method="post" class="card space-y-4">
+    <div><label class="label" for="variantId">Variant *</label><input class="input-field" id="variantId" name="variantId" type="number" required="required" placeholder="ID variant"/></div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div><label class="label" for="newPrice">Giá mới (₫) *</label><input class="input-field" id="newPrice" name="newPrice" type="number" min="0" required="required"/></div>
+      <div><label class="label" for="effectiveFrom">Hiệu lực từ *</label><input class="input-field" id="effectiveFrom" name="effectiveFrom" type="date" required="required"/></div></div>
+    <div><label class="label" for="reason">Lý do *</label><textarea class="input-field" id="reason" name="reason" rows="3" required="required"></textarea></div>
+    <div class="flex justify-end"><button class="btn-primary" type="submit">Gửi đề xuất</button></div>
+  </form>
+</section></body></html>

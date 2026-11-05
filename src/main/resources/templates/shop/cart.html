@@ -1,0 +1,39 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Giỏ hàng – Lapstore</title></head>
+<body>
+<section>
+  <h1 class="page-title mb-6">Giỏ hàng</h1>
+  <div th:if="${items == null or items.isEmpty()}">
+    <div th:replace="~{fragments/ui :: empty('Giỏ hàng đang trống')}"></div>
+    <div class="mt-6 text-center"><a th:href="@{/shop}" class="btn-primary">Tiếp tục mua sắm</a></div>
+  </div>
+  <div th:if="${items != null and !items.isEmpty()}" class="grid gap-6 lg:grid-cols-3">
+    <div class="table-wrap lg:col-span-2">
+      <table class="tbl">
+        <thead><tr><th>Sản phẩm</th><th class="text-right">Đơn giá</th><th class="text-center">SL</th><th class="text-right">Thành tiền</th><th></th></tr></thead>
+        <tbody>
+          <tr th:each="i : ${items}">
+            <td class="font-medium" th:text="${i.variantName}">Variant</td>
+            <td class="text-right"><span th:replace="~{fragments/ui :: money(${i.unitPrice})}"></span></td>
+            <td class="text-center" th:text="${i.quantity}">1</td>
+            <td class="text-right font-semibold"><span th:replace="~{fragments/ui :: money(${i.unitPrice * i.quantity})}"></span></td>
+            <td class="text-right">
+              <form th:action="@{/shop/cart/items/{id}/delete(id=${i.id})}" method="post">
+                <button class="btn-ghost btn-sm !text-red-600" type="submit" aria-label="Xóa"><svg th:replace="~{fragments/ui :: icon('trash','!size-4')}\"></svg></button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="card h-fit space-y-4">
+      <h2 class="font-semibold">Tạm tính</h2>
+      <div class="flex justify-between text-sm text-slate-600"><span>Tổng cộng</span>
+        <span class="text-xl font-extrabold text-slate-900"><span th:replace="~{fragments/ui :: money(${total})}"></span></span></div>
+      <a th:href="@{/shop/checkout}" class="btn-primary btn-lg w-full">Thanh toán</a>
+      <a th:href="@{/shop}" class="btn-secondary w-full">Tiếp tục mua sắm</a>
+    </aside>
+  </div>
+</section>
+</body>
+</html>

@@ -20,6 +20,9 @@ spring:
 
 server:
   port: 8080
+  error:
+    whitelabel:
+      enabled: false
 
 app:
   ports: 8080,8081,8082,8083,8084

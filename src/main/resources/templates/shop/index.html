@@ -1,0 +1,51 @@
+<html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Laptop chính hãng – Lapstore</title></head>
+<body>
+<section>
+  <div class="hero mb-8">
+    <div class="flex-1 space-y-4">
+      <span class="pill">🌿 Khuyến mãi tháng 11 — giảm đến 12%</span>
+      <h2 class="text-4xl font-extrabold leading-tight">Laptop chính hãng<br/>Giá tốt mỗi ngày</h2>
+      <p class="text-brand-100">Bảo hành tận nơi · Đổi trả 7 ngày · Trả góp 0%</p>
+      <div class="flex gap-3"><a href="#danh-sach" class="btn-lg inline-flex rounded-lg bg-white px-6 py-3 font-semibold text-brand-700 hover:bg-brand-50">Mua ngay</a>
+        <a href="#danh-sach" class="btn-lg inline-flex rounded-lg border border-white/50 px-6 py-3 font-semibold hover:bg-white/10">Xem khuyến mãi</a></div>
+    </div>
+    <div class="hidden h-56 w-72 shrink-0 place-items-center rounded-full bg-white/15 text-white md:grid"><svg th:replace="~{fragments/ui :: icon('laptop','size-32')}"></svg></div>
+  </div>
+  <div id="danh-sach" class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+    <div><h1 class="page-title">Laptop</h1><p class="page-sub">Chọn máy phù hợp nhu cầu — giá minh bạch, bảo hành chính hãng.</p></div>
+    <form th:action="@{/shop}" method="get" class="flex flex-wrap gap-2">
+      <div class="relative">
+        <input class="input-field w-60 pl-9" type="search" name="q" th:value="${q}" placeholder="Tìm laptop..."/>
+        <span class="pointer-events-none absolute left-3 top-2.5 text-slate-400"><svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg></span>
+      </div>
+      <select name="brand" class="input-field w-40">
+        <option value="">Tất cả hãng</option>
+        <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${b == selectedBrand}">ASUS</option>
+      </select>
+      <button class="btn-primary" type="submit">Lọc</button>
+    </form>
+  </div>
+
+  <th:block th:if="${page == null or page.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không tìm thấy laptop phù hợp')}"></div></th:block>
+
+  <div th:if="${page != null and !page.content.isEmpty()}" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <a th:each="p : ${page.content}" th:href="@{/shop/products/{id}(id=${p.id})}" class="card card-hover group flex flex-col overflow-hidden !p-0">
+      <div class="relative grid aspect-[4/3] place-items-center bg-gradient-to-br from-slate-100 to-brand-50">
+        <span th:if="${p.sale}" class="tag-sale" th:text="${p.sale}">-9%</span>
+        <img th:if="${p.thumbnail}" th:src="${p.thumbnail}" th:alt="${p.name}" class="size-full object-cover"/>
+        <span th:unless="${p.thumbnail}" class="text-brand-300"><svg th:replace="~{fragments/ui :: icon('laptop','!size-20')}\"></svg></span>
+      </div>
+      <div class="flex flex-1 flex-col p-5">
+        <span class="text-xs font-semibold uppercase tracking-wider text-brand-600" th:text="${p.brand}">ASUS</span>
+        <h2 class="mt-1 line-clamp-2 font-semibold text-slate-900 group-hover:text-brand-700" th:text="${p.name}">Tên sản phẩm</h2>
+        <div class="mt-2 flex flex-wrap gap-1.5"><span th:each="s : ${p.specs}" class="chip" th:text="${s}">i7</span></div>
+        <p class="mt-auto pt-4 text-xs text-slate-400 line-through" th:if="${p.oldPrice}"><span th:replace="~{fragments/ui :: money(${p.oldPrice})}"></span></p>
+        <p class="text-lg font-extrabold text-brand-700"><span th:replace="~{fragments/ui :: money(${p.price})}"></span></p>
+      </div>
+    </a>
+  </div>
+  <th:block th:if="${page != null}"><nav th:replace="~{fragments/ui :: pager(${page}, @{/shop(q=${q ?: ''},brand=${selectedBrand ?: ''})} + '&amp;')}"></nav></th:block>
+</section>
+</body>
+</html>
