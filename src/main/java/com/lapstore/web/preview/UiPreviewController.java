@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,14 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * Xem trước 26 màn hình bằng DỮ LIỆU GIẢ — chỉ bật khi chạy profile "ui".
- *   mvnw spring-boot:run -Dspring-boot.run.profiles=ui
- *   → http://localhost:8080/shop/_ui          (thêm ?empty=1 để xem empty state)
- * Không dùng cho production. Khi có controller thật, xóa package này.
- */
 @Controller
-@Profile("ui")
 @RequestMapping("/shop/_ui")
 class UiPreviewController {
 
@@ -90,12 +82,12 @@ class UiPreviewController {
         switch (slug) {
             case "sh-01" -> {
                 List<Map<String, Object>> cards = e ? List.of() : List.of(
-                    m("id", 1, "name", "ASUS ROG Strix G16 (2025)", "brand", "ASUS", "price", 38990000L, "thumbnail", null),
-                    m("id", 2, "name", "MacBook Air 13 M3", "brand", "Apple", "price", 27990000L, "thumbnail", null),
-                    m("id", 3, "name", "Dell XPS 13 Plus", "brand", "Dell", "price", 32500000L, "thumbnail", null),
-                    m("id", 4, "name", "Lenovo ThinkPad X1 Carbon Gen 12", "brand", "Lenovo", "price", 44900000L, "thumbnail", null),
-                    m("id", 5, "name", "HP Spectre x360 14", "brand", "HP", "price", 36900000L, "thumbnail", null),
-                    m("id", 6, "name", "Acer Swift Go 14", "brand", "Acer", "price", 18490000L, "thumbnail", null));
+                    m("id", 1, "name", "ASUS ROG Strix G16 (2025)", "brand", "ASUS", "price", 38990000L, "oldPrice", 42990000L, "sale", "-9%", "specs", List.of("i7", "16GB", "1TB", "RTX 4060"), "thumbnail", null),
+                    m("id", 2, "name", "MacBook Air 13 M3", "brand", "Apple", "price", 27990000L, "oldPrice", 29990000L, "sale", "-7%", "specs", List.of("M3", "8GB", "256GB"), "thumbnail", null),
+                    m("id", 3, "name", "Dell XPS 13 Plus", "brand", "Dell", "price", 32500000L, "oldPrice", 34990000L, "sale", "-7%", "specs", List.of("Ultra 7", "16GB", "OLED"), "thumbnail", null),
+                    m("id", 4, "name", "Lenovo ThinkPad X1 Carbon Gen 12", "brand", "Lenovo", "price", 44900000L, "oldPrice", 47900000L, "sale", "-6%", "specs", List.of("Ultra 7", "32GB", "1.1kg"), "thumbnail", null),
+                    m("id", 5, "name", "HP Spectre x360 14", "brand", "HP", "price", 36900000L, "oldPrice", 39900000L, "sale", "-8%", "specs", List.of("Ultra 7", "16GB", "2-in-1"), "thumbnail", null),
+                    m("id", 6, "name", "Acer Swift Go 14", "brand", "Acer", "price", 18490000L, "oldPrice", 20990000L, "sale", "-12%", "specs", List.of("i5", "16GB", "OLED"), "thumbnail", null));
                 model.addAttribute("page", m("content", cards, "totalPages", e ? 0 : 3, "number", 0));
                 model.addAttribute("brands", List.of("ASUS", "Apple", "Dell", "Lenovo", "HP", "Acer"));
                 model.addAttribute("q", "");
@@ -163,7 +155,7 @@ class UiPreviewController {
                     m("code", "LAP10", "used", 24, "reserved", 3, "limit", 100, "status", "ACTIVE"),
                     m("code", "NEWUSER", "used", 100, "reserved", 0, "limit", 100, "status", "CLOSED")));
             }
-            case "ad-00" -> model.addAttribute("pendingPrices", 3);
+            case "ad-00" -> { model.addAttribute("pendingPrices", 3); model.addAttribute("kpi", m("revenue", 121000000L, "orders", 4, "onDuty", 5)); }
             case "ad-01" -> model.addAttribute("users", e ? List.of() : List.of(
                 m("id", 1, "username", "admin", "fullName", "Quản trị viên", "roles", List.of("ADMIN"), "active", true),
                 m("id", 2, "username", "lan.sales", "fullName", "Nguyễn Thị Lan", "roles", List.of("SALES", "CONSULTANT"), "active", true),
