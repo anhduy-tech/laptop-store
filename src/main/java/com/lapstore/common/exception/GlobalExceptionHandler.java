@@ -2,24 +2,19 @@ package com.lapstore.common.exception;
 
 import java.net.URI;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import com.lapstore.config.Portal;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- * Chuyển exception thành giao diện:
- *  - NotFoundException  → trang 404
- *  - BusinessException  → POST: quay lại trang trước + flash "error"; GET: trang 503 kèm thông báo
- * Controller nhờ vậy không cần try/catch cho từng lệnh gọi service.
- */
+import com.lapstore.config.Portal;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+
 @ControllerAdvice
 class GlobalExceptionHandler {
 

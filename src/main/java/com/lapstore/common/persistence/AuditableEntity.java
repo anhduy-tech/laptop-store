@@ -12,7 +12,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 
-/** Bốn cột kiểm toán dùng chung. created_by/updated_by là id app_user, KHÔNG có khóa ngoại (xem V1). */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AuditableEntity {
@@ -33,8 +32,19 @@ public abstract class AuditableEntity {
     @Column(name = "updated_by")
     private Long updatedBy;
 
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
-    public Long getCreatedBy() { return createdBy; }
-    public Long getUpdatedBy() { return updatedBy; }
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public Long getUpdatedBy() {
+        return updatedBy;
+    }
 }
