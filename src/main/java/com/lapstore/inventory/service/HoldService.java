@@ -10,8 +10,7 @@ import com.lapstore.inventory.dto.HoldResult;
 
 /**
  * Lớp NGOÀI: chỉ lấy khóa rồi gọi HoldTx. Cố ý KHÔNG có @Transactional —
- * nếu có, khóa sẽ được nhả TRƯỚC khi transaction commit và hai quầy vẫn giữ
- * trùng được một máy.
+ * nếu có, khóa sẽ được nhả TRƯỚC khi transaction commit và hai quầy vẫn giữ trùng được một máy.
  */
 @Service
 class HoldService implements StockHoldService {
@@ -48,8 +47,7 @@ class HoldService implements StockHoldService {
     }
 
     private static String normalize(String serial) {
-        if (serial == null || serial.isBlank())
-            throw new BusinessException("Vui lòng nhập serial.");
+        if (serial == null || serial.isBlank()) throw new BusinessException("Vui lòng nhập serial.");
         return serial.trim();
     }
 }

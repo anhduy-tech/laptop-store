@@ -1,12 +1,26 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
 <head><title>Nhân viên – Lapstore Admin</title></head>
 <body><section>
-<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Quản lý nhân viên</h1><p class="page-sub">Tài khoản đăng nhập hệ thống.</p></div><a th:href="@{/admin/users/new}" class="btn-primary">+ Thêm NV</a></div>
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Quản lý nhân viên</h1><p class="page-sub">Tạo tài khoản, phân vai trò và chi nhánh cho nhân viên.</p></div>
+    <a th:href="@{/admin/users/new}" class="btn-primary">+ Thêm nhân viên</a>
+  </div>
   <th:block th:if="${users.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có nhân viên')}"></div></th:block>
   <div th:unless="${users.isEmpty()}" class="table-wrap"><table class="tbl">
-    <thead><tr><th>Username</th><th>Họ tên</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr></thead>
-    <tbody><tr th:each="u : ${users}"><td class="font-mono font-semibold" th:text="${u.username}">user</td><td th:text="${u.fullName}">Tên</td>
+    <thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Chi nhánh</th><th>Vai trò</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody><tr th:each="u : ${users}">
+      <td class="font-mono font-semibold" th:text="${u.username}">user</td>
+      <td><span th:text="${u.fullName}">Tên</span><span class="block text-xs text-slate-400" th:text="${u.email}">email</span></td>
+      <td th:text="${u.branchName ?: '—'}">CN</td>
       <td><span th:each="r : ${u.roles}" class="badge badge-blue mr-1" th:text="${r}">SALES</span></td>
-      <td><span th:replace="~{fragments/ui :: badge(${u.active ? 'ACTIVE' : 'INACTIVE'})}"></span></td>
-      <td class="text-right"><a class="btn-secondary btn-sm" th:href="@{/admin/users/{id}(id=${u.id})}">Sửa</a></td></tr></tbody></table></div>
+      <td>
+        <span th:replace="~{fragments/ui :: badge(${u.active ? 'ACTIVE' : 'INACTIVE'})}"></span>
+        <span th:if="${u.locked}" class="badge badge-amber ml-1">Đang bị khóa tạm</span>
+      </td>
+      <td class="text-right">
+        <div class="flex justify-end gap-2">
+          <form th:if="${u.locked}" th:action="@{/admin/users/{id}/unlock(id=${u.id})}" method="post"><button class="btn-secondary btn-sm" type="submit">Mở khóa</button></form>
+          <a class="btn-secondary btn-sm" th:href="@{/admin/users/{id}(id=${u.id})}">Sửa</a>
+        </div>
+      </td></tr></tbody></table></div>
 </section></body></html>

@@ -336,7 +336,7 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 11 · Nhân sự, báo cáo, thông báo
 
-- [ ] `StaffService`: tạo/khóa user, gán role, băm mật khẩu BCrypt (UC-A01)
+- [x] `StaffService`: tạo/khóa user, gán role, băm mật khẩu BCrypt (UC-A01)
 - [ ] Xếp ca, chặn trùng khung giờ (`ShiftConflictException`) (UC-A02)
 - [ ] Chấm công; chưa chấm công thì không mở được đơn quầy (BR-10)
 - [ ] `ReportingService`: báo cáo doanh thu/lãi ước tính theo ngày và chi nhánh, job tổng hợp `daily_sales_summary`

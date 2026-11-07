@@ -1,17 +1,67 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
-<head><title>Dashboard – Lapstore Admin</title></head>
-<body><section>
-<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Dashboard</h1><p class="page-sub">Quản trị hệ thống Lapstore.</p></div></div>
-  <div class="mb-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-    <div class="card"><p class="text-xs text-slate-500">Doanh thu hôm nay</p><p class="mt-1 text-2xl font-extrabold"><span th:replace="~{fragments/ui :: money(${kpi?.get('revenue')})}"></span></p><p class="kpi-up">▲ 12% so với hôm qua</p></div>
-    <div class="card"><p class="text-xs text-slate-500">Đơn hàng</p><p class="mt-1 text-2xl font-extrabold" th:text="${kpi?.get('orders') ?: 0}">0</p><p class="kpi-up">Hôm nay</p></div>
-    <div class="card"><p class="text-xs text-slate-500">Đề xuất giá chờ duyệt</p><p class="mt-1 text-2xl font-extrabold" th:text="${pendingPrices ?: 0}">0</p><p class="kpi-down">Cần xử lý</p></div>
-    <div class="card"><p class="text-xs text-slate-500">Nhân viên đang trực</p><p class="mt-1 text-2xl font-extrabold" th:text="${kpi?.get('onDuty') ?: 0}">0</p><p class="kpi-up">Hôm nay</p></div>
-  </div>
-  <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-    <a th:href="@{/admin/users}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600"><svg th:replace="~{fragments/ui :: icon('users','size-5')}"></svg></span><p class="font-semibold">Nhân viên</p><p class="hint">Tài khoản &amp; phân quyền</p></a>
-    <a th:href="@{/admin/shifts}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><svg th:replace="~{fragments/ui :: icon('calendar','size-5')}"></svg></span><p class="font-semibold">Xếp ca</p><p class="hint">Phân ca theo chi nhánh</p></a>
-    <a th:href="@{/admin/prices}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-amber-50 text-amber-600"><svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg></span><p class="font-semibold">Duyệt giá</p><p class="hint"><span th:text="${pendingPrices ?: 0}">0</span> đề xuất đang chờ</p></a>
-    <a th:href="@{/admin/reports}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-violet-50 text-violet-600"><svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg></span><p class="font-semibold">Báo cáo</p><p class="hint">Doanh thu, lãi ước tính</p></a>
-  </div>
-</section></body></html>
+
+<head>
+  <title>Dashboard – Lapstore Admin</title>
+</head>
+
+<body>
+  <section>
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">Quản trị hệ thống Lapstore.</p>
+      </div>
+    </div>
+    <div class="mb-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div class="card">
+        <p class="text-xs text-slate-500">Doanh thu hôm nay</p>
+        <p class="mt-1 text-2xl font-extrabold"><span
+            th:replace="~{fragments/ui :: money(${kpi?.get('revenue')})}"></span></p>
+        <p class="kpi-up">▲ 12% so với hôm qua</p>
+      </div>
+      <div class="card">
+        <p class="text-xs text-slate-500">Đơn hàng</p>
+        <p class="mt-1 text-2xl font-extrabold" th:text="${kpi?.get('orders') ?: 0}">0</p>
+        <p class="kpi-up">Hôm nay</p>
+      </div>
+      <div class="card">
+        <p class="text-xs text-slate-500">Đề xuất giá chờ duyệt</p>
+        <p class="mt-1 text-2xl font-extrabold" th:text="${pendingPrices ?: 0}">0</p>
+        <p class="kpi-down">Cần xử lý</p>
+      </div>
+      <div class="card">
+        <p class="text-xs text-slate-500">Nhân viên đang trực</p>
+        <p class="mt-1 text-2xl font-extrabold" th:text="${kpi?.get('onDuty') ?: 0}">0</p>
+        <p class="kpi-up">Hôm nay</p>
+      </div>
+    </div>
+    <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <a th:href="@{/admin/users}" class="card card-hover"><span
+          class="mb-3 grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600"><svg
+            th:replace="~{fragments/ui :: icon('users','size-5')}"></svg></span>
+        <p class="font-semibold">Nhân viên</p>
+        <p class="hint">Tài khoản &amp; phân quyền</p>
+      </a>
+      <a th:href="@{/admin/shifts}" class="card card-hover"><span
+          class="mb-3 grid size-11 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><svg
+            th:replace="~{fragments/ui :: icon('calendar','size-5')}"></svg></span>
+        <p class="font-semibold">Xếp ca</p>
+        <p class="hint">Phân ca theo chi nhánh</p>
+      </a>
+      <a th:href="@{/admin/prices}" class="card card-hover"><span
+          class="mb-3 grid size-11 place-items-center rounded-xl bg-amber-50 text-amber-600"><svg
+            th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg></span>
+        <p class="font-semibold">Duyệt giá</p>
+        <p class="hint"><span th:text="${pendingPrices ?: 0}">0</span> đề xuất đang chờ</p>
+      </a>
+      <a th:href="@{/admin/reports}" class="card card-hover"><span
+          class="mb-3 grid size-11 place-items-center rounded-xl bg-violet-50 text-violet-600"><svg
+            th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg></span>
+        <p class="font-semibold">Báo cáo</p>
+        <p class="hint">Doanh thu, lãi ước tính</p>
+      </a>
+    </div>
+  </section>
+</body>
+
+</html>

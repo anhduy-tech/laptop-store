@@ -1,0 +1,55 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="${userId != null ? 'Sửa nhân viên' : 'Thêm nhân viên'} + ' – Lapstore Admin'">Nhân viên</title></head>
+<body><section class="max-w-2xl">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title" th:text="${userId != null ? 'Sửa nhân viên' : 'Thêm nhân viên'}">Thêm nhân viên</h1>
+      <p class="page-sub">Tài khoản đăng nhập cổng nhân viên.</p></div>
+    <a th:href="@{/admin/users}" class="btn-ghost btn-sm">← Danh sách</a>
+  </div>
+  <form th:action="${userId != null} ? @{/admin/users/{id}(id=${userId})} : @{/admin/users}" method="post" class="card space-y-5">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <th:block th:if="${userId == null}">
+        <div th:replace="~{fragments/ui :: field('Tên đăng nhập','username',${form?.username},${errors?.get('username')},'text',true)}"></div>
+      </th:block>
+      <div th:if="${userId != null}">
+        <label class="label" for="username">Tên đăng nhập</label>
+        <input class="input-field bg-slate-50" id="username" name="username" th:value="${form?.username}" readonly="readonly"/>
+      </div>
+      <div th:replace="~{fragments/ui :: field('Họ tên','fullName',${form?.fullName},${errors?.get('fullName')},'text',true)}"></div>
+      <div th:replace="~{fragments/ui :: field('Email','email',${form?.email},${errors?.get('email')},'email',false)}"></div>
+      <div th:replace="~{fragments/ui :: field('Số điện thoại','phone',${form?.phone},${errors?.get('phone')},'tel',false)}"></div>
+      <div>
+        <label class="label" for="branchId">Chi nhánh</label>
+        <select class="input-field" id="branchId" name="branchId">
+          <option value="">— Không gắn chi nhánh —</option>
+          <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}"
+                  th:selected="${form?.branchId != null and form.branchId == b.id}">Chi nhánh</option>
+        </select>
+      </div>
+      <div>
+        <label class="label" for="password">Mật khẩu<span th:if="${userId == null}" class="text-red-500"> *</span></label>
+        <input class="input-field" th:classappend="${errors?.get('password')} ? 'input-error'" id="password" name="password" type="password" autocomplete="new-password"/>
+        <p th:if="${userId != null}" class="hint">Để trống nếu không đổi mật khẩu.</p>
+        <p th:if="${errors?.get('password')}" class="field-error" th:text="${errors?.get('password')}">Lỗi</p>
+      </div>
+    </div>
+    <div>
+      <p class="label">Vai trò</p>
+      <div class="flex flex-wrap gap-3">
+        <label th:each="r : ${roleCodes}" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+          <input type="checkbox" name="roles" th:value="${r}" th:checked="${form?.roles != null and form.roles.contains(r)}" class="accent-brand-600"/>
+          <span th:text="${r}">SALES</span>
+        </label>
+      </div>
+    </div>
+    <label class="flex cursor-pointer items-center gap-2 text-sm">
+      <input type="hidden" name="_active" value="on"/>
+      <input type="checkbox" name="active" th:checked="${form == null or form.active}" class="accent-brand-600"/>
+      <span>Tài khoản đang hoạt động</span>
+    </label>
+    <div class="flex justify-end gap-2">
+      <a th:href="@{/admin/users}" class="btn-secondary">Hủy</a>
+      <button class="btn-primary" type="submit">Lưu</button>
+    </div>
+  </form>
+</section></body></html>

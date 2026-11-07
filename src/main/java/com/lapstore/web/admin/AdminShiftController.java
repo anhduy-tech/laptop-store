@@ -1,11 +1,5 @@
 package com.lapstore.web.admin;
 
-import jakarta.validation.Valid;
-
-import com.lapstore.common.web.FormErrors;
-import com.lapstore.inventory.service.InventoryService;
-import com.lapstore.staff.dto.ShiftAssignCommand;
-import com.lapstore.staff.service.StaffService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,23 +9,27 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.lapstore.common.web.FormErrors;
+import com.lapstore.staff.dto.ShiftAssignCommand;
+import com.lapstore.staff.service.StaffService;
+
+import jakarta.validation.Valid;
+
 /** AD-02 xếp ca. */
 @Controller
 @RequestMapping("/admin/shifts")
 class AdminShiftController {
     private final StaffService staff;
-    private final InventoryService inventory;
 
-    AdminShiftController(StaffService staff, InventoryService inventory) {
+    AdminShiftController(StaffService staff) {
         this.staff = staff;
-        this.inventory = inventory;
     }
 
     @GetMapping
     String view(Model model) {
         model.addAttribute("users", staff.userOptions());
         model.addAttribute("templates", staff.shiftTemplates());
-        model.addAttribute("branches", inventory.branches());
+        model.addAttribute("branches", staff.branchOptions());
         model.addAttribute("assignments", staff.shifts());
         return "admin/shifts";
     }
