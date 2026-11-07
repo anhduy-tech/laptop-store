@@ -6,7 +6,7 @@ import java.util.Map;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
-/** BindingResult → Map<tên field, lỗi đầu tiên> để template đọc bằng errors?.get('field'). */
+/** BindingResult -> Map<tên field, lỗi đầu tiên> để template đọc bằng errors?.get('field'). */
 public final class FormErrors {
     private FormErrors() {}
 

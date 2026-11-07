@@ -2,11 +2,6 @@ package com.lapstore.web.warehouse;
 
 import java.security.Principal;
 
-import jakarta.validation.Valid;
-
-import com.lapstore.catalog.dto.PriceProposalRequest;
-import com.lapstore.catalog.service.PriceHistoryService;
-import com.lapstore.common.web.FormErrors;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/** WH-04 đề xuất giá → trạng thái PENDING chờ admin duyệt (AD-03). */
+import com.lapstore.catalog.dto.PriceProposalRequest;
+import com.lapstore.catalog.service.PriceHistoryService;
+import com.lapstore.common.web.FormErrors;
+
+import jakarta.validation.Valid;
+
+/** WH-04 đề xuất giá -> trạng thái PENDING chờ admin duyệt (AD-03). */
 @Controller
 @RequestMapping("/staff/warehouse/prices")
 class PriceProposalController {

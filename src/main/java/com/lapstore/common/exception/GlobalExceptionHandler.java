@@ -48,7 +48,7 @@ class GlobalExceptionHandler {
                     return u.getRawQuery() == null ? path : path + "?" + u.getRawQuery();
                 }
             } catch (IllegalArgumentException ignored) {
-                // Referer hỏng → dùng đường dẫn mặc định
+                // Referer hỏng -> dùng đường dẫn mặc định
             }
         }
         return Portal.byPort(req.getLocalPort()).map(Portal::prefix).orElse("/shop");

@@ -2,12 +2,6 @@ package com.lapstore.web.sales;
 
 import java.security.Principal;
 
-import com.lapstore.common.exception.BusinessException;
-import com.lapstore.common.web.Text;
-import com.lapstore.inventory.dto.HoldResult;
-import com.lapstore.inventory.service.StockHoldService;
-import com.lapstore.sales.dto.CounterOrderView;
-import com.lapstore.sales.service.CounterCheckoutService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +10,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/** SA-01 bán quầy: mở đơn → giữ serial → thu tiền & hoàn tất. Quyền cổng PORTAL_SALES do SecurityConfig kiểm. */
+import com.lapstore.common.exception.BusinessException;
+import com.lapstore.common.web.Text;
+import com.lapstore.inventory.dto.HoldResult;
+import com.lapstore.inventory.service.StockHoldService;
+import com.lapstore.sales.dto.CounterOrderView;
+import com.lapstore.sales.service.CounterCheckoutService;
+
+/** SA-01 bán quầy: mở đơn -> giữ serial -> thu tiền & hoàn tất. Quyền cổng PORTAL_SALES do SecurityConfig kiểm. */
 @Controller
 @RequestMapping("/staff/sales")
 class CounterOrderController {

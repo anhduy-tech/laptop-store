@@ -2,12 +2,12 @@
 (function () {
   const vnd = (n) => new Intl.NumberFormat('vi-VN').format(n) + ' ₫';
 
-  // 1) Sidebar: link sang portal khác (khác cổng) → ghép host hiện tại + data-port
+  // 1) Sidebar: link sang portal khác (khác cổng) -> ghép host hiện tại + data-port
   document.querySelectorAll('a[data-port]').forEach((a) => {
     a.href = location.protocol + '//' + location.hostname + ':' + a.dataset.port + a.getAttribute('data-path');
   });
 
-  // 2) SH-02: đổi variant → cập nhật giá
+  // 2) SH-02: đổi variant -> cập nhật giá
   const sel = document.getElementById('variantId');
   const price = document.getElementById('variantPrice');
   if (sel && price) {
@@ -31,7 +31,7 @@
   const log = document.getElementById('chatLog');
   if (log) log.scrollTop = log.scrollHeight;
 
-  // 5) Form có data-confirm → hỏi lại trước khi gửi
+  // 5) Form có data-confirm -> hỏi lại trước khi gửi
   document.querySelectorAll('form[data-confirm]').forEach((f) =>
     f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); }));
 })();

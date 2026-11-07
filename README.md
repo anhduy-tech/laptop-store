@@ -268,7 +268,7 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [ ] Cả nhóm cài đúng môi trường: JDK 25, Docker, Oracle, user `laptop_admin`
   *Xong khi: `java -version` ra 25, kết nối được PDB `LAPTOP`.*
 - [ ] Bỏ mật khẩu mặc định trong `application.yml`, bắt buộc đọc từ `DB_PASSWORD`
-- [x] Thêm `ArchitectureTest` (ArchUnit) để khóa luật phụ thuộc controller → service → repo
+- [x] Thêm `ArchitectureTest` (ArchUnit) để khóa luật phụ thuộc controller -> service -> repo
 - [ ] Viết `.env.example` / hướng dẫn biến môi trường cho thành viên mới
 
 ### Bước 3–4 · Nền tảng & bảo mật
@@ -285,7 +285,7 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 - [ ] Repository cho catalog (brand, category, product, variant, thuộc tính, ảnh)
 - [ ] `CatalogService`: danh sách có lọc/phân trang, chi tiết sản phẩm, chọn variant (UC-C01)
-- [ ] `PriceHistoryService`: đề xuất giá `PENDING` → duyệt → đóng `effective_to` bản cũ (BR-06)
+- [ ] `PriceHistoryService`: đề xuất giá `PENDING` -> duyệt -> đóng `effective_to` bản cũ (BR-06)
 - [ ] Từ chối đề xuất giá có khoảng hiệu lực chồng nhau
   *Xong khi: đổi giá tạo dòng `price_history` mới, dòng cũ có `effective_to`.*
 - [ ] Kết nối màn Duyệt giá (admin) và Đề xuất giá (warehouse)
@@ -293,9 +293,9 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 ### Bước 6 · Kho & serial
 
 - [ ] Repository cho inventory (serial, balance, hold, receipt, transfer)
-- [ ] `InventoryService.receive`: phiếu nhập → sinh `serial_item IN_STOCK`, cập nhật `inventory_balance`, từ chối trùng serial (BR-01)
-  *Xong khi: nhập 5 serial → `on_hand = 5`, `held_qty = 0`, có 5 dòng `serial_status_history`.*
-- [ ] `InventoryService.transfer`: `IN_TRANSIT` → nhận tại chi nhánh đích → `IN_STOCK`
+- [ ] `InventoryService.receive`: phiếu nhập -> sinh `serial_item IN_STOCK`, cập nhật `inventory_balance`, từ chối trùng serial (BR-01)
+  *Xong khi: nhập 5 serial -> `on_hand = 5`, `held_qty = 0`, có 5 dòng `serial_status_history`.*
+- [ ] `InventoryService.transfer`: `IN_TRANSIT` -> nhận tại chi nhánh đích -> `IN_STOCK`
 - [ ] Nhập/xuất danh sách serial bằng Excel (Apache POI)
 - [ ] Kiểm kê (`stocktake`)
 
@@ -310,20 +310,20 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 8 · Đơn hàng
 
-- [ ] `CounterCheckoutService`: mở đơn quầy (mỗi nhân viên tối đa 1 đơn đang mở), thu tiền, hold → `CONVERTED`, serial → `SOLD`
+- [ ] `CounterCheckoutService`: mở đơn quầy (mỗi nhân viên tối đa 1 đơn đang mở), thu tiền, hold -> `CONVERTED`, serial -> `SOLD`
 - [ ] `CartService` và giỏ hàng khách (session)
 - [ ] `OnlineOrderService`: checkout không cần đăng nhập, giữ số lượng, snapshot giá từng dòng
 - [ ] `OrderService`: xác nhận · gán serial · hoàn tất · hủy (kèm lý do), ghi `order_status_history`
 - [ ] `OrderQueryService`: danh sách đơn, chi tiết, tra cứu theo mã đơn + SĐT (BR-08)
 - [ ] Hóa đơn PDF (`/staff/sales/orders/{id}/invoice.pdf`) bằng OpenPDF
 - [ ] Test tranh chấp: nhiều đơn online cùng tranh vài máy cuối
-  *Xong khi: đặt online 1 máy → `held_qty` +1; nhân viên xác nhận và gán serial → serial `SOLD`, lịch sử trạng thái đủ dòng.*
+  *Xong khi: đặt online 1 máy -> `held_qty` +1; nhân viên xác nhận và gán serial -> serial `SOLD`, lịch sử trạng thái đủ dòng.*
 
 ### Bước 9 · Khuyến mãi & voucher
 
 - [ ] `CampaignService`: tạo campaign theo phạm vi sản phẩm/hãng, tạo voucher có hạn mức và thời hạn
 - [ ] `PricingEngine`: tính giảm giá (Strategy + chuỗi xử lý)
-- [ ] Giữ lượt voucher nguyên tử: reserve → commit → release (BR-07)
+- [ ] Giữ lượt voucher nguyên tử: reserve -> commit -> release (BR-07)
 - [ ] Test tranh chấp: voucher giới hạn 3 lượt, 10 người dùng cùng lúc
   *Xong khi: đúng 3 người thành công.*
 

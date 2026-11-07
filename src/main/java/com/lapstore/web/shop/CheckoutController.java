@@ -1,15 +1,5 @@
 package com.lapstore.web.shop;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
-
-import com.lapstore.common.exception.BusinessException;
-import com.lapstore.common.web.FormErrors;
-import com.lapstore.common.web.Text;
-import com.lapstore.sales.dto.CartView;
-import com.lapstore.sales.dto.CheckoutRequest;
-import com.lapstore.sales.service.CartService;
-import com.lapstore.sales.service.OnlineOrderService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,7 +9,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/** SH-04 checkout → SH-06 thành công. Lỗi form/voucher/tồn kho quay lại SH-04 và giữ nguyên dữ liệu đã nhập. */
+import com.lapstore.common.exception.BusinessException;
+import com.lapstore.common.web.FormErrors;
+import com.lapstore.common.web.Text;
+import com.lapstore.sales.dto.CartView;
+import com.lapstore.sales.dto.CheckoutRequest;
+import com.lapstore.sales.service.CartService;
+import com.lapstore.sales.service.OnlineOrderService;
+
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+
+/** SH-04 checkout -> SH-06 thành công. Lỗi form/voucher/tồn kho quay lại SH-04 và giữ nguyên dữ liệu đã nhập. */
 @Controller
 @RequestMapping("/shop/checkout")
 class CheckoutController {

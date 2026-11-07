@@ -5,7 +5,7 @@ import java.time.LocalDate;
 import com.lapstore.reporting.dto.DashboardKpi;
 import com.lapstore.reporting.dto.SalesReport;
 
-/** Báo cáo (AD-00, AD-04). Cần quyền REPORT_VIEW. branchId = null → tất cả chi nhánh. */
+/** Báo cáo (AD-00, AD-04). Cần quyền REPORT_VIEW. branchId = null -> tất cả chi nhánh. */
 public interface ReportingService {
     DashboardKpi todayKpi();
 
