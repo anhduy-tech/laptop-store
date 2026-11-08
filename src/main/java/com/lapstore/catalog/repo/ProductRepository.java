@@ -21,4 +21,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             order by b.name
             """)
     List<String> activeBrandNames();
+
+    /** Mọi hãng đang hoạt động, cho ô lọc ở bảng sản phẩm của kho. */
+    @Query("select b.name from Brand b where b.active = true order by b.name")
+    List<String> allBrandNames();
+
+    /** Trùng tên trong cùng hãng (UNIQUE brand_id + name) với sản phẩm khác. */
+    boolean existsByBrand_IdAndNameAndIdNot(Long brandId, String name, Long id);
+
+    boolean existsByBrand_IdAndName(Long brandId, String name);
+
+    boolean existsBySlug(String slug);
 }

@@ -1,0 +1,60 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Sửa sản phẩm – Lapstore</title></head>
+<body><section class="max-w-3xl">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Sửa sản phẩm</h1>
+      <p class="page-sub"><span class="font-mono" th:text="${item.sku}">SKU</span> · <span th:text="${item.brandName}">Hãng</span> · <span th:text="${item.colorName}">Màu</span></p></div>
+    <a th:href="@{/staff/warehouse/products}" class="btn-ghost btn-sm">← Danh sách</a>
+  </div>
+
+  <form th:action="@{/staff/warehouse/products/{id}/edit(id=${item.variantId})}" method="post" class="space-y-5">
+    <div class="card space-y-4">
+      <div><h2 class="font-semibold">Thông tin sản phẩm</h2>
+        <p class="hint">Áp dụng cho mọi cấu hình của sản phẩm này.</p></div>
+      <div th:replace="~{fragments/ui :: field('Tên sản phẩm','name',${form?.name},${errors?.get('name')},'text',true)}"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div th:replace="~{fragments/ui :: field('Dòng sản phẩm','series',${form?.series},${errors?.get('series')},'text',false)}"></div>
+        <div th:replace="~{fragments/ui :: field('Năm ra mắt','releaseYear',${form?.releaseYear},${errors?.get('releaseYear')},'number',false)}"></div>
+      </div>
+      <div th:replace="~{fragments/ui :: field('Đường dẫn ảnh đại diện','thumbnailUrl',${form?.thumbnailUrl},${errors?.get('thumbnailUrl')},'text',false)}"></div>
+      <div><label class="label" for="description">Mô tả</label>
+        <textarea class="input-field" th:classappend="${errors?.get('description')} ? 'input-error'" id="description" name="description" rows="5" th:text="${form?.description}"></textarea>
+        <p th:if="${errors?.get('description')}" class="field-error" th:text="${errors?.get('description')}">Lỗi</p></div>
+      <div><label class="label" for="productStatus">Trạng thái sản phẩm</label>
+        <select class="input-field" id="productStatus" name="productStatus">
+          <option value="ACTIVE" th:selected="${form?.productStatus == 'ACTIVE'}">Đang bán</option>
+          <option value="INACTIVE" th:selected="${form?.productStatus == 'INACTIVE'}">Ngừng bán (ẩn khỏi shop)</option>
+        </select></div>
+    </div>
+
+    <div class="card space-y-4">
+      <div><h2 class="font-semibold">Cấu hình này</h2>
+        <p class="hint">SKU <span class="font-mono" th:text="${item.sku}">SKU</span> không đổi được vì đã gắn với serial và đơn hàng.</p></div>
+      <div th:replace="~{fragments/ui :: field('Tên cấu hình','variantName',${form?.variantName},${errors?.get('variantName')},'text',true)}"></div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div th:replace="~{fragments/ui :: field('CPU','cpu',${form?.cpu},${errors?.get('cpu')},'text',true)}"></div>
+        <div th:replace="~{fragments/ui :: field('GPU','gpu',${form?.gpu},${errors?.get('gpu')},'text',false)}"></div>
+        <div th:replace="~{fragments/ui :: field('RAM (GB)','ramGb',${form?.ramGb},${errors?.get('ramGb')},'number',true)}"></div>
+        <div th:replace="~{fragments/ui :: field('Ổ cứng (GB)','storageGb',${form?.storageGb},${errors?.get('storageGb')},'number',true)}"></div>
+        <div th:replace="~{fragments/ui :: field('Bảo hành (tháng)','warrantyMonths',${form?.warrantyMonths},${errors?.get('warrantyMonths')},'number',true)}"></div>
+        <div th:replace="~{fragments/ui :: field('Ngưỡng cảnh báo tồn thấp','lowStockThreshold',${form?.lowStockThreshold},${errors?.get('lowStockThreshold')},'number',false)}"></div>
+        <div th:replace="~{fragments/ui :: field('Số ngày đổi trả (trống = mặc định)','returnWindowDays',${form?.returnWindowDays},${errors?.get('returnWindowDays')},'number',false)}"></div>
+        <div><label class="label" for="variantStatus">Trạng thái cấu hình</label>
+          <select class="input-field" id="variantStatus" name="variantStatus">
+            <option value="ACTIVE" th:selected="${form?.variantStatus == 'ACTIVE'}">Đang bán</option>
+            <option value="INACTIVE" th:selected="${form?.variantStatus == 'INACTIVE'}">Ngừng bán</option>
+          </select></div>
+      </div>
+      <div class="rounded-xl bg-slate-50 p-3 text-sm">
+        <span class="text-slate-500">Giá bán hiện tại:</span>
+        <b><span th:replace="~{fragments/ui :: money(${item.currentPrice})}"></span></b>
+        <span class="hint block">Giá không sửa trực tiếp. Muốn đổi, <a th:href="@{/staff/warehouse/prices}" class="text-brand-600 underline">gửi đề xuất giá</a> để admin duyệt (variant ID <b th:text="${item.variantId}">0</b>).</span>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <a th:href="@{/staff/warehouse/products}" class="btn-secondary">Hủy</a>
+      <button class="btn-primary" type="submit">Lưu thay đổi</button>
+    </div>
+  </form>
+</section></body></html>

@@ -213,6 +213,15 @@ class UiPreviewController {
                         List.of(m("id", 1, "name", "FPT Trading"), m("id", 2, "name", "Synnex")));
                 model.addAttribute("branches",
                         List.of(m("id", 1, "name", "CN Hà Đông"), m("id", 2, "name", "CN Cầu Giấy")));
+                model.addAttribute("catalog", m(
+                        "brands", List.of(m("id", 1, "name", "Acer"), m("id", 2, "name", "Apple")),
+                        "categories", List.of(m("id", 1, "name", "Laptop văn phòng")),
+                        "colors", List.of(m("id", 1, "name", "Bạc", "hexCode", "#C0C0C0"),
+                                m("id", 2, "name", "Đen", "hexCode", "#222222")),
+                        "products", List.of(m("id", 1, "name", "Swift Go 14", "brandName", "Acer")),
+                        "variants", List.of(m("productId", 1, "id", 1, "sku", "SWIFTGO14-I5-16-512", "colorId", 1,
+                                "cpu", "Core i5-1335U", "ramGb", 16, "storageGb", 512, "status",
+                                "ACTIVE"))));
             }
             case "wh-02" -> model.addAttribute("branches",
                     List.of(m("id", 1, "name", "CN Hà Đông"), m("id", 2, "name", "CN Cầu Giấy")));

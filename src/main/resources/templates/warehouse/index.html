@@ -2,7 +2,9 @@
 <head><title>Kho &amp; Khuyến mãi – Lapstore</title></head>
 <body><section>
 <div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Kho &amp; Khuyến mãi</h1><p class="page-sub">Chọn nghiệp vụ cần thực hiện.</p></div></div>
-  <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+  <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-6">
+    <a th:href="@{/staff/warehouse/products}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-sky-50 text-sky-600"><svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg></span><p class="font-semibold">Sản phẩm</p><p class="hint">Danh sách, tồn kho, sửa thông tin</p></a>
+    <a th:href="@{/staff/warehouse/stock}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-violet-50 text-violet-600"><svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg></span><p class="font-semibold">Tồn kho</p><p class="hint">Theo chi nhánh, danh sách serial</p></a>
     <a th:href="@{/staff/warehouse/receipts}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600"><svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg></span><p class="font-semibold">Nhập kho</p><p class="hint">Phiếu nhập từ NCC, gắn serial</p></a>
     <a th:href="@{/staff/warehouse/transfers}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-emerald-50 text-emerald-600"><svg th:replace="~{fragments/ui :: icon('swap','size-5')}"></svg></span><p class="font-semibold">Chuyển kho</p><p class="hint">Giữa các chi nhánh</p></a>
     <a th:href="@{/staff/warehouse/campaigns}" class="card card-hover"><span class="mb-3 grid size-11 place-items-center rounded-xl bg-amber-50 text-amber-600"><svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg></span><p class="font-semibold">Campaign &amp; voucher</p><p class="hint">Khuyến mãi, mã giảm giá</p></a>

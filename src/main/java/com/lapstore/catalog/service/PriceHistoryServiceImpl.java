@@ -116,6 +116,9 @@ class PriceHistoryServiceImpl implements PriceHistoryService {
         ph.setApprovedBy(user(username));
         if (!from.isAfter(now)) {
             v.setCurrentPrice(ph.getPrice());   // có hiệu lực ngay; giá hẹn ngày sẽ do PriceActivationJob áp dụng
+            if (latest.isEmpty() && "INACTIVE".equals(v.getStatus())) {
+                v.setStatus("ACTIVE");          // giá đầu tiên của biến thể mới tạo khi nhập hàng: duyệt xong là mở bán
+            }
         }
     }
 

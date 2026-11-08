@@ -1,0 +1,28 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Serial tồn kho – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title" th:text="${view.productName}">Sản phẩm</h1>
+      <p class="page-sub"><span class="font-mono" th:text="${view.sku}">SKU</span> · <span th:text="${view.variantName}">Cấu hình</span>
+        · tại <b th:text="${view.branchName}">Chi nhánh</b></p></div>
+    <a th:href="@{/staff/warehouse/stock(q=${view.sku})}" class="btn-ghost btn-sm">← Tồn kho</a>
+  </div>
+
+  <div class="mb-5 flex flex-wrap gap-2">
+    <a th:href="@{/staff/warehouse/stock/{v}/{b}(v=${view.variantId},b=${view.branchId})}"
+       class="badge" th:classappend="${selectedStatus == null} ? 'badge-green'">Tất cả</a>
+    <a th:each="e : ${view.countByStatus}" th:href="@{/staff/warehouse/stock/{v}/{b}(v=${view.variantId},b=${view.branchId},status=${e.key})}"
+       class="badge" th:classappend="${selectedStatus == e.key} ? 'badge-green'"><span th:text="${e.key}">IN_STOCK</span>&nbsp;<b th:text="${e.value}">0</b></a>
+  </div>
+
+  <th:block th:if="${view.serials.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có máy nào ở trạng thái này')}"></div></th:block>
+  <div th:unless="${view.serials.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Serial</th><th>Trạng thái</th><th>Nhập lúc</th>
+      <th class="text-right" th:if="${#authorization.expression('hasAuthority(''COST_VIEW'')')}">Giá vốn</th></tr></thead>
+    <tbody><tr th:each="s : ${view.serials}">
+      <td class="font-mono text-xs" th:text="${s.serialNumber}">SN</td>
+      <td><span th:replace="~{fragments/ui :: badge(${s.status})}"></span></td>
+      <td th:text="${s.receivedAt}">01/01/2026</td>
+      <td class="text-right" th:if="${#authorization.expression('hasAuthority(''COST_VIEW'')')}"><span th:replace="~{fragments/ui :: money(${s.costPrice})}"></span></td></tr></tbody></table></div>
+  <p th:if="${view.truncated}" class="hint mt-3">Chỉ hiển thị 500 máy mới nhất; lọc theo trạng thái để thu hẹp.</p>
+</section></body></html>

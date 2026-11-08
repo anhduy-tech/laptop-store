@@ -20,8 +20,11 @@ public class SecurityConfig {
                                                 .requestMatchers("/admin/login").permitAll()
                                                 .anyRequest().hasAuthority("ADMIN_ACCESS"))
                                 .formLogin(f -> f.loginPage("/admin/login")
-                                                .loginProcessingUrl("/admin/login").defaultSuccessUrl("/admin", true))
-                                .logout(l -> l.logoutUrl("/admin/logout"));
+                                                .loginProcessingUrl("/admin/login")
+                                                .failureUrl("/admin/login?error")
+                                                .defaultSuccessUrl("/admin", true))
+                                .logout(l -> l.logoutUrl("/admin/logout")
+                                                .logoutSuccessUrl("/admin/login?logout"));
                 return http.build();
         }
 

@@ -9,6 +9,12 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 class StaffNavAdvice {
 
+    /** Đường dẫn hiện tại (bỏ context path) để menu tô sáng đúng mục con. */
+    @ModelAttribute("navPath")
+    String navPath(HttpServletRequest req) {
+        return req.getRequestURI();
+    }
+
     @ModelAttribute("nav")
     String nav(HttpServletRequest req) {
         String p = req.getRequestURI();

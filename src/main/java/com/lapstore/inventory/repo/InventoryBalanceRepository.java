@@ -34,4 +34,24 @@ public interface InventoryBalanceRepository extends JpaRepository<InventoryBalan
             """)
     int addHeld(@Param("variantId") Long variantId, @Param("branchId") Long branchId,
             @Param("delta") int delta, @Param("now") Instant now);
+
+    /**
+     * Đổi on_hand bằng MỘT lệnh UPDATE có điều kiện (nhập kho: delta > 0, xuất/chuyển đi: delta < 0).
+     * Không cho on_hand xuống dưới 0 hoặc dưới held_qty (khớp CHECK của bảng).
+     *
+     * @return 1 = thành công; 0 = chưa có dòng tồn (khi delta > 0) hoặc không đủ tồn khả dụng
+     */
+    @Modifying(flushAutomatically = true)
+    @Query("""
+            update InventoryBalance b
+               set b.onHand = b.onHand + :delta,
+                   b.version = b.version + 1,
+                   b.updatedAt = :now
+             where b.id.variantId = :variantId
+               and b.id.branchId = :branchId
+               and b.onHand + :delta >= 0
+               and b.onHand + :delta >= b.heldQty
+            """)
+    int addOnHand(@Param("variantId") Long variantId, @Param("branchId") Long branchId,
+            @Param("delta") int delta, @Param("now") Instant now);
 }

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-/** AU-01 – trang đăng nhập dùng chung cho cổng nhân viên và admin. */
+/** AU-01 đăng nhập nhân viên (login) và AU-02 đăng nhập quản trị (admin-login), hai trang riêng. */
 @Controller
 public class LoginController {
 
@@ -17,6 +17,6 @@ public class LoginController {
     @GetMapping("/admin/login")
     String adminLogin(Model m) {
         m.addAttribute("loginUrl", "/admin/login");
-        return "login";
+        return "admin-login";
     }
 }

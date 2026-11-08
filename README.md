@@ -292,10 +292,10 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 6 · Kho & serial
 
-- [ ] Repository cho inventory (serial, balance, hold, receipt, transfer)
-- [ ] `InventoryService.receive`: phiếu nhập -> sinh `serial_item IN_STOCK`, cập nhật `inventory_balance`, từ chối trùng serial (BR-01)
+- [x] Repository cho inventory (serial, balance, hold, receipt, transfer)
+- [x] `InventoryService.createReceipt` (chưa chạy thử với Oracle): phiếu nhập -> sinh `serial_item IN_STOCK`, cập nhật `inventory_balance`, từ chối trùng serial (BR-01)
   *Xong khi: nhập 5 serial -> `on_hand = 5`, `held_qty = 0`, có 5 dòng `serial_status_history`.*
-- [ ] `InventoryService.transfer`: `IN_TRANSIT` -> nhận tại chi nhánh đích -> `IN_STOCK`
+- [x] `InventoryService.transfer` + `receiveTransfer`: `IN_TRANSIT` -> nhận tại chi nhánh đích -> `IN_STOCK` (chưa chạy thử; màn hình nhận hàng chưa có, mới có endpoint `POST /staff/warehouse/transfers/{code}/receive`)
 - [ ] Nhập/xuất danh sách serial bằng Excel (Apache POI)
 - [ ] Kiểm kê (`stocktake`)
 
@@ -354,6 +354,14 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [ ] Chuẩn bị và chạy thử kịch bản demo
 
 ### Việc phát sinh / cải thiện thêm
+
+- [x] Trang đăng nhập admin riêng (`admin-login.html`, AU-02), tách khỏi đăng nhập nhân viên
+- [x] Sidebar theo từng phân hệ (mục con theo quyền, tô sáng mục đang xem) + khối "Chuyển phân hệ"
+- [x] WH-05 Sản phẩm: bảng cấu hình kèm tồn kho (`/staff/warehouse/products`), sửa thông tin (`/{variantId}/edit`), quyền mới `PRODUCT_MANAGE` (migration V3). Giá vẫn đi qua đề xuất → duyệt (BR-06) *(chưa chạy thử)*
+- [x] Nhập kho làm lại (WH-01): bỏ JSON; chọn hoặc tạo sản phẩm, chọn màu/CPU/RAM/ổ cứng để nhân tổ hợp biến thể (VD 2 màu × 3 RAM × 3 ổ cứng = 18 dòng), mỗi dòng có giá vốn, giá bán (biến thể mới) và serial. Tạo sản phẩm/biến thể và nhập serial trong một transaction. Biến thể mới ở trạng thái INACTIVE kèm đề xuất giá PENDING, admin duyệt xong tự mở bán *(chưa chạy thử)*
+- [x] WH-06 Tồn kho theo chi nhánh (`/staff/warehouse/stock`) và danh sách serial từng cấu hình *(chưa chạy thử)*
+- [ ] Upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel
+- [ ] Đưa WH-05 và AU-02 vào `/shop/_ui` và tài liệu thiết kế UI (hiện thiết kế gốc chỉ có 26 màn, thiếu hai màn này)
 
 - [ ] Gỡ stub trong `ServiceStubConfig` khi service tương ứng đã cài xong
 - [ ] Bổ sung `LICENSE`

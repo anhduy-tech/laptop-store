@@ -1,16 +1,119 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
 <head><title>Nhập kho – Lapstore</title></head>
-<body><section class="max-w-3xl">
-<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Nhập kho</h1><p class="page-sub">Tạo phiếu nhập hàng.</p></div><a th:href="@{/staff/warehouse}" class="btn-ghost btn-sm">← Menu kho</a></div>
-  <form th:action="@{/staff/warehouse/receipts}" method="post" class="card space-y-4">
-    <div class="grid gap-4 sm:grid-cols-2">
-      <div><label class="label" for="supplierId">Nhà cung cấp *</label><select class="input-field" id="supplierId" name="supplierId" required="required"><option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}">NCC</option></select></div>
-      <div><label class="label" for="branchId">Chi nhánh *</label><select class="input-field" id="branchId" name="branchId" required="required"><option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">CN</option></select></div>
+<body><section class="max-w-6xl">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Nhập kho</h1>
+      <p class="page-sub">Chọn hoặc tạo sản phẩm, chọn thuộc tính để sinh các biến thể, rồi nhập giá và serial cho từng biến thể.</p></div>
+    <a th:href="@{/staff/warehouse/stock}" class="btn-ghost btn-sm">Xem tồn kho →</a>
+  </div>
+
+  <div id="clientError" class="alert alert-error mb-4" role="alert" hidden="hidden"></div>
+
+  <form id="receiptForm" th:action="@{/staff/warehouse/receipts}" method="post" class="space-y-5">
+    <div class="card space-y-4">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div><label class="label" for="supplierId">Nhà cung cấp *</label>
+          <select class="input-field" id="supplierId" name="supplierId" required="required">
+            <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}">NCC</option></select></div>
+        <div><label class="label" for="branchId">Nhập về chi nhánh *</label>
+          <select class="input-field" id="branchId" name="branchId" required="required">
+            <option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">CN</option></select></div>
+      </div>
+      <div><label class="label" for="note">Ghi chú</label><input class="input-field" id="note" name="note" maxlength="255"/></div>
     </div>
-    <div><label class="label" for="note">Ghi chú</label><input class="input-field" id="note" name="note"/></div>
-    <div><label class="label" for="lines">Dòng hàng (JSON) *</label>
-      <textarea class="input-field font-mono text-xs" id="lines" name="lines" rows="9" required="required" placeholder='[{"variantId":1,"quantity":2,"unitCost":18500000,"serials":["SN001","SN002"]}]'></textarea>
-      <p class="hint">Mỗi dòng: variantId, quantity, unitCost (giá vốn), serials.</p></div>
-    <div class="flex justify-end gap-2"><button class="btn-secondary" type="submit" name="action" value="draft">Lưu nháp</button><button class="btn-primary" type="submit" name="action" value="confirm">Xác nhận nhập</button></div>
+
+    <div id="blocks" class="space-y-5"></div>
+
+    <div><button type="button" id="addBlock" class="btn-secondary">+ Thêm sản phẩm</button></div>
+
+    <div class="card sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+      <p class="text-sm"><b id="sumSerials">0</b> máy · <b id="sumRows">0</b> cấu hình có serial
+        <span id="dupWarn" class="ml-3 font-medium text-red-600" hidden="hidden"></span></p>
+      <button class="btn-primary" type="submit">Xác nhận nhập kho</button>
+    </div>
+    <div id="hiddenFields" hidden="hidden"></div>
   </form>
+
+  <!-- Danh mục do server render sẵn; receipt.js đọc từ đây -->
+  <select id="dataBrands" hidden="hidden"><option th:each="b : ${catalog.brands}" th:value="${b.id}" th:text="${b.name}">Hãng</option></select>
+  <select id="dataCategories" hidden="hidden"><option th:each="c : ${catalog.categories}" th:value="${c.id}" th:text="${c.name}">Danh mục</option></select>
+  <select id="dataProducts" hidden="hidden"><option th:each="p : ${catalog.products}" th:value="${p.id}" th:text="${p.brandName + ' – ' + p.name}">Sản phẩm</option></select>
+  <ul id="dataColors" hidden="hidden"><li th:each="c : ${catalog.colors}" th:attr="data-id=${c.id},data-name=${c.name},data-hex=${c.hexCode}"></li></ul>
+  <ul id="dataVariants" hidden="hidden"><li th:each="v : ${catalog.variants}"
+      th:attr="data-product=${v.productId},data-id=${v.id},data-sku=${v.sku},data-color=${v.colorId},data-cpu=${v.cpu},data-ram=${v.ramGb},data-storage=${v.storageGb},data-status=${v.status}"></li></ul>
+
+  <template id="tplChip">
+    <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50">
+      <input type="checkbox"/><span data-role="swatch" class="inline-block size-3.5 rounded-full border border-slate-300"></span><span data-role="name"></span>
+    </label>
+  </template>
+
+  <template id="tplBlock">
+    <div class="card space-y-4" data-block="data-block">
+      <div class="flex items-center justify-between">
+        <h2 class="font-semibold">Sản phẩm <span data-role="no">1</span></h2>
+        <button type="button" class="btn-ghost btn-sm text-red-600" data-act="removeBlock">Xóa sản phẩm</button>
+      </div>
+      <div class="flex flex-wrap gap-5 text-sm">
+        <label class="flex items-center gap-2"><input type="radio" data-f="mode" value="existing"/> Chọn sản phẩm có sẵn</label>
+        <label class="flex items-center gap-2"><input type="radio" data-f="mode" value="new"/> Tạo sản phẩm mới</label>
+      </div>
+
+      <div data-role="existingBox">
+        <label class="label">Sản phẩm *</label>
+        <select class="input-field" data-f="productId"></select>
+      </div>
+
+      <div data-role="newBox" class="grid gap-4 sm:grid-cols-2" hidden="hidden">
+        <div><label class="label">Hãng *</label><select class="input-field" data-f="brandId"></select>
+          <div data-role="newBrandBox" class="mt-2" hidden="hidden"><input class="input-field" data-f="newBrandName" placeholder="Tên hãng mới" maxlength="80"/></div></div>
+        <div><label class="label">Danh mục *</label><select class="input-field" data-f="categoryId"></select></div>
+        <div class="sm:col-span-2"><label class="label">Tên sản phẩm *</label><input class="input-field" data-f="name" maxlength="200" placeholder="VD: Acer Swift Go 14"/></div>
+        <div><label class="label">Dòng sản phẩm</label><input class="input-field" data-f="series" maxlength="80"/></div>
+        <div><label class="label">Năm ra mắt</label><input class="input-field" type="number" min="1990" max="2100" data-f="releaseYear"/></div>
+        <div class="sm:col-span-2"><label class="label">Mô tả</label><textarea class="input-field" rows="2" data-f="description" maxlength="4000"></textarea></div>
+      </div>
+
+      <div class="border-t border-slate-100 pt-4">
+        <p class="label">Thuộc tính sinh biến thể</p>
+        <p class="hint mb-3">Mỗi thuộc tính nhập nhiều giá trị, cách nhau bằng dấu phẩy.
+          Hệ thống nhân tổ hợp: 2 màu × 3 RAM × 3 ổ cứng = 18 biến thể.</p>
+        <div class="mb-3"><span class="label">Màu *</span><div data-role="colors" class="mt-1 flex flex-wrap gap-2"></div></div>
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div><label class="label">CPU *</label><input class="input-field" data-f="cpuText" placeholder="Core i5-1335U, Core i7-1355U"/></div>
+          <div><label class="label">RAM (GB) *</label><input class="input-field" data-f="ramText" placeholder="8, 16, 32"/></div>
+          <div><label class="label">Ổ cứng (GB) *</label><input class="input-field" data-f="storageText" placeholder="256, 512, 1024"/></div>
+        </div>
+        <div class="mt-3 max-w-sm"><label class="label">GPU (áp dụng cho biến thể mới)</label><input class="input-field" data-f="gpu" maxlength="100"/></div>
+        <p class="hint mt-3 font-medium" data-role="comboInfo"></p>
+      </div>
+
+      <div data-role="bulkBox" class="flex flex-wrap items-end gap-3 rounded-xl bg-slate-50 p-3" hidden="hidden">
+        <div><label class="label">Giá vốn chung (₫)</label><input class="input-field w-40" type="number" min="0" step="any" data-f="bulkCost"/></div>
+        <div><label class="label">Giá bán chung (₫, biến thể mới)</label><input class="input-field w-40" type="number" min="0" step="any" data-f="bulkSell"/></div>
+        <button type="button" class="btn-secondary btn-sm" data-act="applyBulk">Áp cho mọi dòng</button>
+        <p class="hint">Có thể sửa lại từng dòng sau khi áp. Dòng không có serial sẽ bị bỏ qua.</p>
+      </div>
+
+      <div data-role="tableWrap" class="table-wrap" hidden="hidden"><table class="tbl">
+        <thead><tr><th>Màu</th><th>CPU</th><th>RAM</th><th>Ổ cứng</th><th>Biến thể</th><th>Giá vốn (₫)</th><th>Giá bán (₫)</th><th>Serial (mỗi dòng một serial)</th></tr></thead>
+        <tbody data-role="rows"></tbody></table></div>
+    </div>
+  </template>
+
+  <template id="tplRow">
+    <tr class="align-top">
+      <td data-role="color" class="whitespace-nowrap"></td>
+      <td data-role="cpu"></td>
+      <td data-role="ram" class="whitespace-nowrap"></td>
+      <td data-role="storage" class="whitespace-nowrap"></td>
+      <td><span data-role="status" class="badge"></span></td>
+      <td><input class="input-field w-36" type="number" min="0" step="any" inputmode="numeric" data-f="unitCost" placeholder="Giá vốn"/></td>
+      <td><input class="input-field w-36" type="number" min="0" step="any" inputmode="numeric" data-f="sellPrice" placeholder="Giá bán"/></td>
+      <td><textarea class="input-field w-56 font-mono text-xs" rows="3" data-f="serials" placeholder="SN001&#10;SN002"></textarea>
+        <span class="hint" data-role="count"></span></td>
+    </tr>
+  </template>
+
+  <script th:src="@{/js/receipt.js}" defer="defer"></script>
 </section></body></html>

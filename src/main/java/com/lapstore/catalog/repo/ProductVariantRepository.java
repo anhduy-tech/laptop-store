@@ -2,6 +2,7 @@ package com.lapstore.catalog.repo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -12,4 +13,13 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     List<ProductVariant> findByProduct_IdInAndStatusOrderByCurrentPriceAsc(Collection<Long> productIds, String status);
 
     List<ProductVariant> findByProduct_IdAndStatusOrderByCurrentPriceAsc(Long productId, String status);
+
+    /** Trùng bộ (sản phẩm, màu, CPU, RAM, ổ cứng) với cấu hình khác (UNIQUE ở DB). */
+    boolean existsByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGbAndIdNot(Long productId, Long colorId, String cpu,
+            Integer ramGb, Integer storageGb, Long id);
+
+    Optional<ProductVariant> findByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGb(Long productId, Long colorId,
+            String cpu, Integer ramGb, Integer storageGb);
+
+    boolean existsBySku(String sku);
 }

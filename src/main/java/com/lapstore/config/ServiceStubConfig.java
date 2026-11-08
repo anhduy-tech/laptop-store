@@ -11,7 +11,6 @@ import com.lapstore.catalog.service.CatalogService;
 import com.lapstore.catalog.service.PriceHistoryService;
 import com.lapstore.chat.service.ChatService;
 import com.lapstore.common.exception.ServiceNotReadyException;
-import com.lapstore.inventory.service.InventoryService;
 import com.lapstore.inventory.service.StockHoldService;
 import com.lapstore.reporting.service.ReportingService;
 import com.lapstore.sales.service.CampaignService;
@@ -92,12 +91,6 @@ class ServiceStubConfig {
     @ConditionalOnMissingBean
     StockHoldService stockHoldService() {
         return stub(StockHoldService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    InventoryService inventoryService() {
-        return stub(InventoryService.class);
     }
 
     @Bean

@@ -21,6 +21,9 @@
   <path th:case="'trash'" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
   <path th:case="'send'" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
   <path th:case="'lock'" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+  <path th:case="'list'" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+  <path th:case="'grid'" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
+  <path th:case="'shield'" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
   <path th:case="'back'" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
 </svg>
 
@@ -30,9 +33,9 @@
 
 <!-- Badge trạng thái -->
 <span th:fragment="badge(s)" class="badge"
-      th:classappend="${s == 'COMPLETED' or s == 'APPROVED' or s == 'ACTIVE' or s == 'OPEN' or s == 'CONFIRMED' or s == 'PAID'} ? 'badge-green'
-                      : (${s == 'CANCELLED' or s == 'REJECTED' or s == 'CLOSED' or s == 'INACTIVE'} ? 'badge-red'
-                      : (${s == 'PENDING' or s == 'NEW' or s == 'DRAFT' or s == 'WAITING'} ? 'badge-amber'
+      th:classappend="${s == 'COMPLETED' or s == 'APPROVED' or s == 'ACTIVE' or s == 'OPEN' or s == 'CONFIRMED' or s == 'PAID' or s == 'IN_STOCK'} ? 'badge-green'
+                      : (${s == 'CANCELLED' or s == 'REJECTED' or s == 'CLOSED' or s == 'INACTIVE' or s == 'DEFECTIVE'} ? 'badge-red'
+                      : (${s == 'PENDING' or s == 'NEW' or s == 'DRAFT' or s == 'WAITING' or s == 'IN_TRANSIT' or s == 'WARRANTY'} ? 'badge-amber'
                       : (${s == 'HUMAN' or s == 'AI'} ? 'badge-blue' : '')))"
       th:text="${s}">STATUS</span>
 

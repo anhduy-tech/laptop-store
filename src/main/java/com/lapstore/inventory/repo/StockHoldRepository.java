@@ -20,4 +20,7 @@ public interface StockHoldRepository extends JpaRepository<StockHold, Long> {
      */
     Optional<StockHold> findFirstByOrder_IdAndVariant_IdAndHoldTypeAndStatus(
             Long orderId, Long variantId, String holdType, String status);
+
+    /** Máy đang có hold ACTIVE (kể cả hold đã quá hạn nhưng job chưa dọn). */
+    boolean existsBySerial_IdAndStatus(Long serialId, String status);
 }

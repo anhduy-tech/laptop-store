@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -47,7 +48,14 @@ class StockTransferController {
         if (serials.isEmpty()) throw new BusinessException("Nhập ít nhất một serial.");
         String code = inventory.transfer(
                 new StockTransferRequest(form.getFromBranchId(), form.getToBranchId(), serials), principal.getName());
-        ra.addFlashAttribute("success", "Đã chuyển " + serials.size() + " máy (phiếu " + code + ").");
+        ra.addFlashAttribute("success", "Đã xuất " + serials.size() + " máy, đang vận chuyển (phiếu " + code + "). Chi nhánh đích cần xác nhận nhận hàng.");
+        return "redirect:/staff/warehouse/transfers";
+    }
+
+    @PostMapping("/{code}/receive")
+    String receive(@PathVariable String code, Principal principal, RedirectAttributes ra) {
+        inventory.receiveTransfer(code, principal.getName());
+        ra.addFlashAttribute("success", "Đã nhận hàng phiếu " + code + ".");
         return "redirect:/staff/warehouse/transfers";
     }
 }

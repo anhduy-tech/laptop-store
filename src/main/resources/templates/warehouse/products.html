@@ -1,0 +1,57 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Sản phẩm – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Sản phẩm</h1>
+      <p class="page-sub">Mỗi dòng là một cấu hình (variant), kèm tồn kho cộng dồn các chi nhánh.
+        <span th:text="${page.totalElements}">0</span> cấu hình.</p></div>
+    <div class="flex gap-2">
+      <a th:href="@{/staff/warehouse/prices}" class="btn-secondary btn-sm">Đề xuất đổi giá</a>
+      <a th:href="@{/staff/warehouse/receipts}" class="btn-primary btn-sm">+ Nhập hàng / thêm sản phẩm</a>
+    </div>
+  </div>
+
+  <form method="get" th:action="@{/staff/warehouse/products}" class="card mb-5 flex flex-wrap items-end gap-3">
+    <div class="min-w-56 flex-1"><label class="label" for="q">Tìm theo tên hoặc SKU</label>
+      <input class="input-field" id="q" name="q" th:value="${q}" placeholder="VD: MacBook, SWIFTGO14..."/></div>
+    <div><label class="label" for="brand">Hãng</label>
+      <select class="input-field" id="brand" name="brand">
+        <option value="">Tất cả</option>
+        <option th:each="b : ${brands}" th:value="${b}" th:text="${b}" th:selected="${b == selectedBrand}">Hãng</option>
+      </select></div>
+    <div><label class="label" for="status">Trạng thái</label>
+      <select class="input-field" id="status" name="status">
+        <option value="">Tất cả</option>
+        <option value="ACTIVE" th:selected="${selectedStatus == 'ACTIVE'}">Đang bán</option>
+        <option value="INACTIVE" th:selected="${selectedStatus == 'INACTIVE'}">Ngừng bán</option>
+      </select></div>
+    <button class="btn-primary" type="submit">Lọc</button>
+    <a th:href="@{/staff/warehouse/products}" class="btn-ghost">Xóa lọc</a>
+  </form>
+
+  <th:block th:if="${page.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có sản phẩm phù hợp')}"></div></th:block>
+  <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Sản phẩm</th><th>SKU</th><th>Cấu hình</th><th class="text-right">Giá bán</th><th class="text-right">Tồn / giữ</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody><tr th:each="r : ${page.content}">
+      <td><span class="font-semibold" th:text="${r.productName}">Tên</span>
+        <span class="block text-xs text-slate-400" th:text="${r.brandName}">Hãng</span></td>
+      <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
+      <td><span th:text="${r.variantName}">Cấu hình</span>
+        <span class="block text-xs text-slate-400" th:text="${r.colorName}">Màu</span></td>
+      <td class="text-right"><span th:replace="~{fragments/ui :: money(${r.price})}"></span></td>
+      <td class="text-right tabular-nums">
+        <span class="font-semibold" th:text="${r.onHand}">0</span>
+        <span class="text-slate-400"> / <span th:text="${r.held}">0</span></span>
+        <span th:if="${r.lowStock()}" class="badge badge-amber ml-1">Sắp hết</span>
+      </td>
+      <td>
+        <span th:replace="~{fragments/ui :: badge(${r.variantStatus})}"></span>
+        <span th:if="${r.productStatus == 'INACTIVE'}" class="badge badge-red ml-1">SP ngừng bán</span>
+      </td>
+      <td class="whitespace-nowrap text-right">
+        <a class="btn-ghost btn-sm" th:href="@{/staff/warehouse/stock(q=${r.sku})}">Tồn</a>
+        <a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/products/{id}/edit(id=${r.variantId})}"
+           th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}">Sửa</a>
+      </td></tr></tbody></table></div>
+  <nav th:replace="~{fragments/ui :: pager(${page}, @{/staff/warehouse/products(q=${q ?: ''},brand=${selectedBrand ?: ''},status=${selectedStatus ?: ''})} + '&amp;')}"></nav>
+</section></body></html>

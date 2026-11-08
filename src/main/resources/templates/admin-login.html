@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
+  <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+  <meta name="robots" content="noindex,nofollow"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"/>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <title>Đăng nhập quản trị – Lapstore</title>
+</head>
+<body class="grid min-h-screen place-items-center bg-slate-950 p-6 text-slate-100">
+<main class="w-full max-w-sm">
+  <div class="mb-6 text-center">
+    <span class="mx-auto mb-4 grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20"><svg th:replace="~{fragments/ui :: icon('shield','size-5')}"></svg></span>
+    <h1 class="text-xl font-bold tracking-tight">Cổng quản trị Lapstore</h1>
+    <p class="mt-1 text-sm text-slate-400">Khu vực dành riêng cho quản trị viên</p>
+  </div>
+  <form class="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl" method="post" th:action="@{/admin/login}">
+    <div th:if="${param.error}" class="rounded-xl border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300" role="alert">Sai tên đăng nhập hoặc mật khẩu.</div>
+    <div th:if="${param.logout}" class="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300" role="status">Bạn đã đăng xuất.</div>
+    <div>
+      <label class="mb-1 block text-sm font-medium text-slate-300" for="username">Tài khoản quản trị</label>
+      <input class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+             id="username" name="username" autocomplete="username" autofocus="autofocus" required="required"/>
+    </div>
+    <div>
+      <label class="mb-1 block text-sm font-medium text-slate-300" for="password">Mật khẩu</label>
+      <input class="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+             id="password" name="password" type="password" autocomplete="current-password" required="required"/>
+    </div>
+    <button class="w-full cursor-pointer rounded-xl bg-amber-500 px-4 py-2.5 font-semibold text-slate-950 hover:bg-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-500/50" type="submit">Đăng nhập quản trị</button>
+    <p class="text-center text-xs text-slate-500">Mọi lần đăng nhập vào khu vực này đều được ghi nhận.</p>
+  </form>
+  <p class="mt-5 text-center text-xs text-slate-500">
+    <a data-path="/staff/login" data-port="8081" th:href="@{/staff/login}" class="hover:text-amber-400">Bạn là nhân viên? Đăng nhập tại đây</a>
+    · <a th:href="@{/shop}" class="hover:text-amber-400">Về cửa hàng</a>
+  </p>
+</main>
+<script th:src="@{/js/app.js}" defer="defer"></script>
+</body>
+</html>

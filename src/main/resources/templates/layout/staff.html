@@ -13,25 +13,82 @@
 </head>
 <!-- Controller cần set model "nav": sales | consult | warehouse | admin (để tô sáng menu) -->
 <body class="flex min-h-screen">
-<aside class="sticky top-0 flex h-screen w-56 shrink-0 flex-col bg-gradient-to-b from-brand-950 to-[#073b26] px-3 py-5">
+<aside class="sticky top-0 flex h-screen w-60 shrink-0 flex-col overflow-y-auto bg-gradient-to-b from-brand-950 to-[#073b26] px-3 py-5">
   <a th:href="@{/}" class="mb-6 flex items-center gap-2 px-2 text-lg font-bold tracking-tight text-white">
     <span class="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-600"><svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg></span>
     Lap<span class="text-brand-300">store</span>
   </a>
-  <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60">Nhân viên</p>
+  <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60"
+     th:text="${nav == 'sales' ? 'Bán hàng' : (nav == 'consult' ? 'Tư vấn' : (nav == 'warehouse' ? 'Kho &amp; khuyến mãi' : (nav == 'admin' ? 'Quản trị' : 'Nhân viên')))}">Nhân viên</p>
+  <nav class="flex flex-col gap-1">
+    <th:block th:if="${nav == 'sales'}">
+      <a th:href="@{/staff/sales/counter}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/sales/counter')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''ORDER_COUNTER_CREATE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Bán tại quầy</a>
+      <a th:href="@{/staff/sales/orders}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/sales/orders')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''ORDER_FULFILL'')')}">
+        <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg>Đơn hàng</a>
+    </th:block>
+    <th:block th:if="${nav == 'consult'}">
+      <a th:href="@{/staff/consult}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/consult')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''CHAT_REPLY'')')}">
+        <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg>Phiên tư vấn</a>
+    </th:block>
+    <th:block th:if="${nav == 'warehouse'}">
+      <a th:href="@{/staff/warehouse}" class="nav-link" th:classappend="${navPath == '/staff/warehouse' or navPath == '/staff/warehouse/'} ? 'nav-active'"
+         th:if="${preview == true}">
+        <svg th:replace="~{fragments/ui :: icon('grid','size-5')}"></svg>Tổng quan</a>
+      <a th:href="@{/staff/warehouse/products}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/products')} ? 'nav-active'"
+         th:if="${preview == true}">
+        <svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg>Sản phẩm</a>
+      <a th:href="@{/staff/warehouse/stock}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/stock')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg>Tồn kho</a>
+      <a th:href="@{/staff/warehouse/receipts}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/receipts')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_RECEIVE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Nhập kho</a>
+      <a th:href="@{/staff/warehouse/transfers}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/transfers')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_TRANSFER'')')}">
+        <svg th:replace="~{fragments/ui :: icon('swap','size-5')}"></svg>Chuyển kho</a>
+      <a th:href="@{/staff/warehouse/campaigns}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/campaigns')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''CAMPAIGN_MANAGE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg>Campaign &amp; voucher</a>
+      <a th:href="@{/staff/warehouse/prices}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/prices')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PRICE_PROPOSE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Đề xuất giá</a>
+    </th:block>
+    <th:block th:if="${nav == 'admin'}">
+      <a th:href="@{/admin}" class="nav-link" th:classappend="${navPath == '/admin' or navPath == '/admin/'} ? 'nav-active'"
+         th:if="${preview == true}">
+        <svg th:replace="~{fragments/ui :: icon('grid','size-5')}"></svg>Dashboard</a>
+      <a th:href="@{/admin/users}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/users')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''USER_MANAGE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('users','size-5')}"></svg>Nhân viên</a>
+      <a th:href="@{/admin/shifts}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/shifts')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''SHIFT_MANAGE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('calendar','size-5')}"></svg>Xếp ca</a>
+      <a th:href="@{/admin/prices}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/prices')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PRICE_APPROVE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg>Duyệt giá</a>
+      <a th:href="@{/admin/reports}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/reports')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''REPORT_VIEW'')')}">
+        <svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg>Báo cáo</a>
+    </th:block>
+  </nav>
+  <p class="mb-2 mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60">Chuyển phân hệ</p>
   <nav class="flex flex-1 flex-col gap-1">
-    <a data-path="/staff/sales" data-port="8081" th:href="@{/staff/sales}" class="nav-link" th:classappend="${nav == 'sales'} ? 'nav-active'"
-       th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_SALES'')')}">
-      <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Bán hàng</a>
-    <a data-path="/staff/consult" data-port="8082" th:href="@{/staff/consult}" class="nav-link" th:classappend="${nav == 'consult'} ? 'nav-active'"
-       th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_CONSULT'')')}">
-      <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg>Tư vấn</a>
-    <a data-path="/staff/warehouse" data-port="8083" th:href="@{/staff/warehouse}" class="nav-link" th:classappend="${nav == 'warehouse'} ? 'nav-active'"
-       th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
-      <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Kho &amp; KM</a>
-    <a data-path="/admin" data-port="8084" th:href="@{/admin}" class="nav-link" th:classappend="${nav == 'admin'} ? 'nav-active'"
-       th:if="${preview == true or #authorization.expression('hasAuthority(''ADMIN_ACCESS'')')}">
-      <svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg>Admin</a>
+      <a data-path="/staff/sales" data-port="8081" th:href="@{/staff/sales}" class="nav-link"
+         th:if="${nav != 'sales' and (preview == true or #authorization.expression('hasAuthority(''PORTAL_SALES'')'))}">
+        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Bán hàng</a>
+      <a data-path="/staff/consult" data-port="8082" th:href="@{/staff/consult}" class="nav-link"
+         th:if="${nav != 'consult' and (preview == true or #authorization.expression('hasAuthority(''PORTAL_CONSULT'')'))}">
+        <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg>Tư vấn</a>
+      <a data-path="/staff/warehouse" data-port="8083" th:href="@{/staff/warehouse}" class="nav-link"
+         th:if="${nav != 'warehouse' and (preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')'))}">
+        <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Kho &amp; KM</a>
+      <a data-path="/admin" data-port="8084" th:href="@{/admin}" class="nav-link"
+         th:if="${nav != 'admin' and (preview == true or #authorization.expression('hasAuthority(''ADMIN_ACCESS'')'))}">
+        <svg th:replace="~{fragments/ui :: icon('shield','size-5')}"></svg>Quản trị</a>
   </nav>
   <form th:action="@{${nav == 'admin' ? '/admin/logout' : '/staff/logout'}}" method="post">
     <button type="submit" class="nav-link w-full cursor-pointer"><svg th:replace="~{fragments/ui :: icon('logout','size-5')}"></svg>Đăng xuất</button>

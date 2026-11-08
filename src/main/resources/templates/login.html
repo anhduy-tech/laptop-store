@@ -33,7 +33,8 @@
       <input class="input-field" id="password" name="password" type="password" autocomplete="current-password" required="required"/></div>
     <button class="btn-primary w-full" type="submit">Đăng nhập</button>
   </form>
-  <p class="mt-4 text-center text-xs text-slate-400"><a th:href="@{/shop}" class="hover:text-brand-600">← Về trang cửa hàng</a></p>
+  <p class="mt-4 text-center text-xs text-slate-400"><a th:href="@{/shop}" class="hover:text-brand-600">← Về trang cửa hàng</a>
+    · <a data-path="/admin/login" data-port="8084" th:href="@{/admin/login}" class="hover:text-brand-600">Cổng quản trị</a></p>
 </div></main>
 </body>
 </html>
