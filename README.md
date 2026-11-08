@@ -283,12 +283,12 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 5 · Danh mục & giá
 
-- [ ] Repository cho catalog (brand, category, product, variant, thuộc tính, ảnh)
-- [ ] `CatalogService`: danh sách có lọc/phân trang, chi tiết sản phẩm, chọn variant (UC-C01)
-- [ ] `PriceHistoryService`: đề xuất giá `PENDING` -> duyệt -> đóng `effective_to` bản cũ (BR-06)
-- [ ] Từ chối đề xuất giá có khoảng hiệu lực chồng nhau
+- [x] Repository cho catalog: product, variant, price_history, tìm kiếm có phân trang (chưa làm thuộc tính, ảnh)
+- [x] `CatalogService`: danh sách có lọc/phân trang, chi tiết sản phẩm, chọn variant (UC-C01)
+- [x] `PriceHistoryService`: đề xuất giá `PENDING` -> duyệt -> đóng `effective_to` bản cũ (BR-06)
+- [x] Từ chối đề xuất giá có khoảng hiệu lực chồng nhau
   *Xong khi: đổi giá tạo dòng `price_history` mới, dòng cũ có `effective_to`.*
-- [ ] Kết nối màn Duyệt giá (admin) và Đề xuất giá (warehouse)
+- [x] Kết nối màn Duyệt giá (admin) và Đề xuất giá (warehouse)
 
 ### Bước 6 · Kho & serial
 
@@ -301,9 +301,9 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 7 · Giữ máy tại quầy
 
-- [ ] `KeyedLock` trong `common/lock` (khóa theo `serial:ID`, bọc ngoài transaction)
-- [ ] `StockHoldService.hold` / `release` (BR-02, BR-03)
-- [ ] Ràng buộc unique "một hold ACTIVE cho một serial" ở mức DB
+- [x] `KeyedLock` trong `common/lock` (khóa theo `serial:ID`, bọc ngoài transaction)
+- [x] `StockHoldService.hold` / `release` (BR-02, BR-03)
+- [x] Ràng buộc unique "một hold ACTIVE cho một serial" ở mức DB
 - [ ] Job `@Scheduled` hết hạn hold (BR-04, BR-11)
 - [ ] Test tranh chấp: hai quầy cùng giữ một serial
   *Xong khi: đúng một luồng thành công, luồng còn lại nhận lỗi nghiệp vụ rõ ràng.*
@@ -337,7 +337,7 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 ### Bước 11 · Nhân sự, báo cáo, thông báo
 
 - [x] `StaffService`: tạo/khóa user, gán role, băm mật khẩu BCrypt (UC-A01)
-- [ ] Xếp ca, chặn trùng khung giờ (`ShiftConflictException`) (UC-A02)
+- [x] Xếp ca, chặn trùng khung giờ (UC-A02) — hiện ném `BusinessException`, chưa có lớp `ShiftConflictException` riêng
 - [ ] Chấm công; chưa chấm công thì không mở được đơn quầy (BR-10)
 - [ ] `ReportingService`: báo cáo doanh thu/lãi ước tính theo ngày và chi nhánh, job tổng hợp `daily_sales_summary`
 - [ ] Dashboard admin hiển thị KPI thật
