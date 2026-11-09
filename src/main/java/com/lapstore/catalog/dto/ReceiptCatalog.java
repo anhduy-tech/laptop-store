@@ -7,7 +7,7 @@ import com.lapstore.common.dto.IdName;
 
 /** Danh mục cho màn nhập kho: chọn sản phẩm, tạo sản phẩm mới, nhận diện biến thể đã có. */
 public record ReceiptCatalog(List<IdName> brands, List<IdName> categories, List<ColorOption> colors,
-        List<ProductOption> products, List<ExistingVariant> variants) {
+        List<ProductOption> products, List<ExistingVariant> variants, SpecChoices specs) {
 
     public record ColorOption(Long id, String name, String hexCode) {
     }
@@ -15,7 +15,7 @@ public record ReceiptCatalog(List<IdName> brands, List<IdName> categories, List<
     public record ProductOption(Long id, String name, String brandName) {
     }
 
-    public record ExistingVariant(Long productId, Long id, String sku, Long colorId, String cpu, Integer ramGb,
-            Integer storageGb, String status, BigDecimal price) {
+    public record ExistingVariant(Long productId, Long id, String sku, Long colorId, String cpu, String gpu,
+            Integer ramGb, Integer storageGb, String status, BigDecimal price) {
     }
 }

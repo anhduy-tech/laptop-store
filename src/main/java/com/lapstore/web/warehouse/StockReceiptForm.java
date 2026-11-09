@@ -43,7 +43,6 @@ public class StockReceiptForm implements Serializable {
         private String series;
         private Integer releaseYear;
         private String description;
-        private String gpu;
         private List<VariantRow> variants = new ArrayList<>();
 
         public Long getProductId() { return productId; }
@@ -62,8 +61,6 @@ public class StockReceiptForm implements Serializable {
         public void setReleaseYear(Integer releaseYear) { this.releaseYear = releaseYear; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-        public String getGpu() { return gpu; }
-        public void setGpu(String gpu) { this.gpu = gpu; }
         public List<VariantRow> getVariants() { return variants; }
         public void setVariants(List<VariantRow> variants) { this.variants = variants; }
     }
@@ -72,6 +69,7 @@ public class StockReceiptForm implements Serializable {
     public static class VariantRow implements Serializable {
         private Long colorId;
         private String cpu;
+        private String gpu;
         private Integer ramGb;
         private Integer storageGb;
         private BigDecimal unitCost;
@@ -82,6 +80,8 @@ public class StockReceiptForm implements Serializable {
         public void setColorId(Long colorId) { this.colorId = colorId; }
         public String getCpu() { return cpu; }
         public void setCpu(String cpu) { this.cpu = cpu; }
+        public String getGpu() { return gpu; }
+        public void setGpu(String gpu) { this.gpu = gpu; }
         public Integer getRamGb() { return ramGb; }
         public void setRamGb(Integer ramGb) { this.ramGb = ramGb; }
         public Integer getStorageGb() { return storageGb; }

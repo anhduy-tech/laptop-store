@@ -212,7 +212,7 @@ public class InventoryTx {
             ResolvedVariant rv;
             try {
                 rv = catalog.findOrCreateVariant(new VariantSpec(productId, row.colorId(), row.cpu(),
-                        p.block().gpu(), row.ramGb(), row.storageGb(), row.sellPrice()), reason,
+                        row.gpu(), row.ramGb(), row.storageGb(), row.sellPrice()), reason,
                         username);
             } catch (BusinessException e) {
                 throw new BusinessException(p.where() + e.getMessage());

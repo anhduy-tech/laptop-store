@@ -5,7 +5,6 @@ import java.text.Normalizer;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
@@ -21,6 +20,7 @@ import com.lapstore.catalog.domain.Product;
 import com.lapstore.catalog.domain.ProductVariant;
 import com.lapstore.catalog.dto.NewProductSpec;
 import com.lapstore.catalog.dto.ResolvedVariant;
+import com.lapstore.catalog.dto.SpecKind;
 import com.lapstore.catalog.dto.VariantSpec;
 import com.lapstore.catalog.repo.PriceHistoryRepository;
 import com.lapstore.catalog.repo.ProductRepository;
@@ -37,15 +37,17 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
     private final ProductRepository products;
     private final ProductVariantRepository variants;
     private final PriceHistoryRepository prices;
+    private final SpecService specs;
 
     @PersistenceContext
     private EntityManager em;
 
     VariantProvisioningServiceImpl(ProductRepository products, ProductVariantRepository variants,
-            PriceHistoryRepository prices) {
+            PriceHistoryRepository prices, SpecService specs) {
         this.products = products;
         this.variants = variants;
         this.prices = prices;
+        this.specs = specs;
     }
 
     @Override
@@ -91,20 +93,26 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
         Color color = s.colorId() == null ? null : em.find(Color.class, s.colorId());
         if (color == null || !color.isActive())
             throw new BusinessException("Màu không hợp lệ cho \"" + p.getName() + "\".");
-        String cpu = Text.orEmpty(s.cpu());
-        if (cpu.isEmpty() || cpu.length() > 100)
-            throw new BusinessException("CPU không được để trống (tối đa 100 ký tự).");
-        if (s.ramGb() == null || s.ramGb() <= 0 || s.storageGb() == null || s.storageGb() <= 0)
-            throw new BusinessException("RAM và ổ cứng phải lớn hơn 0.");
+        if (s.ramGb() == null || s.storageGb() == null)
+            throw new BusinessException("Chọn RAM và ổ cứng.");
 
-        Optional<ProductVariant> found = variants.findByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGb(p.getId(),
-                color.getId(), cpu, s.ramGb(), s.storageGb());
-        if (found.isPresent())
-            return new ResolvedVariant(found.get().getId(), found.get().getSku(), false);
+        // Thuộc tính lấy theo danh mục: trùng (không phân biệt hoa thường/dấu/khoảng trắng) thì dùng giá trị đã có;
+        // chưa có thì tạo mới (cần PRODUCT_MANAGE). GPU không bắt buộc: trống = máy không có GPU rời.
+        String cpu = specs.resolve(SpecKind.CPU, s.cpu(), true).value();
+        String gpuRaw = Text.blankToNull(s.gpu());
+        String gpu = gpuRaw == null ? null : specs.resolve(SpecKind.GPU, gpuRaw, true).value();
+        int ram = Integer.parseInt(specs.resolve(SpecKind.RAM, String.valueOf(s.ramGb()), true).value());
+        int storage = Integer.parseInt(specs.resolve(SpecKind.STORAGE, String.valueOf(s.storageGb()), true).value());
+
+        List<ProductVariant> same = variants.findByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGb(p.getId(),
+                color.getId(), cpu, ram, storage);
+        for (ProductVariant v : same)
+            if (gpuKey(v.getGpu()).equals(gpuKey(gpu)))
+                return new ResolvedVariant(v.getId(), v.getSku(), false);
 
         requireManage();
         if (s.sellPrice() == null || s.sellPrice().signum() <= 0)
-            throw new BusinessException("Cấu hình mới " + describe(p, color, cpu, s)
+            throw new BusinessException("Cấu hình mới " + describe(p, color, cpu, gpu, ram, storage)
                     + " cần giá bán lớn hơn 0.");
         AppUser user = user(username);
 
@@ -112,11 +120,11 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
         v.setProduct(p);
         v.setColor(color);
         v.setCpu(cpu);
-        v.setGpu(Text.blankToNull(s.gpu()));
-        v.setRamGb(s.ramGb());
-        v.setStorageGb(s.storageGb());
-        v.setSku(uniqueSku(p, color, s));
-        v.setVariantName(variantName(p, color, cpu, s));
+        v.setGpu(gpu);
+        v.setRamGb(ram);
+        v.setStorageGb(storage);
+        v.setSku(uniqueSku(p, color, gpu, ram, storage));
+        v.setVariantName(variantName(p, color, cpu, gpu, ram, storage));
         v.setCurrentPrice(s.sellPrice()); // chưa dùng để bán: biến thể INACTIVE tới khi admin duyệt giá
         v.setWarrantyMonths(12);
         v.setLowStockThreshold(3);
@@ -124,8 +132,10 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
         try {
             variants.saveAndFlush(v);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException("Cấu hình " + describe(p, color, cpu, s)
-                    + " vừa được tạo ở nơi khác. Thử lại.");
+            throw new BusinessException(same.isEmpty()
+                    ? "Cấu hình " + describe(p, color, cpu, gpu, ram, storage) + " vừa được tạo ở nơi khác. Thử lại."
+                    : "Đã có biến thể cùng màu, CPU, RAM, ổ cứng nhưng khác GPU. Ràng buộc DB hiện chưa cho hai biến thể "
+                            + "chỉ khác GPU (xem docs/optional-gpu-in-variant-unique.sql).");
         }
 
         PriceHistory ph = new PriceHistory();
@@ -179,11 +189,13 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
         return slug;
     }
 
-    private String uniqueSku(Product p, Color c, VariantSpec s) {
+    private String uniqueSku(Product p, Color c, String gpu, int ram, int storage) {
         StringBuilder b = new StringBuilder(upperAlnum(p.getName(), 16));
         if (b.length() == 0)
             b.append("SP");
-        b.append('-').append(s.ramGb()).append('-').append(s.storageGb());
+        if (gpu != null && !upperAlnum(gpu, 8).isEmpty())
+            b.append('-').append(upperAlnum(gpu, 8));
+        b.append('-').append(ram).append('-').append(storage);
         String col = upperAlnum(c.getName(), 3);
         b.append('-').append(col.isEmpty() ? "CLR" : col);
         String base = b.toString();
@@ -193,13 +205,18 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
         return sku;
     }
 
-    private static String variantName(Product p, Color c, String cpu, VariantSpec s) {
-        String n = p.getName() + " " + cpu + " " + s.ramGb() + "GB/" + s.storageGb() + "GB " + c.getName();
+    private static String variantName(Product p, Color c, String cpu, String gpu, int ram, int storage) {
+        String n = p.getName() + " " + cpu + (gpu != null ? " " + gpu : "") + " " + ram + "GB/" + storage + "GB "
+                + c.getName();
         return n.length() > 255 ? n.substring(0, 255) : n;
     }
 
-    private static String describe(Product p, Color c, String cpu, VariantSpec s) {
-        return "\"" + variantName(p, c, cpu, s) + "\"";
+    private static String describe(Product p, Color c, String cpu, String gpu, int ram, int storage) {
+        return "\"" + variantName(p, c, cpu, gpu, ram, storage) + "\"";
+    }
+
+    private static String gpuKey(String gpu) {
+        return gpu == null ? "" : gpu.trim().toLowerCase(Locale.ROOT);
     }
 
     private static String ascii(String s) {

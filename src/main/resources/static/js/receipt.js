@@ -1,4 +1,6 @@
 /* WH-01 nhập kho: chọn/tạo sản phẩm, nhân tổ hợp thuộc tính thành biến thể, mỗi biến thể có giá vốn, giá bán, serial.
+ * CPU / GPU / RAM / ổ cứng chọn từ danh mục thuộc tính (ô tick), không gõ tay; muốn thêm giá trị mới thì nhập vào ô "Thêm"
+ * và hệ thống tự kiểm tra trùng: trùng thì chọn luôn giá trị đã có. GPU không bắt buộc (không chọn = không có GPU rời).
  * Trạng thái nằm trong `state` (một nguồn sự thật). Khi gửi form, sinh các trường products[i].variants[j].* để Spring bind.
  * Phần logic thuần (ReceiptLogic) không đụng DOM nên chạy thử được bằng Node. */
 (function (root) {
@@ -7,31 +9,62 @@
   var MAX_ROWS = 200;
   var NEW_BRAND = '__new__';
   var DRAFT_KEY = 'lapstore.receipt.draft';
+  var KINDS = ['cpu', 'gpu', 'ram', 'storage'];
+  var KIND_LABEL = { cpu: 'CPU', gpu: 'GPU', ram: 'RAM', storage: 'Ổ cứng' };
+  var FIELD = { cpu: 'cpus', gpu: 'gpus', ram: 'rams', storage: 'storages' };
+  var NUMERIC = { ram: true, storage: true };
 
   // ------------------------------------------------------------------ logic thuần
 
-  function parseList(text) {
-    var seen = {};
-    var out = [];
-    String(text == null ? '' : text).split(/[,;\/\n]+/).forEach(function (t) {
-      t = t.trim();
-      if (t && !seen[t]) { seen[t] = true; out.push(t); }
-    });
-    return out;
+  /** Khóa chuẩn hóa giống server: bỏ dấu, chữ thường, chỉ giữ chữ và số ("Core i5-1335U" = "core i5 1335u"). */
+  function normKey(s) {
+    return String(s == null ? '' : s).replace(/đ/g, 'd').replace(/Đ/g, 'D').normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
   }
 
-  /** "8, 16, 32" -> ["8","16","32"]; bỏ giá trị không phải số dương. Dùng dấu chấm cho số lẻ (15.6). */
-  function parseNumList(text) {
-    var seen = {};
-    var out = [];
-    parseList(text).forEach(function (t) {
-      var n = Number(t.replace(/\s+/g, ''));
-      if (isFinite(n) && n > 0) {
-        var k = String(n);
-        if (!seen[k]) { seen[k] = true; out.push(k); }
+  /** "16" -> "16", "16GB" -> "16", "1TB" -> "1024"; không hợp lệ -> null. */
+  function parseGb(raw) {
+    var m = /^\s*(\d{1,6})\s*(gb|g|tb|t)?\s*$/i.exec(String(raw == null ? '' : raw));
+    if (!m) return null;
+    var n = Number(m[1]);
+    if (m[2] && m[2].toLowerCase().charAt(0) === 't') n *= 1024;
+    return n > 0 && n <= 99999 ? String(n) : null;
+  }
+
+  function formatGb(n) {
+    n = Number(n);
+    return n >= 1024 && n % 1024 === 0 ? (n / 1024) + ' TB' : n + ' GB';
+  }
+
+  function cleanText(s) { return String(s == null ? '' : s).trim().replace(/\s+/g, ' '); }
+
+  /**
+   * Thêm giá trị vào danh mục `list` (mảng {value,label,isNew}) nếu chưa có.
+   * @return {status:'added'|'exists'|'invalid', option, message}
+   */
+  function addOption(list, kind, raw) {
+    var value;
+    var label;
+    if (NUMERIC[kind]) {
+      value = parseGb(raw);
+      if (!value) return { status: 'invalid', message: 'Nhập số GB hợp lệ cho ' + KIND_LABEL[kind] + ' (VD 16, 512, 1TB).' };
+      label = formatGb(value);
+    } else {
+      value = cleanText(raw);
+      if (!value) return { status: 'invalid', message: 'Nhập giá trị ' + KIND_LABEL[kind] + '.' };
+      if (value.length > 100) return { status: 'invalid', message: KIND_LABEL[kind] + ' tối đa 100 ký tự.' };
+      label = value;
+    }
+    var key = NUMERIC[kind] ? value : normKey(value);
+    for (var i = 0; i < list.length; i++) {
+      var existing = NUMERIC[kind] ? list[i].value : normKey(list[i].value);
+      if (existing === key) {
+        return { status: 'exists', option: list[i], message: 'Đã có "' + list[i].label + '", đã chọn giá trị đó.' };
       }
-    });
-    return out;
+    }
+    var opt = { value: value, label: label, isNew: true };
+    list.push(opt);
+    return { status: 'added', option: opt, message: 'Đã thêm "' + label + '" (được lưu khi xác nhận nhập kho).' };
   }
 
   function cartesian(arrays) {
@@ -42,7 +75,7 @@
     }, [[]]);
   }
 
-  function rowKey(r) { return [r.colorId, r.cpu, r.ram, r.storage].join('|'); }
+  function rowKey(r) { return [r.colorId, r.cpu, r.gpu, r.ram, r.storage].join('|'); }
 
   function splitLines(text) {
     return String(text == null ? '' : text).split(/\r?\n/).map(function (s) { return s.trim(); })
@@ -51,30 +84,23 @@
 
   function countSerials(text) { return splitLines(text).length; }
 
+  /** Số giá trị của từng trục (GPU trống tính là 1: không có GPU rời). */
   function axisCounts(block) {
-    return {
-      colors: block.colorIds.length,
-      cpus: parseList(block.cpuText).length,
-      rams: parseNumList(block.ramText).length,
-      storages: parseNumList(block.storageText).length
-    };
+    return { colors: block.colorIds.length, cpus: block.cpus.length, gpus: block.gpus.length || 1,
+      rams: block.rams.length, storages: block.storages.length };
   }
 
-  /** Nhân tổ hợp màu x CPU x RAM x ổ cứng; giữ lại giá/serial của dòng cũ có cùng tổ hợp. */
+  /** Nhân tổ hợp màu x CPU x GPU x RAM x ổ cứng; giữ lại giá/serial của dòng cũ có cùng tổ hợp. */
   function generateRows(block, oldRows) {
-    var cpus = parseList(block.cpuText);
-    var rams = parseNumList(block.ramText);
-    var storages = parseNumList(block.storageText);
-    var colors = block.colorIds;
-    if (!colors.length || !cpus.length || !rams.length || !storages.length) {
+    var gpus = block.gpus.length ? block.gpus : [''];
+    if (!block.colorIds.length || !block.cpus.length || !block.rams.length || !block.storages.length) {
       return { rows: [], total: 0, truncated: false };
     }
-    var combos = cartesian([colors, cpus, rams, storages]);
+    var combos = cartesian([block.colorIds, block.cpus, gpus, block.rams, block.storages]);
     var byKey = {};
     (oldRows || []).forEach(function (r) { byKey[rowKey(r)] = r; });
     var rows = combos.slice(0, MAX_ROWS).map(function (c) {
-      var row = { colorId: c[0], cpu: c[1], ram: c[2], storage: c[3],
-        unitCost: '', sellPrice: '', serials: '' };
+      var row = { colorId: c[0], cpu: c[1], gpu: c[2], ram: c[3], storage: c[4], unitCost: '', sellPrice: '', serials: '' };
       var old = byKey[rowKey(row)];
       if (old) { row.unitCost = old.unitCost; row.sellPrice = old.sellPrice; row.serials = old.serials; }
       return row;
@@ -101,6 +127,10 @@
     return block.rows.filter(function (r) { return countSerials(r.serials) > 0; });
   }
 
+  function describeRow(r) {
+    return r.cpu + (r.gpu ? ' / ' + r.gpu : '') + ' / ' + formatGb(r.ram) + ' / ' + formatGb(r.storage);
+  }
+
   /** @param isExisting function(block,row) -> true nếu biến thể đã có (không cần giá bán). Trả '' nếu hợp lệ. */
   function validateState(state, isExisting) {
     var total = 0;
@@ -120,7 +150,7 @@
       }
       for (var j = 0; j < rows.length; j++) {
         var r = rows[j];
-        var label = where + 'cấu hình ' + r.cpu + ' / ' + r.ram + 'GB / ' + r.storage + 'GB: ';
+        var label = where + 'cấu hình ' + describeRow(r) + ': ';
         if (!(Number(r.unitCost) > 0)) return label + 'nhập giá vốn lớn hơn 0.';
         if (!isExisting(b, r) && !(Number(r.sellPrice) > 0)) return label + 'đây là biến thể mới, nhập giá bán lớn hơn 0.';
       }
@@ -150,11 +180,11 @@
         out.push([p + 'releaseYear', b.releaseYear]);
         out.push([p + 'description', b.description]);
       }
-      out.push([p + 'gpu', b.gpu]);
       rows.forEach(function (r, vi) {
         var v = p + 'variants[' + vi + '].';
         out.push([v + 'colorId', r.colorId]);
         out.push([v + 'cpu', r.cpu]);
+        out.push([v + 'gpu', r.gpu]);
         out.push([v + 'ramGb', r.ram]);
         out.push([v + 'storageGb', r.storage]);
         out.push([v + 'unitCost', r.unitCost]);
@@ -168,14 +198,14 @@
 
   function newBlock() {
     return { mode: 'existing', productId: '', brandId: '', newBrandName: '', categoryId: '', name: '', series: '',
-      releaseYear: '', description: '', gpu: '', colorIds: [], cpuText: '', ramText: '', storageText: '',
+      releaseYear: '', description: '', colorIds: [], cpus: [], gpus: [], rams: [], storages: [],
       bulkCost: '', bulkSell: '', rows: [], total: 0, truncated: false };
   }
 
-  root.ReceiptLogic = { parseList: parseList, parseNumList: parseNumList, cartesian: cartesian, rowKey: rowKey,
-    splitLines: splitLines, countSerials: countSerials, axisCounts: axisCounts, generateRows: generateRows,
-    findDuplicates: findDuplicates, validateState: validateState, toFormEntries: toFormEntries, newBlock: newBlock,
-    MAX_ROWS: MAX_ROWS };
+  root.ReceiptLogic = { normKey: normKey, parseGb: parseGb, formatGb: formatGb, addOption: addOption,
+    cartesian: cartesian, rowKey: rowKey, splitLines: splitLines, countSerials: countSerials,
+    axisCounts: axisCounts, generateRows: generateRows, findDuplicates: findDuplicates,
+    validateState: validateState, toFormEntries: toFormEntries, newBlock: newBlock, MAX_ROWS: MAX_ROWS };
 
   if (typeof document === 'undefined') return;
 
@@ -203,16 +233,29 @@
     });
     var colorById = {};
     colors.forEach(function (c) { colorById[c.id] = c; });
+
+    var specOptions = { cpu: [], gpu: [], ram: [], storage: [] };
+    Array.prototype.forEach.call(document.querySelectorAll('#dataSpecs li'), function (li) {
+      specOptions[li.dataset.kind].push({ value: li.dataset.value, label: li.dataset.label, isNew: false });
+    });
+
     var variantIndex = {};
     Array.prototype.forEach.call(document.querySelectorAll('#dataVariants li'), function (li) {
       var d = li.dataset;
-      var key = [d.product, d.color, d.cpu, d.ram, d.storage].join('|');
+      var key = [d.product, d.color, normKey(d.cpu), normKey(d.gpu || ''), d.ram, d.storage].join('|');
       variantIndex[key] = { sku: d.sku, status: d.status };
     });
 
     function findExisting(b, r) {
       if (b.mode !== 'existing' || !b.productId) return null;
-      return variantIndex[[b.productId, r.colorId, r.cpu, r.ram, r.storage].join('|')] || null;
+      return variantIndex[[b.productId, r.colorId, normKey(r.cpu), normKey(r.gpu), r.ram, r.storage].join('|')] || null;
+    }
+
+    function labelOf(kind, value) {
+      if (kind === 'gpu' && value === '') return 'Không có';
+      var list = specOptions[kind];
+      for (var i = 0; i < list.length; i++) if (list[i].value === value) return list[i].label;
+      return NUMERIC[kind] ? formatGb(value) : value;
     }
 
     var state = { blocks: [] };
@@ -243,6 +286,33 @@
       $('[data-role=newBrandBox]', el).hidden = b.brandId !== NEW_BRAND;
     }
 
+    function makeChip(label, checked, attrs, swatch) {
+      var chip = tplChip.content.cloneNode(true).querySelector('label');
+      var cb = $('input', chip);
+      Object.keys(attrs).forEach(function (k) { cb.dataset[k] = attrs[k]; });
+      cb.checked = checked;
+      $('[data-role=name]', chip).textContent = label;
+      var sw = $('[data-role=swatch]', chip);
+      if (swatch) sw.style.backgroundColor = swatch; else sw.hidden = true;
+      return chip;
+    }
+
+    /** Dựng lại các ô tick CPU/GPU/RAM/ổ cứng của một sản phẩm từ danh mục hiện có. */
+    function renderChips(el, b) {
+      KINDS.forEach(function (kind) {
+        var box = $('[data-role=chips-' + kind + ']', el);
+        box.innerHTML = '';
+        var list = specOptions[kind].slice();
+        if (kind === 'gpu') list.unshift({ value: '', label: 'Không có', isNew: false });
+        list.forEach(function (o) {
+          var chip = makeChip(o.label + (o.isNew ? ' (mới)' : ''), b[FIELD[kind]].indexOf(o.value) >= 0,
+            { spec: kind, val: o.value });
+          box.appendChild(chip);
+        });
+        if (!list.length) box.textContent = 'Chưa có giá trị nào, hãy thêm ở ô bên dưới.';
+      });
+    }
+
     function buildBlockEl(b) {
       var el = tplBlock.content.cloneNode(true).querySelector('[data-block]');
       el._block = b;
@@ -252,14 +322,9 @@
       fillSelect($('[data-f=categoryId]', el), categories, '— Chọn danh mục —');
       var chips = $('[data-role=colors]', el);
       colors.forEach(function (c) {
-        var chip = tplChip.content.cloneNode(true).querySelector('label');
-        var cb = $('input', chip);
-        cb.dataset.chip = c.id;
-        cb.checked = b.colorIds.indexOf(c.id) >= 0;
-        $('[data-role=name]', chip).textContent = c.name;
-        if (c.hex) $('[data-role=swatch]', chip).style.backgroundColor = c.hex;
-        chips.appendChild(chip);
+        chips.appendChild(makeChip(c.name, b.colorIds.indexOf(c.id) >= 0, { chip: c.id }, c.hex));
       });
+      renderChips(el, b);
       Array.prototype.forEach.call(el.querySelectorAll('[data-f]'), function (inp) {
         var f = inp.dataset.f;
         if (inp.type === 'radio') {
@@ -281,10 +346,10 @@
       var ax = axisCounts(b);
       var info = $('[data-role=comboInfo]', el);
       if (!b.rows.length) {
-        info.textContent = 'Chọn màu và nhập CPU, RAM, ổ cứng để sinh các biến thể .';
+        info.textContent = 'Tick ít nhất một màu, CPU, RAM và ổ cứng để sinh các biến thể (GPU không bắt buộc).';
       } else {
-        info.textContent = ax.colors + ' màu × ' + ax.cpus + ' CPU × ' + ax.rams + ' RAM × ' + ax.storages +
-          ' ổ cứng = ' + b.total + ' biến thể' +
+        info.textContent = ax.colors + ' màu × ' + ax.cpus + ' CPU × ' + ax.gpus + ' GPU × ' + ax.rams + ' RAM × ' +
+          ax.storages + ' ổ cứng = ' + b.total + ' biến thể' +
           (b.truncated ? ' (chỉ hiện ' + MAX_ROWS + ' dòng đầu, hãy bớt giá trị)' : '') + '.';
       }
       b.rows.forEach(function (r, i) {
@@ -293,8 +358,9 @@
         var color = colorById[r.colorId];
         $('[data-role=color]', tr).textContent = color ? color.name : r.colorId;
         $('[data-role=cpu]', tr).textContent = r.cpu;
-        $('[data-role=ram]', tr).textContent = r.ram + ' GB';
-        $('[data-role=storage]', tr).textContent = r.storage + ' GB';
+        $('[data-role=gpu]', tr).textContent = labelOf('gpu', r.gpu);
+        $('[data-role=ram]', tr).textContent = labelOf('ram', r.ram);
+        $('[data-role=storage]', tr).textContent = labelOf('storage', r.storage);
         var ex = findExisting(b, r);
         var st = $('[data-role=status]', tr);
         if (ex) {
@@ -316,8 +382,7 @@
 
     function updateRowCount(tr, r) {
       var n = countSerials(r.serials);
-      var c = $('[data-role=count]', tr);
-      c.textContent = n ? n + ' máy' : 'bỏ qua nếu để trống';
+      $('[data-role=count]', tr).textContent = n ? n + ' máy' : 'bỏ qua nếu để trống';
     }
 
     function regenerate(b, el) {
@@ -360,8 +425,17 @@
       updateSummary();
     }
 
-    var AXIS_FIELDS = { cpuText: 1, ramText: 1, storageText: 1 };
+    function toggleValue(b, kind, value, on) {
+      var arr = b[FIELD[kind]];
+      var idx = arr.indexOf(value);
+      if (on && idx < 0) arr.push(value);
+      if (!on && idx >= 0) arr.splice(idx, 1);
+      var order = specOptions[kind].map(function (o) { return o.value; });
+      if (kind === 'gpu') order.unshift('');
+      arr.sort(function (x, y) { return order.indexOf(x) - order.indexOf(y); });
+    }
 
+    // ---- sự kiện
     blocksEl.addEventListener('input', function (e) {
       var t = e.target;
       var f = t.dataset.f;
@@ -392,6 +466,11 @@
         regenerate(b, el);
         return;
       }
+      if (t.dataset.spec) {
+        toggleValue(b, t.dataset.spec, t.dataset.val, t.checked);
+        regenerate(b, el);
+        return;
+      }
       var f = t.dataset.f;
       if (!f || t.closest('tr[data-row]')) return;
       if (f === 'mode') {
@@ -402,9 +481,28 @@
       } else if (f === 'brandId') {
         b.brandId = t.value;
         toggleBoxes(el, b);
-      } else if (AXIS_FIELDS[f]) {
-        b[f] = t.value;
-        regenerate(b, el);
+      }
+    });
+
+    /** Thêm giá trị thuộc tính mới ngay trong khối; trùng thì chọn luôn giá trị đã có. */
+    function addSpec(el, kind) {
+      var b = el._block;
+      var input = $('[data-add=' + kind + ']', el);
+      var note = $('[data-role=specNote]', el);
+      var res = addOption(specOptions[kind], kind, input.value);
+      note.textContent = res.message;
+      note.className = 'mt-2 text-sm font-medium ' + (res.status === 'invalid' ? 'text-red-600' : 'text-emerald-700');
+      if (res.status === 'invalid') return;
+      toggleValue(b, kind, res.option.value, true);
+      input.value = '';
+      Array.prototype.forEach.call(blocksEl.children, function (other) { renderChips(other, other._block); });
+      regenerate(b, el);
+    }
+
+    blocksEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target.dataset.add) {
+        e.preventDefault();
+        addSpec(e.target.closest('[data-block]'), e.target.dataset.add);
       }
     });
 
@@ -414,8 +512,15 @@
       var el = btn.closest('[data-block]');
       var b = el._block;
       if (btn.dataset.act === 'removeBlock') {
-        if (state.blocks.length === 1) { state.blocks[0] = newBlock(); var fresh = buildBlockEl(state.blocks[0]); blocksEl.replaceChild(fresh, el); renderRows(state.blocks[0], fresh); }
-        else { state.blocks.splice(state.blocks.indexOf(b), 1); blocksEl.removeChild(el); }
+        if (state.blocks.length === 1) {
+          state.blocks[0] = newBlock();
+          var fresh = buildBlockEl(state.blocks[0]);
+          blocksEl.replaceChild(fresh, el);
+          renderRows(state.blocks[0], fresh);
+        } else {
+          state.blocks.splice(state.blocks.indexOf(b), 1);
+          blocksEl.removeChild(el);
+        }
         renumber();
         updateSummary();
       } else if (btn.dataset.act === 'applyBulk') {
@@ -424,6 +529,8 @@
           if (b.bulkSell !== '' && !findExisting(b, r)) r.sellPrice = b.bulkSell;
         });
         renderRows(b, el);
+      } else if (btn.dataset.act === 'addSpec') {
+        addSpec(el, btn.dataset.kind);
       }
     });
 
@@ -450,9 +557,11 @@
         hf.appendChild(ta);
       });
       try {
+        var newOpts = {};
+        KINDS.forEach(function (k) { newOpts[k] = specOptions[k].filter(function (o) { return o.isNew; }); });
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
           supplierId: form.elements.supplierId.value, branchId: form.elements.branchId.value,
-          note: form.elements.note.value, blocks: state.blocks }));
+          note: form.elements.note.value, newOptions: newOpts, blocks: state.blocks }));
       } catch (x) { /* không lưu được bản nháp thì thôi */ }
     });
 
@@ -463,6 +572,9 @@
       if (raw && document.querySelector('.alert-error')) {
         var d = JSON.parse(raw);
         ['supplierId', 'branchId', 'note'].forEach(function (k) { if (d[k] != null) form.elements[k].value = d[k]; });
+        KINDS.forEach(function (k) {
+          ((d.newOptions || {})[k] || []).forEach(function (o) { addOption(specOptions[k], k, o.value); });
+        });
         (d.blocks || []).forEach(function (b) { addBlock(b); });
         restored = state.blocks.length > 0;
       }

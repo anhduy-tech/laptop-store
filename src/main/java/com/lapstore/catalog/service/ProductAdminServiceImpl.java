@@ -1,6 +1,7 @@
 package com.lapstore.catalog.service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -11,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.lapstore.catalog.domain.Product;
 import com.lapstore.catalog.domain.ProductVariant;
+import com.lapstore.catalog.dto.ProductAdminDetail;
 import com.lapstore.catalog.dto.ProductAdminRow;
+import com.lapstore.catalog.dto.SpecKind;
+import com.lapstore.catalog.dto.VariantAdminRow;
 import com.lapstore.catalog.dto.ProductEditRequest;
 import com.lapstore.catalog.dto.ProductEditView;
 import com.lapstore.catalog.dto.ReceiptCatalog;
@@ -26,6 +30,7 @@ import com.lapstore.common.web.Text;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
 
 @Service
 class ProductAdminServiceImpl implements ProductAdminService {
@@ -35,16 +40,18 @@ class ProductAdminServiceImpl implements ProductAdminService {
     private final ProductRepository products;
     private final ProductVariantRepository variants;
     private final PriceHistoryRepository prices;
+    private final SpecService specs;
 
     @PersistenceContext
     private EntityManager em;
 
     ProductAdminServiceImpl(ProductAdminSearchRepository search, ProductRepository products,
-            ProductVariantRepository variants, PriceHistoryRepository prices) {
+            ProductVariantRepository variants, PriceHistoryRepository prices, SpecService specs) {
         this.search = search;
         this.products = products;
         this.variants = variants;
         this.prices = prices;
+        this.specs = specs;
     }
 
     @Override
@@ -92,25 +99,30 @@ class ProductAdminServiceImpl implements ProductAdminService {
 
         String name = Text.orEmpty(r.name());
         String variantName = Text.orEmpty(r.variantName());
-        String cpu = Text.orEmpty(r.cpu());
-        if (name.isEmpty() || variantName.isEmpty() || cpu.isEmpty())
-            throw new BusinessException("Tên sản phẩm, tên cấu hình và CPU không được để trống.");
+        if (name.isEmpty() || variantName.isEmpty())
+            throw new BusinessException("Tên sản phẩm và tên cấu hình không được để trống.");
         if (!STATUSES.contains(r.productStatus()) || !STATUSES.contains(r.variantStatus()))
             throw new BusinessException("Trạng thái chỉ nhận ACTIVE hoặc INACTIVE.");
         String thumb = Text.blankToNull(r.thumbnailUrl());
         if (thumb != null && !(thumb.startsWith("http://") || thumb.startsWith("https://") || thumb.startsWith("/")))
             throw new BusinessException("Đường dẫn ảnh phải bắt đầu bằng http://, https:// hoặc /.");
-        if (r.ramGb() == null || r.ramGb() <= 0 || r.storageGb() == null || r.storageGb() <= 0)
-            throw new BusinessException("RAM và dung lượng ổ cứng phải lớn hơn 0.");
+        if (r.ramGb() == null || r.storageGb() == null)
+            throw new BusinessException("Chọn RAM và ổ cứng.");
         if (r.warrantyMonths() == null || r.warrantyMonths() < 0)
             throw new BusinessException("Thời hạn bảo hành không được âm.");
 
         if (!name.equals(p.getName())
                 && products.existsByBrand_IdAndNameAndIdNot(p.getBrand().getId(), name, p.getId()))
             throw new BusinessException("Hãng " + p.getBrand().getName() + " đã có sản phẩm tên \"" + name + "\".");
-        if (variants.existsByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGbAndIdNot(p.getId(), v.getColor().getId(),
-                cpu, r.ramGb(), r.storageGb(), v.getId()))
-            throw new BusinessException("Đã có cấu hình khác cùng màu, CPU, RAM và ổ cứng này.");
+        // CPU/GPU/RAM/ổ cứng chỉ được chọn từ danh mục thuộc tính (thêm mới ở màn Thuộc tính), dùng đúng giá trị đã có
+        String cpu = specs.resolve(SpecKind.CPU, r.cpu(), false).value();
+        String gpu = Text.blankToNull(r.gpu()) == null ? null : specs.resolve(SpecKind.GPU, r.gpu(), false).value();
+        int ram = Integer.parseInt(specs.resolve(SpecKind.RAM, String.valueOf(r.ramGb()), false).value());
+        int storage = Integer.parseInt(specs.resolve(SpecKind.STORAGE, String.valueOf(r.storageGb()), false).value());
+        for (ProductVariant other : variants.findByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGb(p.getId(),
+                v.getColor().getId(), cpu, ram, storage))
+            if (!other.getId().equals(v.getId()) && Objects.equals(gpuKey(other.getGpu()), gpuKey(gpu)))
+                throw new BusinessException("Đã có cấu hình khác cùng màu, CPU, GPU, RAM và ổ cứng này.");
         if ("ACTIVE".equals(r.variantStatus()) && !"ACTIVE".equals(v.getStatus())
                 && !prices.existsByVariant_IdAndStatus(v.getId(), "APPROVED"))
             throw new BusinessException("Cấu hình này chưa có giá bán được duyệt nên chưa thể mở bán. "
@@ -126,14 +138,24 @@ class ProductAdminServiceImpl implements ProductAdminService {
 
         v.setVariantName(variantName);
         v.setCpu(cpu);
-        v.setGpu(Text.blankToNull(r.gpu()));
-        v.setRamGb(r.ramGb());
-        v.setStorageGb(r.storageGb());
+        v.setGpu(gpu);
+        v.setRamGb(ram);
+        v.setStorageGb(storage);
         v.setWarrantyMonths(r.warrantyMonths());
         if (r.lowStockThreshold() != null)
             v.setLowStockThreshold(r.lowStockThreshold());
         v.setReturnWindowDays(r.returnWindowDays());
         v.setStatus(r.variantStatus());
+        try {
+            em.flush();
+        } catch (PersistenceException e) {
+            throw new BusinessException("Cấu hình này trùng với một cấu hình khác của sản phẩm "
+                    + "(cùng màu, CPU, RAM, ổ cứng). Kiểm tra lại.");
+        }
+    }
+
+    private static String gpuKey(String gpu) {
+        return gpu == null ? "" : gpu.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
     @Override
@@ -155,10 +177,29 @@ class ProductAdminServiceImpl implements ProductAdminService {
                         + "from Product p join p.brand b where p.deletedAt is null order by b.name, p.name",
                 ReceiptCatalog.ProductOption.class).getResultList();
         List<ReceiptCatalog.ExistingVariant> existing = em.createQuery(
-                "select new com.lapstore.catalog.dto.ReceiptCatalog$ExistingVariant(p.id, v.id, v.sku, c.id, v.cpu, "
+                "select new com.lapstore.catalog.dto.ReceiptCatalog$ExistingVariant(p.id, v.id, v.sku, c.id, v.cpu, v.gpu, "
                         + "v.ramGb, v.storageGb, v.status, v.currentPrice) "
                         + "from ProductVariant v join v.product p join v.color c where p.deletedAt is null",
                 ReceiptCatalog.ExistingVariant.class).getResultList();
-        return new ReceiptCatalog(brands, categories, colors, productOptions, existing);
+        return new ReceiptCatalog(brands, categories, colors, productOptions, existing, specs.choices());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('PORTAL_WAREHOUSE')")
+    public ProductAdminDetail detail(long productId) {
+        Product p = products.findById(productId)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm " + productId));
+        if (p.getDeletedAt() != null)
+            throw new NotFoundException("Sản phẩm đã bị xóa.");
+        List<VariantAdminRow> rows = search.variantsOf(productId).stream()
+                .map(r -> new VariantAdminRow(r.variantId(), r.sku(), r.variantName(), r.colorName(), r.cpu(), r.gpu(),
+                        r.ramGb() == null ? 0 : r.ramGb(), r.storageGb() == null ? 0 : r.storageGb(), r.price(),
+                        r.onHand() == null ? 0 : r.onHand().longValue(), r.held() == null ? 0 : r.held().longValue(),
+                        r.lowStockThreshold() == null ? 0 : r.lowStockThreshold(), r.status()))
+                .toList();
+        return new ProductAdminDetail(p.getId(), p.getName(), p.getSlug(), p.getBrand().getName(),
+                p.getCategory().getName(), p.getSeries(), p.getReleaseYear(), p.getDescription(), p.getThumbnailUrl(),
+                p.getStatus(), rows);
     }
 }

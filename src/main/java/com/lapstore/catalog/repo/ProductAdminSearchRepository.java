@@ -60,4 +60,16 @@ public class ProductAdminSearchRepository {
         List<ProductAdminRowData> rows = data.getResultList();
         return new PageImpl<>(rows, pageable, count.getSingleResult());
     }
+
+    /** Mọi biến thể của một sản phẩm kèm tồn kho cộng dồn các chi nhánh. */
+    public List<VariantRowData> variantsOf(Long productId) {
+        return em.createQuery(
+                "select new com.lapstore.catalog.repo.VariantRowData(v.id, v.sku, v.variantName, c.name, v.cpu, v.gpu, "
+                        + "v.ramGb, v.storageGb, v.currentPrice, "
+                        + "(select coalesce(sum(ib.onHand), 0) from InventoryBalance ib where ib.id.variantId = v.id), "
+                        + "(select coalesce(sum(ib2.heldQty), 0) from InventoryBalance ib2 where ib2.id.variantId = v.id), "
+                        + "v.lowStockThreshold, v.status) "
+                        + "from ProductVariant v join v.color c where v.product.id = :pid order by v.sku",
+                VariantRowData.class).setParameter("pid", productId).getResultList();
+    }
 }

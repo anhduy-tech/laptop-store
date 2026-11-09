@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.lapstore.catalog.dto.ProductAdminDetail;
 import com.lapstore.catalog.dto.ProductAdminRow;
 import com.lapstore.catalog.dto.ProductEditRequest;
 import com.lapstore.catalog.dto.ProductEditView;
@@ -28,4 +29,7 @@ public interface ProductAdminService {
 
     /** Danh mục cho màn nhập kho (hãng, danh mục, màu, sản phẩm, biến thể đã có). Quyền PORTAL_WAREHOUSE. */
     ReceiptCatalog receiptCatalog();
+
+    /** Chi tiết một sản phẩm và mọi biến thể kèm tồn kho. @throws NotFoundException nếu không có hoặc đã xóa */
+    ProductAdminDetail detail(long productId);
 }

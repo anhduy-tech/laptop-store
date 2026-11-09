@@ -18,7 +18,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
     boolean existsByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGbAndIdNot(Long productId, Long colorId, String cpu,
             Integer ramGb, Integer storageGb, Long id);
 
-    Optional<ProductVariant> findByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGb(Long productId, Long colorId,
+    /** Có thể trả nhiều dòng nếu DB cho phép hai biến thể chỉ khác GPU; lọc GPU ở service. */
+    List<ProductVariant> findByProduct_IdAndColor_IdAndCpuAndRamGbAndStorageGb(Long productId, Long colorId,
             String cpu, Integer ramGb, Integer storageGb);
 
     boolean existsBySku(String sku);

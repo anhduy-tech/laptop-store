@@ -4,7 +4,7 @@
   <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <div><h1 class="page-title">Sửa sản phẩm</h1>
       <p class="page-sub"><span class="font-mono" th:text="${item.sku}">SKU</span> · <span th:text="${item.brandName}">Hãng</span> · <span th:text="${item.colorName}">Màu</span></p></div>
-    <a th:href="@{/staff/warehouse/products}" class="btn-ghost btn-sm">← Danh sách</a>
+    <a th:href="@{/staff/warehouse/products/{id}(id=${item.productId})}" class="btn-ghost btn-sm">← Chi tiết sản phẩm</a>
   </div>
 
   <form th:action="@{/staff/warehouse/products/{id}/edit(id=${item.variantId})}" method="post" class="space-y-5">
@@ -29,13 +29,35 @@
 
     <div class="card space-y-4">
       <div><h2 class="font-semibold">Cấu hình này</h2>
-        <p class="hint">SKU <span class="font-mono" th:text="${item.sku}">SKU</span> không đổi được vì đã gắn với serial và đơn hàng.</p></div>
+        <p class="hint">SKU <span class="font-mono" th:text="${item.sku}">SKU</span> không đổi được vì đã gắn với serial và đơn hàng.
+          CPU, GPU, RAM, ổ cứng chỉ chọn từ danh sách; thêm giá trị mới ở mục <a th:href="@{/staff/warehouse/attributes}" class="text-brand-600 underline">Thuộc tính</a>.</p></div>
       <div th:replace="~{fragments/ui :: field('Tên cấu hình','variantName',${form?.variantName},${errors?.get('variantName')},'text',true)}"></div>
       <div class="grid gap-4 sm:grid-cols-2">
-        <div th:replace="~{fragments/ui :: field('CPU','cpu',${form?.cpu},${errors?.get('cpu')},'text',true)}"></div>
-        <div th:replace="~{fragments/ui :: field('GPU','gpu',${form?.gpu},${errors?.get('gpu')},'text',false)}"></div>
-        <div th:replace="~{fragments/ui :: field('RAM (GB)','ramGb',${form?.ramGb},${errors?.get('ramGb')},'number',true)}"></div>
-        <div th:replace="~{fragments/ui :: field('Ổ cứng (GB)','storageGb',${form?.storageGb},${errors?.get('storageGb')},'number',true)}"></div>
+        <div><label class="label" for="cpu">CPU *</label>
+          <select class="input-field" id="cpu" name="cpu">
+            <option th:each="c : ${specs.cpus}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == form?.cpu}">giá trị</option>
+            <option th:if="${form?.cpu != null and !specs.cpus.![value].contains(form.cpu)}" th:value="${form.cpu}" th:text="${form.cpu} + ' (đã ngừng dùng)'" selected="selected">giá trị cũ</option>
+          </select>
+          <p th:if="${errors?.get('cpu')}" class="field-error" th:text="${errors?.get('cpu')}">Lỗi</p></div>
+        <div><label class="label" for="gpu">GPU (không bắt buộc)</label>
+          <select class="input-field" id="gpu" name="gpu">
+            <option value="">Không có</option>
+            <option th:each="c : ${specs.gpus}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == form?.gpu}">giá trị</option>
+            <option th:if="${form?.gpu != null and !specs.gpus.![value].contains(form.gpu)}" th:value="${form.gpu}" th:text="${form.gpu} + ' (đã ngừng dùng)'" selected="selected">giá trị cũ</option>
+          </select>
+          <p th:if="${errors?.get('gpu')}" class="field-error" th:text="${errors?.get('gpu')}">Lỗi</p></div>
+        <div><label class="label" for="ramGb">RAM *</label>
+          <select class="input-field" id="ramGb" name="ramGb">
+            <option th:each="c : ${specs.rams}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == '' + form?.ramGb}">giá trị</option>
+            <option th:if="${form?.ramGb != null and !specs.rams.![value].contains('' + form.ramGb)}" th:value="${'' + form.ramGb}" th:text="${'' + form.ramGb} + ' (đã ngừng dùng)'" selected="selected">giá trị cũ</option>
+          </select>
+          <p th:if="${errors?.get('ramGb')}" class="field-error" th:text="${errors?.get('ramGb')}">Lỗi</p></div>
+        <div><label class="label" for="storageGb">Ổ cứng *</label>
+          <select class="input-field" id="storageGb" name="storageGb">
+            <option th:each="c : ${specs.storages}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == '' + form?.storageGb}">giá trị</option>
+            <option th:if="${form?.storageGb != null and !specs.storages.![value].contains('' + form.storageGb)}" th:value="${'' + form.storageGb}" th:text="${'' + form.storageGb} + ' (đã ngừng dùng)'" selected="selected">giá trị cũ</option>
+          </select>
+          <p th:if="${errors?.get('storageGb')}" class="field-error" th:text="${errors?.get('storageGb')}">Lỗi</p></div>
         <div th:replace="~{fragments/ui :: field('Bảo hành (tháng)','warrantyMonths',${form?.warrantyMonths},${errors?.get('warrantyMonths')},'number',true)}"></div>
         <div th:replace="~{fragments/ui :: field('Ngưỡng cảnh báo tồn thấp','lowStockThreshold',${form?.lowStockThreshold},${errors?.get('lowStockThreshold')},'number',false)}"></div>
         <div th:replace="~{fragments/ui :: field('Số ngày đổi trả (trống = mặc định)','returnWindowDays',${form?.returnWindowDays},${errors?.get('returnWindowDays')},'number',false)}"></div>

@@ -220,8 +220,13 @@ class UiPreviewController {
                                 m("id", 2, "name", "Đen", "hexCode", "#222222")),
                         "products", List.of(m("id", 1, "name", "Swift Go 14", "brandName", "Acer")),
                         "variants", List.of(m("productId", 1, "id", 1, "sku", "SWIFTGO14-I5-16-512", "colorId", 1,
-                                "cpu", "Core i5-1335U", "ramGb", 16, "storageGb", 512, "status",
-                                "ACTIVE"))));
+                                "cpu", "Core i5-1335U", "gpu", "", "ramGb", 16, "storageGb", 512, "status",
+                                "ACTIVE")),
+                        "specs", m(
+                                "cpus", List.of(m("value", "Core i5-1335U", "label", "Core i5-1335U")),
+                                "gpus", List.of(m("value", "RTX 4050 6GB", "label", "RTX 4050 6GB")),
+                                "rams", List.of(m("value", "16", "label", "16 GB")),
+                                "storages", List.of(m("value", "512", "label", "512 GB")))));
             }
             case "wh-02" -> model.addAttribute("branches",
                     List.of(m("id", 1, "name", "CN Hà Đông"), m("id", 2, "name", "CN Cầu Giấy")));

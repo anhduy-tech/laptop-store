@@ -33,7 +33,7 @@
   <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
     <thead><tr><th>Sản phẩm</th><th>SKU</th><th>Cấu hình</th><th class="text-right">Giá bán</th><th class="text-right">Tồn / giữ</th><th>Trạng thái</th><th></th></tr></thead>
     <tbody><tr th:each="r : ${page.content}">
-      <td><span class="font-semibold" th:text="${r.productName}">Tên</span>
+      <td><a class="font-semibold hover:text-brand-600" th:href="@{/staff/warehouse/products/{id}(id=${r.productId})}" th:text="${r.productName}">Tên</a>
         <span class="block text-xs text-slate-400" th:text="${r.brandName}">Hãng</span></td>
       <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
       <td><span th:text="${r.variantName}">Cấu hình</span>

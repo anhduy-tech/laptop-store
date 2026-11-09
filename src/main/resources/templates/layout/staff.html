@@ -44,6 +44,9 @@
       <a th:href="@{/staff/warehouse/stock}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/stock')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
         <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg>Tồn kho</a>
+      <a th:href="@{/staff/warehouse/attributes}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/attributes')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg>Thuộc tính</a>
       <a th:href="@{/staff/warehouse/receipts}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/receipts')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_RECEIVE'')')}">
         <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Nhập kho</a>

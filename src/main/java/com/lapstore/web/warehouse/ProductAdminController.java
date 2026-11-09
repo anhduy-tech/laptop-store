@@ -15,6 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.lapstore.catalog.dto.ProductEditRequest;
 import com.lapstore.catalog.dto.ProductEditView;
 import com.lapstore.catalog.service.ProductAdminService;
+import com.lapstore.catalog.service.SpecService;
 import com.lapstore.common.exception.BusinessException;
 import com.lapstore.common.web.FormErrors;
 import com.lapstore.common.web.Text;
@@ -28,9 +29,11 @@ class ProductAdminController {
     private static final int PAGE_SIZE = 20;
 
     private final ProductAdminService products;
+    private final SpecService specs;
 
-    ProductAdminController(ProductAdminService products) {
+    ProductAdminController(ProductAdminService products, SpecService specs) {
         this.products = products;
+        this.specs = specs;
     }
 
     @GetMapping
@@ -49,12 +52,19 @@ class ProductAdminController {
         return "warehouse/products";
     }
 
+    @GetMapping("/{productId}")
+    String detail(@PathVariable long productId, Model model) {
+        model.addAttribute("product", products.detail(productId));
+        return "warehouse/product-detail";
+    }
+
     @GetMapping("/{variantId}/edit")
     String editForm(@PathVariable long variantId, Model model) {
         ProductEditView item = products.get(variantId);
         if (!model.containsAttribute("form"))
             model.addAttribute("form", toForm(item));
         model.addAttribute("item", item);
+        model.addAttribute("specs", specs.choices());
         return "warehouse/product-edit";
     }
 

@@ -1,0 +1,51 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Thuộc tính – Lapstore</title></head>
+<body><section>
+  <div class="mb-6">
+    <h1 class="page-title">Thuộc tính cấu hình</h1>
+    <p class="page-sub">Danh mục CPU, GPU, RAM, ổ cứng dùng cho sản phẩm. Thêm giá trị trùng (khác hoa/thường, dấu, khoảng trắng) sẽ bị chặn;
+      xóa chỉ được khi không còn sản phẩm nào dùng.</p>
+  </div>
+
+  <div class="mb-5 flex flex-wrap gap-2">
+    <a th:each="k : ${kinds}" th:href="@{/staff/warehouse/attributes(kind=${k.name()})}"
+       class="btn-sm" th:classappend="${k == kind} ? 'btn-primary' : 'btn-secondary'" th:text="${k.label()}">CPU</a>
+  </div>
+
+  <form th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}"
+        th:action="@{/staff/warehouse/attributes}" method="post" class="card mb-5 flex flex-wrap items-end gap-3">
+    <input type="hidden" name="kind" th:value="${kind.name()}"/>
+    <div class="min-w-64 flex-1"><label class="label" for="value" th:text="'Thêm ' + ${kind.label()} + ' mới'">Thêm mới</label>
+      <input class="input-field" id="value" name="value" maxlength="100" required="required"
+             th:placeholder="${kind.numeric()} ? 'VD 24 hoặc 24GB, 2TB' : 'Nhập tên đầy đủ, VD Intel Core i7-1355U'"/></div>
+    <button class="btn-primary" type="submit">Thêm</button>
+  </form>
+
+  <th:block th:if="${rows.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có giá trị nào')}"></div></th:block>
+  <div th:unless="${rows.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th th:text="${kind.label()}">Giá trị</th><th class="text-right">Số sản phẩm</th><th class="text-right">Số biến thể</th><th></th></tr></thead>
+    <tbody><tr th:each="r : ${rows}">
+      <td>
+        <form th:if="${r.renamable() and (preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')'))}"
+              th:action="@{/staff/warehouse/attributes/{id}/rename(id=${r.id})}" method="post" class="flex max-w-lg gap-2">
+          <input type="hidden" name="kind" th:value="${kind.name()}"/>
+          <input class="input-field" name="value" th:value="${r.label}" maxlength="100" required="required"/>
+          <button class="btn-secondary btn-sm shrink-0" type="submit">Lưu tên</button>
+        </form>
+        <span th:unless="${r.renamable() and (preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')'))}"
+              class="font-medium" th:text="${r.label}">Giá trị</span>
+      </td>
+      <td class="text-right tabular-nums" th:text="${r.productCount}">0</td>
+      <td class="text-right tabular-nums" th:text="${r.variantCount}">0</td>
+      <td class="text-right">
+        <form th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}"
+              th:action="@{/staff/warehouse/attributes/{id}/delete(id=${r.id})}" method="post"
+              onsubmit="return confirm('Xóa giá trị này?');">
+          <input type="hidden" name="kind" th:value="${kind.name()}"/>
+          <button class="btn-ghost btn-sm text-red-600" type="submit" th:disabled="${!r.deletable()}"
+                  th:title="${r.deletable()} ? 'Xóa giá trị' : 'Đang có sản phẩm dùng, không xóa được'">Xóa</button>
+        </form>
+      </td></tr></tbody></table></div>
+  <p th:if="${kind.numeric()}" class="hint mt-3">RAM và ổ cứng là giá trị số nên không đổi tên; cần giá trị khác thì thêm mới.</p>
+  <p th:unless="${kind.numeric()}" class="hint mt-3">Đổi tên sẽ cập nhật luôn các sản phẩm đang dùng giá trị này.</p>
+</section></body></html>

@@ -358,8 +358,10 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [x] Trang đăng nhập admin riêng (`admin-login.html`, AU-02), tách khỏi đăng nhập nhân viên
 - [x] Sidebar theo từng phân hệ (mục con theo quyền, tô sáng mục đang xem) + khối "Chuyển phân hệ"
 - [x] WH-05 Sản phẩm: bảng cấu hình kèm tồn kho (`/staff/warehouse/products`), sửa thông tin (`/{variantId}/edit`), quyền mới `PRODUCT_MANAGE` (migration V3). Giá vẫn đi qua đề xuất → duyệt (BR-06) *(chưa chạy thử)*
-- [x] Nhập kho làm lại (WH-01): bỏ JSON; chọn hoặc tạo sản phẩm, chọn màu/CPU/RAM/ổ cứng để nhân tổ hợp biến thể (VD 2 màu × 3 RAM × 3 ổ cứng = 18 dòng), mỗi dòng có giá vốn, giá bán (biến thể mới) và serial. Tạo sản phẩm/biến thể và nhập serial trong một transaction. Biến thể mới ở trạng thái INACTIVE kèm đề xuất giá PENDING, admin duyệt xong tự mở bán *(chưa chạy thử)*
+- [x] Nhập kho làm lại (WH-01): bỏ JSON; chọn hoặc tạo sản phẩm, tick màu/CPU/GPU (không bắt buộc)/RAM/ổ cứng từ danh mục để nhân tổ hợp biến thể (VD 2 màu × 3 RAM × 3 ổ cứng = 18 dòng); thuộc tính chọn từ danh sách, thêm mới có kiểm tra trùng, mỗi dòng có giá vốn, giá bán (biến thể mới) và serial. Tạo sản phẩm/biến thể và nhập serial trong một transaction. Biến thể mới ở trạng thái INACTIVE kèm đề xuất giá PENDING, admin duyệt xong tự mở bán *(chưa chạy thử)*
 - [x] WH-06 Tồn kho theo chi nhánh (`/staff/warehouse/stock`) và danh sách serial từng cấu hình *(chưa chạy thử)*
+- [x] WH-07 Thuộc tính (`/staff/warehouse/attributes`): quản lý CPU/GPU/RAM/ổ cứng trên bảng `attribute_definition` + `attribute_option` có sẵn (không thêm bảng, không migration): xem số sản phẩm/biến thể đang dùng, thêm (chống trùng), sửa tên CPU/GPU (cập nhật luôn sản phẩm đang dùng), xóa khi không còn sản phẩm nào dùng *(chưa chạy thử)*
+- [x] WH-05b Chi tiết sản phẩm (`/staff/warehouse/products/{productId}`): thông tin chung, mọi biến thể kèm tồn kho; form sửa chọn CPU/GPU/RAM/ổ cứng từ danh sách *(chưa chạy thử)*
 - [ ] Upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel
 - [ ] Đưa WH-05 và AU-02 vào `/shop/_ui` và tài liệu thiết kế UI (hiện thiết kế gốc chỉ có 26 màn, thiếu hai màn này)
 

@@ -1,0 +1,50 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Chi tiết sản phẩm – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div class="flex items-start gap-4">
+      <img th:if="${product.thumbnailUrl != null}" th:src="${product.thumbnailUrl}" alt="" class="size-20 rounded-xl border border-slate-200 object-cover"/>
+      <div><h1 class="page-title" th:text="${product.name}">Tên sản phẩm</h1>
+        <p class="page-sub"><span th:text="${product.brandName}">Hãng</span> · <span th:text="${product.categoryName}">Danh mục</span>
+          <span th:if="${product.series != null}"> · <span th:text="${product.series}">Dòng</span></span>
+          <span th:if="${product.releaseYear != null}"> · <span th:text="${product.releaseYear}">2025</span></span></p>
+        <p class="mt-1"><span th:replace="~{fragments/ui :: badge(${product.status})}"></span></p></div>
+    </div>
+    <div class="flex gap-2">
+      <a th:href="@{/staff/warehouse/receipts}" class="btn-primary btn-sm">+ Nhập thêm hàng</a>
+      <a th:href="@{/staff/warehouse/products}" class="btn-ghost btn-sm">← Danh sách</a>
+    </div>
+  </div>
+
+  <div class="mb-5 grid gap-4 sm:grid-cols-3">
+    <div class="card"><p class="hint">Số biến thể</p><p class="text-2xl font-bold" th:text="${product.variants.size()}">0</p></div>
+    <div class="card"><p class="hint">Tồn kho (mọi chi nhánh)</p><p class="text-2xl font-bold" th:text="${product.totalOnHand()}">0</p></div>
+    <div class="card"><p class="hint">Đang giữ cho đơn</p><p class="text-2xl font-bold" th:text="${product.totalHeld()}">0</p></div>
+  </div>
+
+  <div th:if="${product.description != null}" class="card mb-5">
+    <h2 class="mb-2 font-semibold">Mô tả</h2>
+    <p class="whitespace-pre-line text-sm text-slate-600" th:text="${product.description}">Mô tả</p>
+  </div>
+
+  <h2 class="mb-3 font-semibold">Các biến thể</h2>
+  <th:block th:if="${product.variants.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Sản phẩm chưa có biến thể nào')}"></div></th:block>
+  <div th:unless="${product.variants.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>SKU</th><th>Màu</th><th>CPU</th><th>GPU</th><th>RAM</th><th>Ổ cứng</th><th class="text-right">Giá bán</th><th class="text-right">Tồn / giữ</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody><tr th:each="v : ${product.variants}">
+      <td class="font-mono text-xs" th:text="${v.sku}">SKU</td>
+      <td th:text="${v.colorName}">Màu</td>
+      <td th:text="${v.cpu}">CPU</td>
+      <td th:text="${v.gpu != null} ? ${v.gpu} : 'Không có'">GPU</td>
+      <td class="whitespace-nowrap" th:text="${v.ramGb} + ' GB'">16 GB</td>
+      <td class="whitespace-nowrap" th:text="${v.storageGb >= 1024 and v.storageGb % 1024 == 0} ? (${v.storageGb / 1024} + ' TB') : (${v.storageGb} + ' GB')">512 GB</td>
+      <td class="text-right"><span th:replace="~{fragments/ui :: money(${v.price})}"></span></td>
+      <td class="text-right tabular-nums"><span class="font-semibold" th:text="${v.onHand}">0</span>
+        <span class="text-slate-400"> / <span th:text="${v.held}">0</span></span>
+        <span th:if="${v.lowStock()}" class="badge badge-amber ml-1">Sắp hết</span></td>
+      <td><span th:replace="~{fragments/ui :: badge(${v.status})}"></span></td>
+      <td class="whitespace-nowrap text-right">
+        <a class="btn-ghost btn-sm" th:href="@{/staff/warehouse/stock(q=${v.sku})}">Tồn</a>
+        <a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/products/{id}/edit(id=${v.variantId})}"
+           th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}">Sửa</a></td></tr></tbody></table></div>
+</section></body></html>

@@ -3,7 +3,7 @@
 <body><section class="max-w-6xl">
   <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <div><h1 class="page-title">Nhập kho</h1>
-      <p class="page-sub">Chọn hoặc tạo sản phẩm, chọn thuộc tính để sinh các biến thể, rồi nhập giá và serial cho từng biến thể.</p></div>
+      <p class="page-sub">Chọn hoặc tạo sản phẩm, tick thuộc tính (màu, CPU, GPU, RAM, ổ cứng) để sinh các biến thể, rồi nhập giá và serial cho từng biến thể.</p></div>
     <a th:href="@{/staff/warehouse/stock}" class="btn-ghost btn-sm">Xem tồn kho →</a>
   </div>
 
@@ -39,8 +39,14 @@
   <select id="dataCategories" hidden="hidden"><option th:each="c : ${catalog.categories}" th:value="${c.id}" th:text="${c.name}">Danh mục</option></select>
   <select id="dataProducts" hidden="hidden"><option th:each="p : ${catalog.products}" th:value="${p.id}" th:text="${p.brandName + ' – ' + p.name}">Sản phẩm</option></select>
   <ul id="dataColors" hidden="hidden"><li th:each="c : ${catalog.colors}" th:attr="data-id=${c.id},data-name=${c.name},data-hex=${c.hexCode}"></li></ul>
+  <ul id="dataSpecs" hidden="hidden">
+    <li th:each="c : ${catalog.specs.cpus}" th:attr="data-kind='cpu',data-value=${c.value},data-label=${c.label}"></li>
+    <li th:each="c : ${catalog.specs.gpus}" th:attr="data-kind='gpu',data-value=${c.value},data-label=${c.label}"></li>
+    <li th:each="c : ${catalog.specs.rams}" th:attr="data-kind='ram',data-value=${c.value},data-label=${c.label}"></li>
+    <li th:each="c : ${catalog.specs.storages}" th:attr="data-kind='storage',data-value=${c.value},data-label=${c.label}"></li>
+  </ul>
   <ul id="dataVariants" hidden="hidden"><li th:each="v : ${catalog.variants}"
-      th:attr="data-product=${v.productId},data-id=${v.id},data-sku=${v.sku},data-color=${v.colorId},data-cpu=${v.cpu},data-ram=${v.ramGb},data-storage=${v.storageGb},data-status=${v.status}"></li></ul>
+      th:attr="data-product=${v.productId},data-id=${v.id},data-sku=${v.sku},data-color=${v.colorId},data-cpu=${v.cpu},data-gpu=${v.gpu},data-ram=${v.ramGb},data-storage=${v.storageGb},data-status=${v.status}"></li></ul>
 
   <template id="tplChip">
     <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50">
@@ -76,15 +82,43 @@
 
       <div class="border-t border-slate-100 pt-4">
         <p class="label">Thuộc tính sinh biến thể</p>
-        <p class="hint mb-3">Mỗi thuộc tính nhập nhiều giá trị, cách nhau bằng dấu phẩy.
-          Hệ thống nhân tổ hợp: 2 màu × 3 RAM × 3 ổ cứng = 18 biến thể.</p>
-        <div class="mb-3"><span class="label">Màu *</span><div data-role="colors" class="mt-1 flex flex-wrap gap-2"></div></div>
-        <div class="grid gap-4 sm:grid-cols-3">
-          <div><label class="label">CPU *</label><input class="input-field" data-f="cpuText" placeholder="Core i5-1335U, Core i7-1355U"/></div>
-          <div><label class="label">RAM (GB) *</label><input class="input-field" data-f="ramText" placeholder="8, 16, 32"/></div>
-          <div><label class="label">Ổ cứng (GB) *</label><input class="input-field" data-f="storageText" placeholder="256, 512, 1024"/></div>
+        <p class="hint mb-3">Tick các giá trị cần nhập, hệ thống nhân tổ hợp (VD 2 màu × 3 RAM × 3 ổ cứng = 18 biến thể).
+          Giá trị chưa có thì nhập ở ô "Thêm": nếu trùng giá trị đã có (khác hoa/thường, dấu, khoảng trắng) sẽ tự chọn giá trị đó.
+          Quản lý đầy đủ ở mục <a th:href="@{/staff/warehouse/attributes}" class="text-brand-600 underline">Thuộc tính</a>.</p>
+        <div class="mb-4"><span class="label">Màu *</span><div data-role="colors" class="mt-1 flex flex-wrap gap-2"></div></div>
+        <div class="mb-4">
+          <span class="label">CPU *</span>
+          <div data-role="chips-cpu" class="mt-1 flex flex-wrap gap-2"></div>
+          <div class="mt-2 flex max-w-md gap-2">
+            <input class="input-field" data-add="cpu" placeholder="Thêm CPU mới, VD Intel Core i7-1355U" maxlength="100"/>
+            <button type="button" class="btn-secondary btn-sm shrink-0" data-act="addSpec" data-kind="cpu">+ Thêm</button>
+          </div>
         </div>
-        <div class="mt-3 max-w-sm"><label class="label">GPU (áp dụng cho biến thể mới)</label><input class="input-field" data-f="gpu" maxlength="100"/></div>
+        <div class="mb-4">
+          <span class="label">GPU</span> <span class="hint">(không bắt buộc, không tick = không có GPU rời)</span>
+          <div data-role="chips-gpu" class="mt-1 flex flex-wrap gap-2"></div>
+          <div class="mt-2 flex max-w-md gap-2">
+            <input class="input-field" data-add="gpu" placeholder="Thêm GPU mới, VD RTX 4060 8GB" maxlength="100"/>
+            <button type="button" class="btn-secondary btn-sm shrink-0" data-act="addSpec" data-kind="gpu">+ Thêm</button>
+          </div>
+        </div>
+        <div class="mb-4">
+          <span class="label">RAM *</span>
+          <div data-role="chips-ram" class="mt-1 flex flex-wrap gap-2"></div>
+          <div class="mt-2 flex max-w-md gap-2">
+            <input class="input-field" data-add="ram" placeholder="Thêm RAM mới, VD 24 hoặc 24GB" maxlength="100"/>
+            <button type="button" class="btn-secondary btn-sm shrink-0" data-act="addSpec" data-kind="ram">+ Thêm</button>
+          </div>
+        </div>
+        <div class="mb-4">
+          <span class="label">Ổ cứng *</span>
+          <div data-role="chips-storage" class="mt-1 flex flex-wrap gap-2"></div>
+          <div class="mt-2 flex max-w-md gap-2">
+            <input class="input-field" data-add="storage" placeholder="Thêm ổ cứng mới, VD 512 hoặc 2TB" maxlength="100"/>
+            <button type="button" class="btn-secondary btn-sm shrink-0" data-act="addSpec" data-kind="storage">+ Thêm</button>
+          </div>
+        </div>
+        <p data-role="specNote" class="mt-2 text-sm"></p>
         <p class="hint mt-3 font-medium" data-role="comboInfo"></p>
       </div>
 
@@ -96,7 +130,7 @@
       </div>
 
       <div data-role="tableWrap" class="table-wrap" hidden="hidden"><table class="tbl">
-        <thead><tr><th>Màu</th><th>CPU</th><th>RAM</th><th>Ổ cứng</th><th>Biến thể</th><th>Giá vốn (₫)</th><th>Giá bán (₫)</th><th>Serial (mỗi dòng một serial)</th></tr></thead>
+        <thead><tr><th>Màu</th><th>CPU</th><th>GPU</th><th>RAM</th><th>Ổ cứng</th><th>Biến thể</th><th>Giá vốn (₫)</th><th>Giá bán (₫)</th><th>Serial (mỗi dòng một serial)</th></tr></thead>
         <tbody data-role="rows"></tbody></table></div>
     </div>
   </template>
@@ -105,6 +139,7 @@
     <tr class="align-top">
       <td data-role="color" class="whitespace-nowrap"></td>
       <td data-role="cpu"></td>
+      <td data-role="gpu"></td>
       <td data-role="ram" class="whitespace-nowrap"></td>
       <td data-role="storage" class="whitespace-nowrap"></td>
       <td><span data-role="status" class="badge"></span></td>

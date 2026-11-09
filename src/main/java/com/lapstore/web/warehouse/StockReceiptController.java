@@ -82,10 +82,10 @@ class StockReceiptController {
                     : new NewProductSpec(b.getBrandId(), Text.blankToNull(b.getNewBrandName()), b.getCategoryId(),
                             b.getName(), b.getSeries(), b.getReleaseYear(), b.getDescription());
             List<VariantLine> rows = b.getVariants().stream().filter(Objects::nonNull)
-                    .map(r -> new VariantLine(r.getColorId(), r.getCpu(), r.getRamGb(), r.getStorageGb(),
+                    .map(r -> new VariantLine(r.getColorId(), r.getCpu(), r.getGpu(), r.getRamGb(), r.getStorageGb(),
                             r.getUnitCost(), r.getSellPrice(), splitLines(r.getSerials())))
                     .toList();
-            return new ProductLine(b.getProductId(), np, b.getGpu(), rows);
+            return new ProductLine(b.getProductId(), np, rows);
         }).toList();
         return new StockReceiptRequest(f.getSupplierId(), f.getBranchId(), Text.blankToNull(f.getNote()), lines);
     }
