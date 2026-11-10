@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import com.lapstore.common.web.Pages;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,13 +34,16 @@ class SalesOrderController {
 
     @GetMapping
     String list(@RequestParam(required = false) String status,
-                @RequestParam(required = false) String q, Model model) {
+                @RequestParam(required = false) String q,
+                @RequestParam(defaultValue = "0") int page, Model model) {
         String st = Text.orEmpty(status);
         String kw = Text.orEmpty(q);
         model.addAttribute("statuses", queries.statuses());
         model.addAttribute("status", st);
         model.addAttribute("q", kw);
-        model.addAttribute("orders", queries.search(st, kw));
+        var p = Pages.of(queries.search(st, kw), page);
+        model.addAttribute("orders", p.getContent());
+        model.addAttribute("ordersPage", p);
         return "sales/order-list";
     }
 

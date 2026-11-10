@@ -10,4 +10,5 @@
       <td><div class="flex justify-end gap-2">
         <form th:action="@{/admin/prices/{id}/approve(id=${p.id})}" method="post"><button class="btn-primary btn-sm" type="submit">Duyệt</button></form>
         <form th:action="@{/admin/prices/{id}/reject(id=${p.id})}" method="post" data-confirm="Từ chối đề xuất này?"><button class="btn-danger btn-sm" type="submit">Từ chối</button></form></div></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${proposalsPage}, @{/admin/prices} + '?')}"></div>
 </section></body></html>

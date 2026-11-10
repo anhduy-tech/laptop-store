@@ -1,5 +1,5 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
-<head><title>Sửa sản phẩm – Lapstore</title></head>
+<head><title th:text="'Sửa: ' + ${item.sku} + ' – Lapstore'">Sửa sản phẩm – Lapstore</title></head>
 <body><section class="max-w-3xl">
   <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <div><h1 class="page-title">Sửa sản phẩm</h1>
@@ -7,12 +7,12 @@
     <a th:href="@{/staff/warehouse/products/{id}(id=${item.productId})}" class="btn-ghost btn-sm">← Chi tiết sản phẩm</a>
   </div>
 
-  <form th:action="@{/staff/warehouse/products/{id}/edit(id=${item.variantId})}" method="post" class="space-y-5">
-    <div class="card space-y-4">
-      <div><h2 class="font-semibold">Thông tin sản phẩm</h2>
-        <p class="hint">Áp dụng cho mọi cấu hình của sản phẩm này.</p></div>
+  <form th:action="@{/staff/warehouse/products/{id}/edit(id=${item.variantId})}" method="post" class="space-y-6">
+    <div class="form-section space-y-4">
+      <div class="form-section-head"><h2 class="form-section-title">Thông tin sản phẩm</h2>
+        <p class="form-section-desc">Áp dụng cho mọi cấu hình của sản phẩm này.</p></div>
       <div th:replace="~{fragments/ui :: field('Tên sản phẩm','name',${form?.name},${errors?.get('name')},'text',true)}"></div>
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="form-grid">
         <div th:replace="~{fragments/ui :: field('Dòng sản phẩm','series',${form?.series},${errors?.get('series')},'text',false)}"></div>
         <div th:replace="~{fragments/ui :: field('Năm ra mắt','releaseYear',${form?.releaseYear},${errors?.get('releaseYear')},'number',false)}"></div>
       </div>
@@ -27,12 +27,12 @@
         </select></div>
     </div>
 
-    <div class="card space-y-4">
-      <div><h2 class="font-semibold">Cấu hình này</h2>
-        <p class="hint">SKU <span class="font-mono" th:text="${item.sku}">SKU</span> không đổi được vì đã gắn với serial và đơn hàng.
+    <div class="form-section space-y-4">
+      <div class="form-section-head"><h2 class="form-section-title">Cấu hình này</h2>
+        <p class="form-section-desc">SKU <span class="font-mono" th:text="${item.sku}">SKU</span> không đổi được vì đã gắn với serial và đơn hàng.
           CPU, GPU, RAM, ổ cứng chỉ chọn từ danh sách; thêm giá trị mới ở mục <a th:href="@{/staff/warehouse/attributes}" class="text-brand-600 underline">Thuộc tính</a>.</p></div>
       <div th:replace="~{fragments/ui :: field('Tên cấu hình','variantName',${form?.variantName},${errors?.get('variantName')},'text',true)}"></div>
-      <div class="grid gap-4 sm:grid-cols-2">
+      <div class="form-grid">
         <div><label class="label" for="cpu">CPU *</label>
           <select class="input-field" id="cpu" name="cpu">
             <option th:each="c : ${specs.cpus}" th:value="${c.value}" th:text="${c.label}" th:selected="${c.value == form?.cpu}">giá trị</option>
@@ -74,7 +74,7 @@
       </div>
     </div>
 
-    <div class="flex justify-end gap-3">
+    <div class="form-actions">
       <a th:href="@{/staff/warehouse/products}" class="btn-secondary">Hủy</a>
       <button class="btn-primary" type="submit">Lưu thay đổi</button>
     </div>

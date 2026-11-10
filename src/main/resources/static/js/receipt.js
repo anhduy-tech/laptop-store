@@ -403,6 +403,12 @@
           if (n) { serials += n; rows++; }
         });
       });
+      var touched = state.blocks.some(function (b) {
+        return b.colorIds.length || b.cpus.length || b.gpus.length || b.rams.length || b.storages.length ||
+          b.productId || (b.name && b.name.trim());
+      });
+      // workspace.js đọc cờ này để cảnh báo khi đóng tab đang nhập dở
+      document.documentElement.dataset.dirty = (serials > 0 || touched) ? '1' : '0';
       $('#sumSerials').textContent = serials;
       $('#sumRows').textContent = rows;
       var dups = findDuplicates(state);
@@ -478,6 +484,7 @@
       } else if (f === 'productId') {
         b.productId = t.value;
         renderRows(b, el);
+        updateSummary();
       } else if (f === 'brandId') {
         b.brandId = t.value;
         toggleBoxes(el, b);

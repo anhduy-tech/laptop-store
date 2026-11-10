@@ -5,6 +5,8 @@ import org.springframework.data.domain.Pageable;
 
 import com.lapstore.inventory.dto.StockRow;
 import com.lapstore.inventory.dto.StockSerialsView;
+import com.lapstore.inventory.dto.TransferRow;
+import com.lapstore.inventory.dto.TransferView;
 
 /** Xem tồn kho (WH-06). Quyền PORTAL_WAREHOUSE. */
 public interface StockQueryService {
@@ -18,4 +20,10 @@ public interface StockQueryService {
      * @throws com.lapstore.common.exception.NotFoundException nếu không có cấu hình hoặc chi nhánh
      */
     StockSerialsView serials(long variantId, long branchId, String status);
+
+    /** Danh sách phiếu chuyển, mới nhất trước. @param status IN_TRANSIT | RECEIVED; null = tất cả */
+    Page<TransferRow> transfers(String status, Pageable pageable);
+
+    /** @throws com.lapstore.common.exception.NotFoundException nếu không có phiếu */
+    TransferView transfer(String code);
 }

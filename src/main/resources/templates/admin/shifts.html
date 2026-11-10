@@ -11,4 +11,5 @@
   <th:block th:if="${assignments.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có phân ca')}"></div></th:block>
   <div th:unless="${assignments.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Ca</th><th>Chi nhánh</th></tr></thead>
     <tbody><tr th:each="a : ${assignments}"><td th:text="${a.date}">05/11</td><td class="font-medium" th:text="${a.userName}">NV</td><td th:text="${a.shift}">Ca sáng</td><td th:text="${a.branch}">CN</td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${assignmentsPage}, @{/admin/shifts} + '?')}"></div>
 </section></body></html>

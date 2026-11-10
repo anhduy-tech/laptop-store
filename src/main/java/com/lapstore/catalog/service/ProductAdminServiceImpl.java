@@ -150,7 +150,7 @@ class ProductAdminServiceImpl implements ProductAdminService {
             em.flush();
         } catch (PersistenceException e) {
             throw new BusinessException("Cấu hình này trùng với một cấu hình khác của sản phẩm "
-                    + "(cùng màu, CPU, RAM, ổ cứng). Kiểm tra lại.");
+                    + "(cùng màu, CPU, GPU, RAM, ổ cứng). Kiểm tra lại.");
         }
     }
 

@@ -2,7 +2,7 @@
 <head><title>Danh sách đơn – Lapstore</title></head>
 <body><section>
 <div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Danh sách đơn</h1><p class="page-sub">Tra cứu và xử lý đơn hàng.</p></div></div>
-  <form th:action="@{/staff/sales/orders}" method="get" class="card mb-5 flex flex-wrap items-end gap-3">
+  <form th:action="@{/staff/sales/orders}" method="get" class="filter-bar">
     <div><label class="label" for="status">Trạng thái</label>
       <select class="input-field w-44" id="status" name="status"><option value="">Tất cả</option>
         <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}" th:selected="${s == status}">NEW</option></select></div>
@@ -18,4 +18,5 @@
       <td><span th:replace="~{fragments/ui :: badge(${o.status})}"></span></td>
       <td class="text-right"><a class="btn-secondary btn-sm" th:href="@{/staff/sales/orders/{id}(id=${o.id})}">Chi tiết</a></td></tr></tbody>
   </table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${ordersPage}, @{/staff/sales/orders(status=${status},q=${q})} + '&amp;')}"></div>
 </section></body></html>

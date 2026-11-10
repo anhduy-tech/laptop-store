@@ -4,7 +4,7 @@
   <div class="mb-6">
     <h1 class="page-title">Thuộc tính cấu hình</h1>
     <p class="page-sub">Danh mục CPU, GPU, RAM, ổ cứng dùng cho sản phẩm. Thêm giá trị trùng (khác hoa/thường, dấu, khoảng trắng) sẽ bị chặn;
-      xóa chỉ được khi không còn sản phẩm nào dùng.</p>
+      xóa chỉ được khi không còn sản phẩm nào dùng. Bấm vào số sản phẩm/biến thể để xem danh sách cụ thể.</p>
   </div>
 
   <div class="mb-5 flex flex-wrap gap-2">
@@ -12,8 +12,16 @@
        class="btn-sm" th:classappend="${k == kind} ? 'btn-primary' : 'btn-secondary'" th:text="${k.label()}">CPU</a>
   </div>
 
+  <form th:action="@{/staff/warehouse/attributes}" method="get" class="filter-bar" role="search">
+    <input type="hidden" name="kind" th:value="${kind.name()}"/>
+    <div class="min-w-64 flex-1"><label class="label" for="q" th:text="'Tìm trong danh sách ' + ${kind.label()}">Tìm</label>
+      <input class="input-field" id="q" name="q" th:value="${q}" placeholder="Gõ một phần tên, không cần đúng hoa/thường hay dấu gạch"/></div>
+    <button class="btn-primary" type="submit">Tìm</button>
+    <a th:href="@{/staff/warehouse/attributes(kind=${kind.name()})}" class="btn-ghost">Xóa lọc</a>
+  </form>
+
   <form th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}"
-        th:action="@{/staff/warehouse/attributes}" method="post" class="card mb-5 flex flex-wrap items-end gap-3">
+        th:action="@{/staff/warehouse/attributes}" method="post" class="filter-bar">
     <input type="hidden" name="kind" th:value="${kind.name()}"/>
     <div class="min-w-64 flex-1"><label class="label" for="value" th:text="'Thêm ' + ${kind.label()} + ' mới'">Thêm mới</label>
       <input class="input-field" id="value" name="value" maxlength="100" required="required"
@@ -21,7 +29,7 @@
     <button class="btn-primary" type="submit">Thêm</button>
   </form>
 
-  <th:block th:if="${rows.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có giá trị nào')}"></div></th:block>
+  <th:block th:if="${rows.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có giá trị nào phù hợp')}"></div></th:block>
   <div th:unless="${rows.isEmpty()}" class="table-wrap"><table class="tbl">
     <thead><tr><th th:text="${kind.label()}">Giá trị</th><th class="text-right">Số sản phẩm</th><th class="text-right">Số biến thể</th><th></th></tr></thead>
     <tbody><tr th:each="r : ${rows}">
@@ -35,8 +43,14 @@
         <span th:unless="${r.renamable() and (preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')'))}"
               class="font-medium" th:text="${r.label}">Giá trị</span>
       </td>
-      <td class="text-right tabular-nums" th:text="${r.productCount}">0</td>
-      <td class="text-right tabular-nums" th:text="${r.variantCount}">0</td>
+      <td class="text-right tabular-nums">
+        <a th:if="${r.variantCount > 0}" class="font-semibold text-brand-700 underline decoration-dotted hover:text-brand-600" data-newtab="true"
+           th:attr="data-title=${kind.label()} + ': ' + ${r.label}" th:href="@{/staff/warehouse/attributes/{id}/usage(id=${r.id})}" th:text="${r.productCount}">0</a>
+        <span th:unless="${r.variantCount > 0}" class="text-slate-400">0</span></td>
+      <td class="text-right tabular-nums">
+        <a th:if="${r.variantCount > 0}" class="font-semibold text-brand-700 underline decoration-dotted hover:text-brand-600" data-newtab="true"
+           th:attr="data-title=${kind.label()} + ': ' + ${r.label}" th:href="@{/staff/warehouse/attributes/{id}/usage(id=${r.id})}" th:text="${r.variantCount}">0</a>
+        <span th:unless="${r.variantCount > 0}" class="text-slate-400">0</span></td>
       <td class="text-right">
         <form th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}"
               th:action="@{/staff/warehouse/attributes/{id}/delete(id=${r.id})}" method="post"
@@ -46,6 +60,7 @@
                   th:title="${r.deletable()} ? 'Xóa giá trị' : 'Đang có sản phẩm dùng, không xóa được'">Xóa</button>
         </form>
       </td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${rowsPage}, @{/staff/warehouse/attributes(kind=${kind.name()},q=${q ?: ''})} + '&amp;')}"></div>
   <p th:if="${kind.numeric()}" class="hint mt-3">RAM và ổ cứng là giá trị số nên không đổi tên; cần giá trị khác thì thêm mới.</p>
   <p th:unless="${kind.numeric()}" class="hint mt-3">Đổi tên sẽ cập nhật luôn các sản phẩm đang dùng giá trị này.</p>
 </section></body></html>

@@ -1,5 +1,5 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
-<head><title>Chi tiết sản phẩm – Lapstore</title></head>
+<head><title th:text="'SP: ' + ${product.name} + ' – Lapstore'">Chi tiết sản phẩm – Lapstore</title></head>
 <body><section>
   <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
     <div class="flex items-start gap-4">

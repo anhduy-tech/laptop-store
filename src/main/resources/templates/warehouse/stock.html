@@ -8,7 +8,7 @@
     <a th:href="@{/staff/warehouse/receipts}" class="btn-primary btn-sm">+ Nhập hàng</a>
   </div>
 
-  <form method="get" th:action="@{/staff/warehouse/stock}" class="card mb-5 flex flex-wrap items-end gap-3">
+  <form method="get" th:action="@{/staff/warehouse/stock}" class="filter-bar">
     <div class="min-w-56 flex-1"><label class="label" for="q">Tìm theo tên hoặc SKU</label>
       <input class="input-field" id="q" name="q" th:value="${q}" placeholder="VD: MacBook, SWIFTGO14..."/></div>
     <div><label class="label" for="branchId">Chi nhánh</label>
@@ -34,6 +34,6 @@
       <td class="text-right tabular-nums text-slate-400" th:text="${r.held}">0</td>
       <td class="text-right tabular-nums"><span class="font-semibold" th:text="${r.available()}">0</span>
         <span th:if="${r.lowStock()}" class="badge badge-amber ml-1">Sắp hết</span></td>
-      <td class="text-right"><a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/stock/{v}/{b}(v=${r.variantId},b=${r.branchId})}">Serial</a></td></tr></tbody></table></div>
-  <nav th:replace="~{fragments/ui :: pager(${page}, @{/staff/warehouse/stock(q=${q ?: ''},branchId=${selectedBranch},low=${low})} + '&amp;')}"></nav>
+      <td class="text-right"><a class="btn-secondary btn-sm" data-newtab="true" th:attr="data-title='Serial '+${r.sku}" th:href="@{/staff/warehouse/stock/{v}/{b}(v=${r.variantId},b=${r.branchId})}">Serial</a></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/staff/warehouse/stock(q=${q ?: ''},branchId=${selectedBranch},low=${low})} + '&amp;')}"></div>
 </section></body></html>

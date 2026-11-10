@@ -16,9 +16,11 @@
   <div><h2 class="mb-3 font-semibold">Campaign</h2>
     <th:block th:if="${campaigns.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có campaign')}"></div></th:block>
     <div th:unless="${campaigns.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Tên</th><th>Loại</th><th>Hiệu lực</th><th>Trạng thái</th></tr></thead>
-      <tbody><tr th:each="c : ${campaigns}"><td class="font-medium" th:text="${c.name}">KM</td><td th:text="${c.type}">PERCENT</td><td th:text="${c.period}">01/11 – 30/11</td><td><span th:replace="~{fragments/ui :: badge(${c.status})}"></span></td></tr></tbody></table></div></div>
+      <tbody><tr th:each="c : ${campaigns}"><td class="font-medium" th:text="${c.name}">KM</td><td th:text="${c.type}">PERCENT</td><td th:text="${c.period}">01/11 – 30/11</td><td><span th:replace="~{fragments/ui :: badge(${c.status})}"></span></td></tr></tbody></table></div>
+      <div th:replace="~{fragments/ui :: tablefootp(${campaignsPage}, @{/staff/warehouse/campaigns(vpage=${vouchersPage != null ? vouchersPage.number : 0})} + '&amp;', 'cpage')}"></div></div>
   <div><h2 class="mb-3 font-semibold">Voucher</h2>
     <th:block th:if="${vouchers.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có voucher')}"></div></th:block>
     <div th:unless="${vouchers.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Mã</th><th class="text-center">Đã dùng</th><th class="text-center">Đang giữ</th><th class="text-center">Giới hạn</th><th>Trạng thái</th></tr></thead>
-      <tbody><tr th:each="v : ${vouchers}"><td class="font-mono font-semibold" th:text="${v.code}">LAP10</td><td class="text-center" th:text="${v.used}">0</td><td class="text-center" th:text="${v.reserved}">0</td><td class="text-center" th:text="${v.limit}">100</td><td><span th:replace="~{fragments/ui :: badge(${v.status})}"></span></td></tr></tbody></table></div></div>
+      <tbody><tr th:each="v : ${vouchers}"><td class="font-mono font-semibold" th:text="${v.code}">LAP10</td><td class="text-center" th:text="${v.used}">0</td><td class="text-center" th:text="${v.reserved}">0</td><td class="text-center" th:text="${v.limit}">100</td><td><span th:replace="~{fragments/ui :: badge(${v.status})}"></span></td></tr></tbody></table></div>
+      <div th:replace="~{fragments/ui :: tablefootp(${vouchersPage}, @{/staff/warehouse/campaigns(cpage=${campaignsPage != null ? campaignsPage.number : 0})} + '&amp;', 'vpage')}"></div></div>
 </section></body></html>

@@ -10,8 +10,10 @@
   <div id="clientError" class="alert alert-error mb-4" role="alert" hidden="hidden"></div>
 
   <form id="receiptForm" th:action="@{/staff/warehouse/receipts}" method="post" class="space-y-5">
-    <div class="card space-y-4">
-      <div class="grid gap-4 sm:grid-cols-2">
+    <div class="form-section space-y-4">
+      <div class="form-section-head"><h2 class="form-section-title">Thông tin phiếu nhập</h2>
+        <p class="form-section-desc">Nhà cung cấp và chi nhánh nhận hàng.</p></div>
+      <div class="form-grid">
         <div><label class="label" for="supplierId">Nhà cung cấp *</label>
           <select class="input-field" id="supplierId" name="supplierId" required="required">
             <option th:each="s : ${suppliers}" th:value="${s.id}" th:text="${s.name}">NCC</option></select></div>
@@ -26,7 +28,7 @@
 
     <div><button type="button" id="addBlock" class="btn-secondary">+ Thêm sản phẩm</button></div>
 
-    <div class="card sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+    <div class="sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-200 bg-white/95 p-4 shadow-lift backdrop-blur">
       <p class="text-sm"><b id="sumSerials">0</b> máy · <b id="sumRows">0</b> cấu hình có serial
         <span id="dupWarn" class="ml-3 font-medium text-red-600" hidden="hidden"></span></p>
       <button class="btn-primary" type="submit">Xác nhận nhập kho</button>
@@ -49,15 +51,15 @@
       th:attr="data-product=${v.productId},data-id=${v.id},data-sku=${v.sku},data-color=${v.colorId},data-cpu=${v.cpu},data-gpu=${v.gpu},data-ram=${v.ramGb},data-storage=${v.storageGb},data-status=${v.status}"></li></ul>
 
   <template id="tplChip">
-    <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50">
+    <label class="chip-opt">
       <input type="checkbox"/><span data-role="swatch" class="inline-block size-3.5 rounded-full border border-slate-300"></span><span data-role="name"></span>
     </label>
   </template>
 
   <template id="tplBlock">
-    <div class="card space-y-4" data-block="data-block">
+    <div class="form-section space-y-4" data-block="data-block">
       <div class="flex items-center justify-between">
-        <h2 class="font-semibold">Sản phẩm <span data-role="no">1</span></h2>
+        <h2 class="form-section-title">Sản phẩm <span data-role="no">1</span></h2>
         <button type="button" class="btn-ghost btn-sm text-red-600" data-act="removeBlock">Xóa sản phẩm</button>
       </div>
       <div class="flex flex-wrap gap-5 text-sm">
@@ -70,7 +72,7 @@
         <select class="input-field" data-f="productId"></select>
       </div>
 
-      <div data-role="newBox" class="grid gap-4 sm:grid-cols-2" hidden="hidden">
+      <div data-role="newBox" class="form-grid" hidden="hidden">
         <div><label class="label">Hãng *</label><select class="input-field" data-f="brandId"></select>
           <div data-role="newBrandBox" class="mt-2" hidden="hidden"><input class="input-field" data-f="newBrandName" placeholder="Tên hãng mới" maxlength="80"/></div></div>
         <div><label class="label">Danh mục *</label><select class="input-field" data-f="categoryId"></select></div>

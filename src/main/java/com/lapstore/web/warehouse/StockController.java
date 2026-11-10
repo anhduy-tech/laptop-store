@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.lapstore.common.web.Pages;
 import com.lapstore.common.web.Text;
 import com.lapstore.inventory.service.InventoryService;
 import com.lapstore.inventory.service.StockQueryService;
@@ -16,7 +17,7 @@ import com.lapstore.inventory.service.StockQueryService;
 @Controller
 @RequestMapping("/staff/warehouse/stock")
 class StockController {
-    private static final int PAGE_SIZE = 25;
+    private static final int PAGE_SIZE = Pages.SIZE;
     private static final java.util.Set<String> SERIAL_STATUSES = java.util.Set.of("IN_STOCK", "IN_TRANSIT", "SOLD",
             "WARRANTY", "RETURNED", "DEFECTIVE");
 
@@ -43,11 +44,14 @@ class StockController {
 
     @GetMapping("/{variantId}/{branchId}")
     String serials(@PathVariable long variantId, @PathVariable long branchId,
-            @RequestParam(required = false) String status, Model model) {
+            @RequestParam(required = false) String status, @RequestParam(defaultValue = "0") int page, Model model) {
         String st = Text.blankToNull(status);
         if (st != null && !SERIAL_STATUSES.contains(st))
             st = null;
-        model.addAttribute("view", stock.serials(variantId, branchId, st));
+        var view = stock.serials(variantId, branchId, st);
+        var p = Pages.of(view.serials(), page, 15);
+        model.addAttribute("view", view);
+        model.addAttribute("serialPage", p);
         model.addAttribute("selectedStatus", st);
         return "warehouse/stock-serials";
     }

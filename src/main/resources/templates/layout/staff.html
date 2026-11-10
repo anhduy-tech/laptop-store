@@ -1,116 +1,190 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (title, content)">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (title, content)"
+      data-layout="sidebar" data-collapsed="0" th:attr="data-workspace=${preview == true ? 'off' : 'on'}">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="_csrf" th:content="${_csrf != null ? _csrf.token : ''}"/>
   <meta name="_csrf_header" th:content="${_csrf != null ? _csrf.headerName : ''}"/>
+  <!-- Chạy sớm để không bị nháy bố cục: trang nằm trong tab (iframe) thì bỏ khung; ngược lại nạp bố cục đã chọn -->
+  <script>
+    (function () {
+      var d = document.documentElement;
+      try {
+        if (window.self !== window.top) { d.classList.add('embedded'); return; }
+        d.dataset.layout = localStorage.getItem('lap_layout') === 'topmenu' ? 'topmenu' : 'sidebar';
+        d.dataset.collapsed = localStorage.getItem('lap_collapsed') === '1' ? '1' : '0';
+      } catch (e) { /* giữ mặc định */ }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"/>
   <link rel="stylesheet" th:href="@{/css/app.css}"/>
   <title th:replace="${title}">Lapstore Staff</title>
 </head>
-<!-- Controller cần set model "nav": sales | consult | warehouse | admin (để tô sáng menu) -->
-<body class="flex min-h-screen">
-<aside class="sticky top-0 flex h-screen w-60 shrink-0 flex-col overflow-y-auto bg-gradient-to-b from-brand-950 to-[#073b26] px-3 py-5">
-  <a th:href="@{/}" class="mb-6 flex items-center gap-2 px-2 text-lg font-bold tracking-tight text-white">
-    <span class="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-brand-600"><svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg></span>
-    Lap<span class="text-brand-300">store</span>
+<!-- Controller cần set model "nav": sales | consult | warehouse | admin (để dựng menu và tô sáng) -->
+<body th:attr="data-home=${nav == 'admin' ? '/admin' : (nav == 'sales' ? '/staff/sales' : (nav == 'consult' ? '/staff/consult' : '/staff/warehouse'))}">
+<div class="app-shell">
+<aside id="appNav" class="app-nav">
+  <a th:href="@{/}" class="app-brand">
+    <span class="app-brand-mark"><svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg></span>
+    <span class="app-brand-text">Lap<span class="text-brand-300">store</span></span>
   </a>
-  <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60"
-     th:text="${nav == 'sales' ? 'Bán hàng' : (nav == 'consult' ? 'Tư vấn' : (nav == 'warehouse' ? 'Kho &amp; khuyến mãi' : (nav == 'admin' ? 'Quản trị' : 'Nhân viên')))}">Nhân viên</p>
-  <nav class="flex flex-col gap-1">
+  <div class="app-nav-scroll">
+    <p class="nav-section"
+       th:text="${nav == 'sales' ? 'Bán hàng' : (nav == 'consult' ? 'Tư vấn' : (nav == 'warehouse' ? 'Kho &amp; khuyến mãi' : (nav == 'admin' ? 'Quản trị' : 'Nhân viên')))}">Nhân viên</p>
+    <nav class="nav-group">
     <th:block th:if="${nav == 'sales'}">
-      <a th:href="@{/staff/sales/counter}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/sales/counter')} ? 'nav-active'"
+      <a th:href="@{/staff/sales/counter}" class="nav-link" data-tab="true" title="Bán tại quầy" th:classappend="${#strings.startsWith(navPath, '/staff/sales/counter')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''ORDER_COUNTER_CREATE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Bán tại quầy</a>
-      <a th:href="@{/staff/sales/orders}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/sales/orders')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg><span class="nav-label">Bán tại quầy</span></a>
+      <a th:href="@{/staff/sales/orders}" class="nav-link" data-tab="true" title="Đơn hàng" th:classappend="${#strings.startsWith(navPath, '/staff/sales/orders')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''ORDER_FULFILL'')')}">
-        <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg>Đơn hàng</a>
+        <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg><span class="nav-label">Đơn hàng</span></a>
     </th:block>
     <th:block th:if="${nav == 'consult'}">
-      <a th:href="@{/staff/consult}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/consult')} ? 'nav-active'"
+      <a th:href="@{/staff/consult}" class="nav-link" data-tab="true" title="Phiên tư vấn" th:classappend="${#strings.startsWith(navPath, '/staff/consult')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''CHAT_REPLY'')')}">
-        <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg>Phiên tư vấn</a>
+        <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg><span class="nav-label">Phiên tư vấn</span></a>
     </th:block>
     <th:block th:if="${nav == 'warehouse'}">
-      <a th:href="@{/staff/warehouse}" class="nav-link" th:classappend="${navPath == '/staff/warehouse' or navPath == '/staff/warehouse/'} ? 'nav-active'"
-         th:if="${preview == true}">
-        <svg th:replace="~{fragments/ui :: icon('grid','size-5')}"></svg>Tổng quan</a>
-      <a th:href="@{/staff/warehouse/products}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/products')} ? 'nav-active'"
-         th:if="${preview == true}">
-        <svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg>Sản phẩm</a>
-      <a th:href="@{/staff/warehouse/stock}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/stock')} ? 'nav-active'"
+      <a th:href="@{/staff/warehouse}" class="nav-link" data-tab="true" data-exact="true" title="Tổng quan" th:classappend="${navPath == '/staff/warehouse' or navPath == '/staff/warehouse/'} ? 'nav-active'">
+        <svg th:replace="~{fragments/ui :: icon('grid','size-5')}"></svg><span class="nav-label">Tổng quan</span></a>
+      <a th:href="@{/staff/warehouse/products}" class="nav-link" data-tab="true" title="Sản phẩm" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/products')} ? 'nav-active'">
+        <svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg><span class="nav-label">Sản phẩm</span></a>
+      <a th:href="@{/staff/warehouse/stock}" class="nav-link" data-tab="true" title="Tồn kho" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/stock')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg>Tồn kho</a>
-      <a th:href="@{/staff/warehouse/attributes}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/attributes')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg><span class="nav-label">Tồn kho</span></a>
+      <a th:href="@{/staff/warehouse/attributes}" class="nav-link" data-tab="true" title="Thuộc tính" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/attributes')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg>Thuộc tính</a>
-      <a th:href="@{/staff/warehouse/receipts}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/receipts')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg><span class="nav-label">Thuộc tính</span></a>
+      <a th:href="@{/staff/warehouse/receipts}" class="nav-link" data-tab="true" title="Nhập kho" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/receipts')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_RECEIVE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Nhập kho</a>
-      <a th:href="@{/staff/warehouse/transfers}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/transfers')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg><span class="nav-label">Nhập kho</span></a>
+      <a th:href="@{/staff/warehouse/transfers}" class="nav-link" data-tab="true" data-exact="true" title="Chuyển kho" th:classappend="${navPath == '/staff/warehouse/transfers'} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_TRANSFER'')')}">
-        <svg th:replace="~{fragments/ui :: icon('swap','size-5')}"></svg>Chuyển kho</a>
-      <a th:href="@{/staff/warehouse/campaigns}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/campaigns')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('swap','size-5')}"></svg><span class="nav-label">Chuyển kho</span></a>
+      <a th:href="@{/staff/warehouse/transfers/list}" class="nav-link" data-tab="true" data-prefix="/staff/warehouse/transfers/" title="Phiếu chuyển / nhận hàng"
+         th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/transfers/')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('inbox','size-5')}"></svg><span class="nav-label">Phiếu chuyển</span></a>
+      <a th:href="@{/staff/warehouse/campaigns}" class="nav-link" data-tab="true" title="Campaign &amp; voucher" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/campaigns')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''CAMPAIGN_MANAGE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg>Campaign &amp; voucher</a>
-      <a th:href="@{/staff/warehouse/prices}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/prices')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg><span class="nav-label">Campaign &amp; voucher</span></a>
+      <a th:href="@{/staff/warehouse/prices}" class="nav-link" data-tab="true" title="Đề xuất giá" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/prices')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PRICE_PROPOSE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Đề xuất giá</a>
+        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg><span class="nav-label">Đề xuất giá</span></a>
     </th:block>
     <th:block th:if="${nav == 'admin'}">
-      <a th:href="@{/admin}" class="nav-link" th:classappend="${navPath == '/admin' or navPath == '/admin/'} ? 'nav-active'"
-         th:if="${preview == true}">
-        <svg th:replace="~{fragments/ui :: icon('grid','size-5')}"></svg>Dashboard</a>
-      <a th:href="@{/admin/users}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/users')} ? 'nav-active'"
+      <a th:href="@{/admin}" class="nav-link" data-tab="true" data-exact="true" title="Dashboard" th:classappend="${navPath == '/admin' or navPath == '/admin/'} ? 'nav-active'">
+        <svg th:replace="~{fragments/ui :: icon('grid','size-5')}"></svg><span class="nav-label">Dashboard</span></a>
+      <a th:href="@{/admin/users}" class="nav-link" data-tab="true" title="Nhân viên" th:classappend="${#strings.startsWith(navPath, '/admin/users')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''USER_MANAGE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('users','size-5')}"></svg>Nhân viên</a>
-      <a th:href="@{/admin/shifts}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/shifts')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('users','size-5')}"></svg><span class="nav-label">Nhân viên</span></a>
+      <a th:href="@{/admin/shifts}" class="nav-link" data-tab="true" title="Xếp ca" th:classappend="${#strings.startsWith(navPath, '/admin/shifts')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''SHIFT_MANAGE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('calendar','size-5')}"></svg>Xếp ca</a>
-      <a th:href="@{/admin/prices}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/prices')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('calendar','size-5')}"></svg><span class="nav-label">Xếp ca</span></a>
+      <a th:href="@{/admin/prices}" class="nav-link" data-tab="true" title="Duyệt giá" th:classappend="${#strings.startsWith(navPath, '/admin/prices')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PRICE_APPROVE'')')}">
-        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg>Duyệt giá</a>
-      <a th:href="@{/admin/reports}" class="nav-link" th:classappend="${#strings.startsWith(navPath, '/admin/reports')} ? 'nav-active'"
+        <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg><span class="nav-label">Duyệt giá</span></a>
+      <a th:href="@{/admin/reports}" class="nav-link" data-tab="true" title="Báo cáo" th:classappend="${#strings.startsWith(navPath, '/admin/reports')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''REPORT_VIEW'')')}">
-        <svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg>Báo cáo</a>
+        <svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg><span class="nav-label">Báo cáo</span></a>
     </th:block>
-  </nav>
-  <p class="mb-2 mt-6 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-300/60">Chuyển phân hệ</p>
-  <nav class="flex flex-1 flex-col gap-1">
-      <a data-path="/staff/sales" data-port="8081" th:href="@{/staff/sales}" class="nav-link"
+    </nav>
+    <p class="nav-section">Chuyển phân hệ</p>
+    <nav class="nav-group">
+      <a data-path="/staff/sales" data-port="8081" th:href="@{/staff/sales}" class="nav-link" title="Bán hàng"
          th:if="${nav != 'sales' and (preview == true or #authorization.expression('hasAuthority(''PORTAL_SALES'')'))}">
-        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg>Bán hàng</a>
-      <a data-path="/staff/consult" data-port="8082" th:href="@{/staff/consult}" class="nav-link"
+        <svg th:replace="~{fragments/ui :: icon('cash','size-5')}"></svg><span class="nav-label">Bán hàng</span></a>
+      <a data-path="/staff/consult" data-port="8082" th:href="@{/staff/consult}" class="nav-link" title="Tư vấn"
          th:if="${nav != 'consult' and (preview == true or #authorization.expression('hasAuthority(''PORTAL_CONSULT'')'))}">
-        <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg>Tư vấn</a>
-      <a data-path="/staff/warehouse" data-port="8083" th:href="@{/staff/warehouse}" class="nav-link"
+        <svg th:replace="~{fragments/ui :: icon('chat','size-5')}"></svg><span class="nav-label">Tư vấn</span></a>
+      <a data-path="/staff/warehouse" data-port="8083" th:href="@{/staff/warehouse}" class="nav-link" title="Kho &amp; KM"
          th:if="${nav != 'warehouse' and (preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')'))}">
-        <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg>Kho &amp; KM</a>
-      <a data-path="/admin" data-port="8084" th:href="@{/admin}" class="nav-link"
+        <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg><span class="nav-label">Kho &amp; KM</span></a>
+      <a data-path="/admin" data-port="8084" th:href="@{/admin}" class="nav-link" title="Quản trị"
          th:if="${nav != 'admin' and (preview == true or #authorization.expression('hasAuthority(''ADMIN_ACCESS'')'))}">
-        <svg th:replace="~{fragments/ui :: icon('shield','size-5')}"></svg>Quản trị</a>
-  </nav>
-  <form th:action="@{${nav == 'admin' ? '/admin/logout' : '/staff/logout'}}" method="post">
-    <button type="submit" class="nav-link w-full cursor-pointer"><svg th:replace="~{fragments/ui :: icon('logout','size-5')}"></svg>Đăng xuất</button>
-  </form>
-</aside>
-
-<main class="min-w-0 flex-1 overflow-x-auto">
-  <div class="mx-auto max-w-7xl p-6 lg:p-8">
-    <div class="mb-6 flex items-center justify-between">
-      <div class="relative"><input class="input-field w-80 rounded-full pl-9" type="search" placeholder="Tìm nhanh..."/>
-        <span class="pointer-events-none absolute left-3 top-2.5 text-slate-400"><svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg></span></div>
-      <div class="flex items-center gap-3 text-sm text-slate-500">Xin chào,
-        <b class="text-slate-900" th:text="${preview == true ? 'Nguyễn Thị Lan' : (#authentication != null ? #authentication.name : 'Nhân viên')}">Nhân viên</b>
-        <span class="grid size-10 place-items-center rounded-full bg-brand-100 font-bold text-brand-700">N</span></div>
-    </div>
-    <div th:replace="~{fragments/alerts :: flash}"></div>
-    <th:block th:insert="${content}"></th:block>
+        <svg th:replace="~{fragments/ui :: icon('shield','size-5')}"></svg><span class="nav-label">Quản trị</span></a>
+    </nav>
   </div>
-</main>
+  <div class="nav-tools" th:with="uname=${preview == true ? 'Nguyễn Thị Lan' : (#authentication != null ? #authentication.name : 'Nhân viên')}">
+    <div class="nav-user" th:title="${uname}">
+      <span class="nav-avatar" th:text="${#strings.toUpperCase(#strings.substring(uname, 0, 1))}">N</span>
+      <span class="nav-user-name truncate" th:text="${uname}">Nhân viên</span>
+    </div>
+    <button type="button" class="nav-link nav-collapse" data-act="toggleCollapse" title="Thu gọn / mở rộng menu">
+      <svg th:replace="~{fragments/ui :: icon('chevron-left','size-5 collapse-icon')}"></svg><span class="nav-label">Thu gọn menu</span></button>
+    <button type="button" class="nav-link" data-act="openSettings" title="Cài đặt giao diện">
+      <svg th:replace="~{fragments/ui :: icon('sliders','size-5')}"></svg><span class="nav-label">Cài đặt</span></button>
+    <form th:action="@{${nav == 'admin' ? '/admin/logout' : '/staff/logout'}}" method="post">
+      <button type="submit" class="nav-link w-full cursor-pointer" title="Đăng xuất">
+        <svg th:replace="~{fragments/ui :: icon('logout','size-5')}"></svg><span class="nav-label">Đăng xuất</span></button>
+    </form>
+  </div>
+</aside>
+<div class="app-backdrop" id="navBackdrop"></div>
+
+<div class="app-main">
+  <div class="app-tabs">
+    <button type="button" id="navToggle" class="app-icon-btn" aria-label="Mở hoặc đóng menu" title="Mở/đóng menu">
+      <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg></button>
+    <div id="tabStrip" class="tab-strip" role="tablist" aria-label="Các tab đang mở"></div>
+    <form id="quickSearch" class="tab-search" data-open="false" th:if="${nav == 'warehouse'}" th:action="@{/staff/warehouse/products}" method="get" role="search">
+      <input class="search-input" type="search" name="q" placeholder="Tìm sản phẩm, SKU..." aria-label="Tìm sản phẩm theo tên hoặc SKU" tabindex="-1" autocomplete="off"/>
+      <button type="button" class="app-icon-btn search-toggle" aria-label="Tìm kiếm" aria-expanded="false" title="Tìm sản phẩm">
+        <svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg></button>
+    </form>
+  </div>
+
+  <div class="app-content">
+    <main id="ownContent" class="min-w-0">
+      <div class="mx-auto max-w-7xl p-6 lg:p-8">
+        <div th:replace="~{fragments/alerts :: flash}"></div>
+        <th:block th:insert="${content}"></th:block>
+      </div>
+    </main>
+    <div id="tabHost" class="tab-host absolute inset-0" hidden="hidden"></div>
+  </div>
+</div>
+</div>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<dialog id="settingsDialog" class="settings" aria-labelledby="settingsTitle">
+  <div class="settings-body">
+    <div class="flex items-start justify-between gap-4">
+      <div><h2 id="settingsTitle" class="text-lg font-bold">Cài đặt giao diện</h2>
+        <p class="hint">Lưu trên trình duyệt này, áp dụng cho mọi phân hệ.</p></div>
+      <button type="button" class="app-icon-btn" data-act="closeSettings" aria-label="Đóng"><svg th:replace="~{fragments/ui :: icon('close','size-5')}"></svg></button>
+    </div>
+    <div>
+      <p class="settings-title mb-2">Bố cục trên máy tính</p>
+      <div class="grid grid-cols-2 gap-3">
+        <button type="button" class="layout-card" data-layout-choice="topmenu" aria-pressed="false">
+          <span class="layout-card-name"><svg th:replace="~{fragments/ui :: icon('topbar','size-5')}"></svg>Top menu</span>
+          <span class="layout-card-desc">Menu ngang phía trên, nhiều chỗ cho nội dung.</span>
+          <span class="layout-preview"><span class="block h-3 bg-brand-300"></span></span></button>
+        <button type="button" class="layout-card" data-layout-choice="sidebar" aria-pressed="false">
+          <span class="layout-card-name"><svg th:replace="~{fragments/ui :: icon('sidebar','size-5')}"></svg>Sidebar</span>
+          <span class="layout-card-desc">Menu dọc bên trái, đóng/mở được.</span>
+          <span class="layout-preview flex"><span class="block w-4 bg-brand-300"></span></span></button>
+      </div>
+      <p class="hint">Trên điện thoại luôn dùng nút ☰ và menu kéo từ cạnh trái; hai lựa chọn trên chỉ có hiệu lực từ màn hình rộng 1024px. Ở chế độ Sidebar, nút "Thu gọn menu" nằm ở cuối menu bên trái.</p>
+    </div>
+    <div class="rounded-xl bg-slate-50 p-3">
+      <p class="settings-title">Hệ thống tab</p>
+      <p class="hint">Mỗi trang mở trong một tab riêng và được giữ nguyên khi bạn chuyển tab (VD đang tick dở ở Nhập kho, sang Chuyển kho rồi quay lại vẫn còn). Nhấn giữ Ctrl khi bấm để mở trang ở cửa sổ trình duyệt mới.</p>
+      <div class="mt-3 flex items-center gap-3">
+        <button type="button" class="btn-secondary btn-sm" data-act="closeAllTabs"><svg th:replace="~{fragments/ui :: icon('close','size-5')}"></svg>Đóng tất cả tab</button>
+        <span class="badge badge-blue"><span id="tabCount">0</span> tab</span>
+      </div>
+    </div>
+  </div>
+</dialog>
+
 <script th:src="@{/js/app.js}" defer="defer"></script>
+<script th:src="@{/js/workspace.js}" defer="defer"></script>
 </body>
 </html>

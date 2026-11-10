@@ -11,7 +11,7 @@
     </div>
   </div>
 
-  <form method="get" th:action="@{/staff/warehouse/products}" class="card mb-5 flex flex-wrap items-end gap-3">
+  <form method="get" th:action="@{/staff/warehouse/products}" class="filter-bar">
     <div class="min-w-56 flex-1"><label class="label" for="q">Tìm theo tên hoặc SKU</label>
       <input class="input-field" id="q" name="q" th:value="${q}" placeholder="VD: MacBook, SWIFTGO14..."/></div>
     <div><label class="label" for="brand">Hãng</label>
@@ -33,7 +33,7 @@
   <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
     <thead><tr><th>Sản phẩm</th><th>SKU</th><th>Cấu hình</th><th class="text-right">Giá bán</th><th class="text-right">Tồn / giữ</th><th>Trạng thái</th><th></th></tr></thead>
     <tbody><tr th:each="r : ${page.content}">
-      <td><a class="font-semibold hover:text-brand-600" th:href="@{/staff/warehouse/products/{id}(id=${r.productId})}" th:text="${r.productName}">Tên</a>
+      <td><a class="font-semibold text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title=${r.productName}" th:href="@{/staff/warehouse/products/{id}(id=${r.productId})}" th:text="${r.productName}">Tên</a>
         <span class="block text-xs text-slate-400" th:text="${r.brandName}">Hãng</span></td>
       <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
       <td><span th:text="${r.variantName}">Cấu hình</span>
@@ -50,8 +50,8 @@
       </td>
       <td class="whitespace-nowrap text-right">
         <a class="btn-ghost btn-sm" th:href="@{/staff/warehouse/stock(q=${r.sku})}">Tồn</a>
-        <a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/products/{id}/edit(id=${r.variantId})}"
+        <a class="btn-secondary btn-sm" data-newtab="true" th:attr="data-title='Sửa '+${r.sku}" th:href="@{/staff/warehouse/products/{id}/edit(id=${r.variantId})}"
            th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}">Sửa</a>
       </td></tr></tbody></table></div>
-  <nav th:replace="~{fragments/ui :: pager(${page}, @{/staff/warehouse/products(q=${q ?: ''},brand=${selectedBrand ?: ''},status=${selectedStatus ?: ''})} + '&amp;')}"></nav>
+  <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/staff/warehouse/products(q=${q ?: ''},brand=${selectedBrand ?: ''},status=${selectedStatus ?: ''})} + '&amp;')}"></div>
 </section></body></html>

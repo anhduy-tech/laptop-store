@@ -23,4 +23,5 @@
           <a class="btn-secondary btn-sm" th:href="@{/admin/users/{id}(id=${u.id})}">Sửa</a>
         </div>
       </td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${usersPage}, @{/admin/users} + '?')}"></div>
 </section></body></html>

@@ -5,6 +5,17 @@
   // 1) Sidebar: link sang portal khác (khác cổng) -> ghép host hiện tại + data-port
   document.querySelectorAll('a[data-port]').forEach((a) => {
     a.href = location.protocol + '//' + location.hostname + ':' + a.dataset.port + a.getAttribute('data-path');
+    if (window.self !== window.top) a.target = '_top'; // đang trong tab (iframe): sang phân hệ khác thì đổi cả cửa sổ
+  });
+
+  // 1b) Liên kết có data-newtab: trong khung tab thì mở ở một tab mới của workspace (Ctrl-click vẫn mở cửa sổ mới)
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest && e.target.closest('a[data-newtab]');
+    if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+    if (window.parent !== window && window.parent.Workspace) {
+      e.preventDefault();
+      window.parent.Workspace.open(a.href, { title: a.dataset.title || a.textContent.trim() });
+    }
   });
 
   // 2) SH-02: đổi variant -> cập nhật giá
