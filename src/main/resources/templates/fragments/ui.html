@@ -24,6 +24,13 @@
   <path th:case="'list'" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
   <path th:case="'grid'" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"/>
   <path th:case="'shield'" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+  <path th:case="'close'" d="M6 18L18 6M6 6l12 12"/>
+  <path th:case="'sliders'" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+  <path th:case="'sidebar'" d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm5 0v14"/>
+  <path th:case="'topbar'" d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM3 10h18"/>
+  <path th:case="'chevron-left'" d="M15 19l-7-7 7-7"/>
+  <path th:case="'chevron-right'" d="M9 5l7 7-7 7"/>
+  <path th:case="'inbox'" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
   <path th:case="'back'" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
 </svg>
 
@@ -33,7 +40,7 @@
 
 <!-- Badge trạng thái -->
 <span th:fragment="badge(s)" class="badge"
-      th:classappend="${s == 'COMPLETED' or s == 'APPROVED' or s == 'ACTIVE' or s == 'OPEN' or s == 'CONFIRMED' or s == 'PAID' or s == 'IN_STOCK'} ? 'badge-green'
+      th:classappend="${s == 'COMPLETED' or s == 'APPROVED' or s == 'ACTIVE' or s == 'OPEN' or s == 'CONFIRMED' or s == 'PAID' or s == 'IN_STOCK' or s == 'RECEIVED'} ? 'badge-green'
                       : (${s == 'CANCELLED' or s == 'REJECTED' or s == 'CLOSED' or s == 'INACTIVE' or s == 'DEFECTIVE'} ? 'badge-red'
                       : (${s == 'PENDING' or s == 'NEW' or s == 'DRAFT' or s == 'WAITING' or s == 'IN_TRANSIT' or s == 'WARRANTY'} ? 'badge-amber'
                       : (${s == 'HUMAN' or s == 'AI'} ? 'badge-blue' : '')))"
@@ -53,6 +60,31 @@
   <input class="input-field" th:classappend="${error} ? 'input-error'" th:id="${name}"
          th:attr="name=${name},type=${type}" th:value="${value}" th:required="${required}"/>
   <p th:if="${error}" class="field-error" th:text="${error}">Lỗi</p>
+</div>
+
+
+<!-- Chân bảng: "Hiển thị a–b trên N" + phân trang có cửa sổ trang. Dùng:
+     <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/duong-dan(q=${q})} + '&')}"></div>
+     base kết thúc bằng ? hoặc &; tablefootp cho phép đổi tên tham số trang (trang có hai bảng). -->
+<div th:fragment="tablefoot(page, base)" th:replace="~{fragments/ui :: tablefootp(${page}, ${base}, 'page')}"></div>
+<div th:fragment="tablefootp(page, base, param)" th:if="${page != null and page.totalElements > 0}" class="table-foot">
+  <p class="table-foot-info">Hiển thị
+    <b th:text="${page.number * page.size + 1}">1</b>–<b th:text="${page.number * page.size + page.numberOfElements}">12</b>
+    trên <b th:text="${page.totalElements}">100</b></p>
+  <nav th:if="${page.totalPages > 1}" class="pager" aria-label="Phân trang">
+    <a th:if="${page.number > 0}" th:href="${base + param + '=' + (page.number - 1)}" class="pager-btn" aria-label="Trang trước">‹</a>
+    <span th:unless="${page.number > 0}" class="pager-btn pager-off" aria-hidden="true">‹</span>
+    <a th:if="${page.number > 2}" th:href="${base + param + '=0'}" class="pager-btn">1</a>
+    <span th:if="${page.number > 3}" class="pager-dots">…</span>
+    <th:block th:each="i : ${#numbers.sequence(page.number > 2 ? page.number - 2 : 0, page.number + 2 < page.totalPages - 1 ? page.number + 2 : page.totalPages - 1)}">
+      <span th:if="${i == page.number}" class="pager-btn pager-on" aria-current="page" th:text="${i + 1}">1</span>
+      <a th:unless="${i == page.number}" th:href="${base + param + '=' + i}" class="pager-btn" th:text="${i + 1}">2</a>
+    </th:block>
+    <span th:if="${page.number < page.totalPages - 4}" class="pager-dots">…</span>
+    <a th:if="${page.number < page.totalPages - 3}" th:href="${base + param + '=' + (page.totalPages - 1)}" class="pager-btn" th:text="${page.totalPages}">9</a>
+    <a th:if="${page.number < page.totalPages - 1}" th:href="${base + param + '=' + (page.number + 1)}" class="pager-btn" aria-label="Trang sau">›</a>
+    <span th:unless="${page.number < page.totalPages - 1}" class="pager-btn pager-off" aria-hidden="true">›</span>
+  </nav>
 </div>
 
 <!-- Phân trang Page<?>: pager(page, base) — base kết thúc bằng ? hoặc & -->

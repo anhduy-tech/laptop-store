@@ -1,0 +1,27 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="${view.kindLabel} + ': ' + ${view.label} + ' – Lapstore'">Thuộc tính – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div><p class="hint uppercase tracking-wider" th:text="${view.kindLabel}">CPU</p>
+      <h1 class="page-title" th:text="${view.label}">Giá trị</h1>
+      <p class="page-sub"><b th:text="${view.productCount}">0</b> sản phẩm · <b th:text="${view.variantCount}">0</b> biến thể đang dùng giá trị này.
+        Xóa hoặc đổi tên giá trị chỉ nên làm sau khi xem danh sách này.</p></div>
+    <a th:href="@{/staff/warehouse/attributes(kind=${view.kind})}" class="btn-ghost btn-sm">← Thuộc tính</a>
+  </div>
+
+  <th:block th:if="${rowsPage.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có sản phẩm nào dùng giá trị này, có thể xóa nếu không cần')}"></div></th:block>
+  <div th:unless="${rowsPage.content.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Sản phẩm</th><th>SKU</th><th>Cấu hình</th><th class="text-right">Giá bán</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody><tr th:each="r : ${rowsPage.content}">
+      <td><a class="font-semibold text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title=${r.productName}"
+             th:href="@{/staff/warehouse/products/{id}(id=${r.productId})}" th:text="${r.productName}">Tên</a>
+        <span class="block text-xs text-slate-400" th:text="${r.brandName}">Hãng</span></td>
+      <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
+      <td class="text-sm"><span th:text="${r.cpu}">CPU</span> · <span th:text="${r.gpu != null} ? ${r.gpu} : 'Không có GPU'">GPU</span>
+        <span class="block text-xs text-slate-400"><span th:text="${r.ramGb} + ' GB RAM'">16 GB</span> · <span th:text="${r.storageGb} + ' GB'">512 GB</span> · <span th:text="${r.colorName}">Màu</span></span></td>
+      <td class="text-right"><span th:replace="~{fragments/ui :: money(${r.price})}"></span></td>
+      <td><span th:replace="~{fragments/ui :: badge(${r.status})}"></span></td>
+      <td class="text-right"><a class="btn-ghost btn-sm" data-newtab="true" th:attr="data-title='Sửa ' + ${r.sku}"
+             th:href="@{/staff/warehouse/products/{id}/edit(id=${r.variantId})}">Sửa</a></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${rowsPage}, @{/staff/warehouse/attributes/{id}/usage(id=${view.optionId})} + '?')}"></div>
+</section></body></html>

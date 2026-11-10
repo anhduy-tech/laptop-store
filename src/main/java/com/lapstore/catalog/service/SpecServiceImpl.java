@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +27,8 @@ import com.lapstore.catalog.dto.SpecChoices;
 import com.lapstore.catalog.dto.SpecChoices.Choice;
 import com.lapstore.catalog.dto.SpecKind;
 import com.lapstore.catalog.dto.SpecOptionRow;
+import com.lapstore.catalog.dto.SpecUsageRow;
+import com.lapstore.catalog.dto.SpecUsageView;
 import com.lapstore.catalog.repo.AttributeDefinitionRepository;
 import com.lapstore.catalog.repo.AttributeOptionRepository;
 import com.lapstore.common.exception.BusinessException;
@@ -141,6 +145,41 @@ class SpecServiceImpl implements SpecService {
     // ------------------------------------------------------------ sửa
 
     @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('PORTAL_WAREHOUSE')")
+    public SpecUsageView usage(long optionId, Pageable pageable) {
+        AttributeOption o = opts.findDetail(optionId).orElseThrow(() -> new NotFoundException("Không tìm thấy giá trị."));
+        SpecKind kind = kindOf(o);
+        String f = kind.field();
+        // các giá trị thô trong biến thể trùng với giá trị này theo khóa chuẩn hóa (VD khác hoa/thường)
+        List<Object> raws = new ArrayList<>();
+        if (kind.numeric()) {
+            raws.add(Integer.valueOf(o.getValue().trim()));
+        } else {
+            String key = keyOf(kind, o.getValue());
+            for (String raw : em.createQuery("select distinct v." + f + " from ProductVariant v where v." + f
+                    + " is not null", String.class).getResultList())
+                if (keyOf(kind, raw).equals(key))
+                    raws.add(raw);
+        }
+        if (raws.isEmpty())
+            return new SpecUsageView(kind.name(), kind.label(), o.getId(), display(kind, o), 0, 0,
+                    new PageImpl<>(List.of(), pageable, 0));
+        String from = " from ProductVariant v join v.product p join p.brand b join v.color c "
+                + "where p.deletedAt is null and v." + f + " in :vals";
+        List<SpecUsageRow> rows = em.createQuery("select new com.lapstore.catalog.dto.SpecUsageRow(p.id, p.name, "
+                + "b.name, v.id, v.sku, c.name, v.cpu, v.gpu, v.ramGb, v.storageGb, v.currentPrice, v.status)" + from
+                + " order by p.name, v.sku", SpecUsageRow.class).setParameter("vals", raws)
+                .setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize()).getResultList();
+        long variants = em.createQuery("select count(v)" + from, Long.class).setParameter("vals", raws)
+                .getSingleResult();
+        long products = em.createQuery("select count(distinct p.id)" + from, Long.class).setParameter("vals", raws)
+                .getSingleResult();
+        return new SpecUsageView(kind.name(), kind.label(), o.getId(), display(kind, o), variants, products,
+                new PageImpl<>(rows, pageable, variants));
+    }
+
+    @Override
     @Transactional
     @PreAuthorize("hasAuthority('PRODUCT_MANAGE')")
     public void add(SpecKind kind, String raw) {
@@ -183,7 +222,7 @@ class SpecServiceImpl implements SpecService {
             em.flush();
         } catch (PersistenceException e) {
             throw new BusinessException("Đổi tên làm hai biến thể của cùng một sản phẩm trùng nhau "
-                    + "(cùng màu, CPU, RAM, ổ cứng). Hãy xử lý biến thể trước.");
+                    + "(cùng màu, CPU, GPU, RAM, ổ cứng). Hãy xử lý biến thể trước.");
         }
     }
 

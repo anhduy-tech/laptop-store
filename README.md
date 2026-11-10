@@ -362,7 +362,14 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [x] WH-06 Tồn kho theo chi nhánh (`/staff/warehouse/stock`) và danh sách serial từng cấu hình *(chưa chạy thử)*
 - [x] WH-07 Thuộc tính (`/staff/warehouse/attributes`): quản lý CPU/GPU/RAM/ổ cứng trên bảng `attribute_definition` + `attribute_option` có sẵn (không thêm bảng, không migration): xem số sản phẩm/biến thể đang dùng, thêm (chống trùng), sửa tên CPU/GPU (cập nhật luôn sản phẩm đang dùng), xóa khi không còn sản phẩm nào dùng *(chưa chạy thử)*
 - [x] WH-05b Chi tiết sản phẩm (`/staff/warehouse/products/{productId}`): thông tin chung, mọi biến thể kèm tồn kho; form sửa chọn CPU/GPU/RAM/ổ cứng từ danh sách *(chưa chạy thử)*
-- [ ] Upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel
+- [x] Giao diện nhân viên: bố cục động (Sidebar ↔ Top menu, thu gọn/mở sidebar, menu kéo trên điện thoại), nút ⚙ Cài đặt, ô "Tìm nhanh" thành tìm sản phẩm thật (chỉ phân hệ kho) *(chưa chạy thử trên trình duyệt)*
+- [x] Hệ thống tab (iframe): mỗi trang một tab, giữ nguyên trạng thái khi chuyển tab (đang tick dở ở Nhập kho, sang Chuyển kho rồi quay lại vẫn còn), cảnh báo khi đóng tab có dữ liệu chưa lưu, "Đóng tất cả tab", tối đa 10 tab *(chưa chạy thử trên trình duyệt)*
+- [x] Bảng đẹp hơn và phân trang 12 dòng (serial 15 dòng) cho mọi danh sách; tìm kiếm trong Thuộc tính; form nhập chia section
+- [x] Migration V4: cho phép hai biến thể chỉ khác GPU (đổi ràng buộc unique, không thêm bảng/cột)
+- [x] Xem danh sách sản phẩm/biến thể đang dùng một giá trị thuộc tính (`/staff/warehouse/attributes/{id}/usage`, bấm vào số ở màn Thuộc tính) *(chưa chạy thử)*
+- [x] Nhận hàng chuyển kho: danh sách phiếu (`/staff/warehouse/transfers/list`, mặc định "đang vận chuyển") và chi tiết phiếu kèm nút "Đã nhận đủ hàng" (`/staff/warehouse/transfers/{code}`) *(chưa chạy thử)*
+- [x] Tab chi tiết/sửa sản phẩm ghi rõ tên sản phẩm/SKU; điều hướng sang trang đã có tab khác thì gộp tab; nút thu gọn nằm trong sidebar; thanh tìm kiếm là kính lúp bấm mới mở; top menu căn lề theo nội dung, bỏ thanh cuộn ngang
+- [ ] Danh sách phiếu nhập kho, ràng buộc chỉ chi nhánh đích mới được nhận hàng, upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel
 - [ ] Đưa WH-05 và AU-02 vào `/shop/_ui` và tài liệu thiết kế UI (hiện thiết kế gốc chỉ có 26 màn, thiếu hai màn này)
 
 - [ ] Gỡ stub trong `ServiceStubConfig` khi service tương ứng đã cài xong

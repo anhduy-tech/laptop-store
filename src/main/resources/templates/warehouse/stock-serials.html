@@ -1,5 +1,5 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
-<head><title>Serial tồn kho – Lapstore</title></head>
+<head><title th:text="'Serial: ' + ${view.sku} + ' – Lapstore'">Serial tồn kho – Lapstore</title></head>
 <body><section>
   <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <div><h1 class="page-title" th:text="${view.productName}">Sản phẩm</h1>
@@ -19,10 +19,11 @@
   <div th:unless="${view.serials.isEmpty()}" class="table-wrap"><table class="tbl">
     <thead><tr><th>Serial</th><th>Trạng thái</th><th>Nhập lúc</th>
       <th class="text-right" th:if="${#authorization.expression('hasAuthority(''COST_VIEW'')')}">Giá vốn</th></tr></thead>
-    <tbody><tr th:each="s : ${view.serials}">
+    <tbody><tr th:each="s : ${serialPage.content}">
       <td class="font-mono text-xs" th:text="${s.serialNumber}">SN</td>
       <td><span th:replace="~{fragments/ui :: badge(${s.status})}"></span></td>
       <td th:text="${s.receivedAt}">01/01/2026</td>
       <td class="text-right" th:if="${#authorization.expression('hasAuthority(''COST_VIEW'')')}"><span th:replace="~{fragments/ui :: money(${s.costPrice})}"></span></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${serialPage}, @{/staff/warehouse/stock/{v}/{b}(v=${view.variantId},b=${view.branchId},status=${selectedStatus ?: ''})} + '&amp;')}"></div>
   <p th:if="${view.truncated}" class="hint mt-3">Chỉ hiển thị 500 máy mới nhất; lọc theo trạng thái để thu hẹp.</p>
 </section></body></html>

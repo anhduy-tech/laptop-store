@@ -24,7 +24,9 @@ public class SecurityConfig {
                                                 .failureUrl("/admin/login?error")
                                                 .defaultSuccessUrl("/admin", true))
                                 .logout(l -> l.logoutUrl("/admin/logout")
-                                                .logoutSuccessUrl("/admin/login?logout"));
+                                                .logoutSuccessUrl("/admin/login?logout"))
+                                // trang chạy trong tab (iframe) của workspace cần cùng origin
+                                .headers(h -> h.frameOptions(fo -> fo.sameOrigin()));
                 return http.build();
         }
 
@@ -45,7 +47,8 @@ public class SecurityConfig {
                                                                 Portal.byPort(req.getLocalPort()).map(Portal::prefix)
                                                                                 .orElse("/shop"))))
                                 .logout(l -> l.logoutUrl("/staff/logout")
-                                                .logoutSuccessUrl("/staff/login?logout"));
+                                                .logoutSuccessUrl("/staff/login?logout"))
+                                .headers(h -> h.frameOptions(fo -> fo.sameOrigin()));
                 return http.build();
         }
 

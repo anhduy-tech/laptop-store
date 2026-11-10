@@ -1,0 +1,40 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Phiếu chuyển kho – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Phiếu chuyển kho</h1>
+      <p class="page-sub">Phiếu <b>đang vận chuyển</b> chờ chi nhánh đích xác nhận nhận hàng; mở phiếu để nhận.
+        <span th:text="${page.totalElements}">0</span> phiếu.</p></div>
+    <a th:href="@{/staff/warehouse/transfers}" class="btn-primary btn-sm">+ Tạo phiếu chuyển</a>
+  </div>
+
+  <form method="get" th:action="@{/staff/warehouse/transfers/list}" class="filter-bar">
+    <div><label class="label" for="status">Trạng thái</label>
+      <select class="input-field" id="status" name="status" onchange="this.form.submit()">
+        <option value="IN_TRANSIT" th:selected="${status == 'IN_TRANSIT'}">Đang vận chuyển</option>
+        <option value="RECEIVED" th:selected="${status == 'RECEIVED'}">Đã nhận</option>
+        <option value="" th:selected="${status == ''}">Tất cả</option>
+      </select></div>
+    <noscript><button class="btn-primary" type="submit">Lọc</button></noscript>
+  </form>
+
+  <th:block th:if="${page.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có phiếu chuyển nào')}"></div></th:block>
+  <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Mã phiếu</th><th>Tuyến chuyển</th><th class="text-right">Số máy</th><th>Trạng thái</th><th>Xuất kho</th><th>Nhận hàng</th><th></th></tr></thead>
+    <tbody><tr th:each="t : ${page.content}">
+      <td class="font-mono text-xs font-semibold">
+        <a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Phiếu ' + ${t.code}"
+           th:href="@{/staff/warehouse/transfers/{c}(c=${t.code})}" th:text="${t.code}">CK</a></td>
+      <td><span th:text="${t.fromBranch}">CN A</span> <span class="text-slate-400">→</span> <span class="font-medium" th:text="${t.toBranch}">CN B</span></td>
+      <td class="text-right tabular-nums font-semibold" th:text="${t.itemCount}">0</td>
+      <td><span th:replace="~{fragments/ui :: badge(${t.status})}"></span></td>
+      <td><span th:text="${t.shippedAt}">01/01/2026</span><span class="block text-xs text-slate-400" th:text="${t.shippedBy}">user</span></td>
+      <td><span th:if="${t.receivedAt != ''}" th:text="${t.receivedAt}">01/01/2026</span>
+        <span th:if="${t.receivedAt != ''}" class="block text-xs text-slate-400" th:text="${t.receivedBy}">user</span>
+        <span th:if="${t.receivedAt == ''}" class="text-slate-400">—</span></td>
+      <td class="whitespace-nowrap text-right">
+        <a class="btn-sm" th:classappend="${t.inTransit()} ? 'btn-primary' : 'btn-secondary'" data-newtab="true"
+           th:attr="data-title='Phiếu ' + ${t.code}" th:href="@{/staff/warehouse/transfers/{c}(c=${t.code})}"
+           th:text="${t.inTransit()} ? 'Nhận hàng' : 'Chi tiết'">Chi tiết</a></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/staff/warehouse/transfers/list(status=${status})} + '&amp;')}"></div>
+</section></body></html>

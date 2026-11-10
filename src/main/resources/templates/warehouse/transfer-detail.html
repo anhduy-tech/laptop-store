@@ -1,0 +1,40 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="'Phiếu ' + ${view.header.code} + ' – Lapstore'">Phiếu chuyển – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div><h1 class="page-title"><span class="font-mono" th:text="${view.header.code}">CK</span></h1>
+      <p class="page-sub"><span th:text="${view.header.fromBranch}">CN A</span> <span class="text-slate-400">→</span>
+        <b th:text="${view.header.toBranch}">CN B</b> · <span th:text="${view.header.itemCount}">0</span> máy
+        <span class="ml-2" th:replace="~{fragments/ui :: badge(${view.header.status})}"></span></p></div>
+    <a th:href="@{/staff/warehouse/transfers/list}" class="btn-ghost btn-sm">← Danh sách phiếu</a>
+  </div>
+
+  <div class="mb-5 grid gap-4 sm:grid-cols-2">
+    <div class="card"><p class="hint">Xuất kho</p><p class="font-semibold" th:text="${view.header.shippedAt}">01/01/2026</p>
+      <p class="hint" th:text="'bởi ' + ${view.header.shippedBy}">bởi user</p></div>
+    <div class="card"><p class="hint">Nhận hàng</p>
+      <p th:if="${view.header.receivedAt != ''}" class="font-semibold" th:text="${view.header.receivedAt}">01/01/2026</p>
+      <p th:if="${view.header.receivedAt != ''}" class="hint" th:text="'bởi ' + ${view.header.receivedBy}">bởi user</p>
+      <p th:if="${view.header.receivedAt == ''}" class="font-semibold text-amber-600">Chưa nhận</p></div>
+  </div>
+  <p th:if="${view.note != null}" class="card mb-5 text-sm text-slate-600" th:text="${view.note}">Ghi chú</p>
+
+  <form th:if="${view.header.inTransit() and (preview == true or #authorization.expression('hasAuthority(''STOCK_TRANSFER'')'))}"
+        th:action="@{/staff/warehouse/transfers/{c}/receive(c=${view.header.code})}" method="post"
+        class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-200 bg-brand-50/60 p-5"
+        onsubmit="return confirm('Xác nhận đã nhận đủ máy của phiếu này?');">
+    <div><p class="font-semibold text-slate-900">Xác nhận nhận hàng tại <span th:text="${view.header.toBranch}">CN B</span></p>
+      <p class="hint">Kiểm đủ <b th:text="${view.header.itemCount}">0</b> máy dưới đây rồi xác nhận: máy chuyển sang "Còn hàng" tại chi nhánh đích và tồn kho được cộng.</p></div>
+    <button class="btn-primary" type="submit">Đã nhận đủ hàng</button>
+  </form>
+
+  <h2 class="mb-3 font-semibold">Danh sách máy</h2>
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>Serial</th><th>Sản phẩm</th><th>SKU</th><th>Trạng thái máy</th></tr></thead>
+    <tbody><tr th:each="i : ${itemPage.content}">
+      <td class="font-mono text-xs font-semibold" th:text="${i.serialNumber}">SN</td>
+      <td><span th:text="${i.productName}">Sản phẩm</span><span class="block text-xs text-slate-400" th:text="${i.variantName}">Cấu hình</span></td>
+      <td class="font-mono text-xs" th:text="${i.sku}">SKU</td>
+      <td><span th:replace="~{fragments/ui :: badge(${i.serialStatus})}"></span></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${itemPage}, @{/staff/warehouse/transfers/{c}(c=${view.header.code})} + '?')}"></div>
+</section></body></html>

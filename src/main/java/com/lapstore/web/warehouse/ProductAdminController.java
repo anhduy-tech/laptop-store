@@ -18,6 +18,7 @@ import com.lapstore.catalog.service.ProductAdminService;
 import com.lapstore.catalog.service.SpecService;
 import com.lapstore.common.exception.BusinessException;
 import com.lapstore.common.web.FormErrors;
+import com.lapstore.common.web.Pages;
 import com.lapstore.common.web.Text;
 
 import jakarta.validation.Valid;
@@ -26,7 +27,7 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/staff/warehouse/products")
 class ProductAdminController {
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = Pages.SIZE;
 
     private final ProductAdminService products;
     private final SpecService specs;
@@ -83,7 +84,7 @@ class ProductAdminController {
             return backToForm(form, null, e.getMessage(), path, ra);
         }
         ra.addFlashAttribute("success", "Đã cập nhật sản phẩm.");
-        return "redirect:/staff/warehouse/products";
+        return "redirect:/staff/warehouse/products/" + products.get(variantId).productId();
     }
 
     private static String backToForm(ProductEditForm form, java.util.Map<String, String> errors, String error,

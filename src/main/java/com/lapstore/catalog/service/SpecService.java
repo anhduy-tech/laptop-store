@@ -2,9 +2,12 @@ package com.lapstore.catalog.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
+
 import com.lapstore.catalog.dto.SpecChoices;
 import com.lapstore.catalog.dto.SpecKind;
 import com.lapstore.catalog.dto.SpecOptionRow;
+import com.lapstore.catalog.dto.SpecUsageView;
 
 /**
  * Quản lý giá trị CPU / GPU / RAM / ổ cứng trên bảng attribute_definition + attribute_option có sẵn (không thêm bảng).
@@ -19,6 +22,9 @@ public interface SpecService {
 
     /** Giá trị đang dùng được, để đổ vào ô chọn. */
     SpecChoices choices();
+
+    /** Các biến thể/sản phẩm đang dùng một giá trị (phân trang). @throws NotFoundException nếu không có giá trị */
+    SpecUsageView usage(long optionId, Pageable pageable);
 
     /** Trùng (khóa chuẩn hóa) -> BusinessException nêu giá trị đã có. */
     void add(SpecKind kind, String raw);

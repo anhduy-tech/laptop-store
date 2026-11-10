@@ -132,10 +132,8 @@ class VariantProvisioningServiceImpl implements VariantProvisioningService {
         try {
             variants.saveAndFlush(v);
         } catch (DataIntegrityViolationException e) {
-            throw new BusinessException(same.isEmpty()
-                    ? "Cấu hình " + describe(p, color, cpu, gpu, ram, storage) + " vừa được tạo ở nơi khác. Thử lại."
-                    : "Đã có biến thể cùng màu, CPU, RAM, ổ cứng nhưng khác GPU. Ràng buộc DB hiện chưa cho hai biến thể "
-                            + "chỉ khác GPU (xem docs/optional-gpu-in-variant-unique.sql).");
+            throw new BusinessException("Cấu hình " + describe(p, color, cpu, gpu, ram, storage)
+                    + " vừa được tạo ở nơi khác. Thử lại.");
         }
 
         PriceHistory ph = new PriceHistory();

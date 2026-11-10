@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -16,6 +17,8 @@ import com.lapstore.common.web.Text;
 import com.lapstore.staff.dto.AppUserView;
 import com.lapstore.staff.dto.UserCommand;
 import com.lapstore.staff.service.StaffService;
+
+import com.lapstore.common.web.Pages;
 
 import jakarta.validation.Valid;
 
@@ -33,8 +36,10 @@ class AdminUserController {
     }
 
     @GetMapping
-    String list(Model model) {
-        model.addAttribute("users", staff.users());
+    String list(@RequestParam(defaultValue = "0") int page, Model model) {
+        var p = Pages.of(staff.users(), page);
+        model.addAttribute("users", p.getContent());
+        model.addAttribute("usersPage", p);
         return "admin/users";
     }
 
