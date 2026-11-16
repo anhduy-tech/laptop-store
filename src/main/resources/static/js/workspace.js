@@ -381,7 +381,7 @@
         e.preventDefault();
         var q = sInput.value.trim();
         if (!q) { setSearch(false); return; }
-        openTabUrl(search.getAttribute('action') + '?q=' + encodeURIComponent(q), { title: 'Sản phẩm', navigate: true });
+        openTabUrl(search.getAttribute('action') + '?q=' + encodeURIComponent(q), { title: 'Tìm: ' + q, navigate: true });
         setDrawer(false);
       });
     }

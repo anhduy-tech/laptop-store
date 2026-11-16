@@ -17,6 +17,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 5MB      # file Excel serial (nhập kho, chuyển kho, kiểm kê)
+      max-request-size: 5MB
   web:
     error:
       whitelabel:

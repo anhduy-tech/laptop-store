@@ -28,7 +28,8 @@ public class StockSearchRepository {
     public Page<StockRowData> search(String q, Long branchId, boolean lowOnly, Pageable pageable) {
         StringBuilder where = new StringBuilder(" where p.deletedAt is null");
         if (q != null)
-            where.append(" and (lower(p.name) like :pattern or lower(v.sku) like :pattern)");
+            where.append(" and (lower(p.name) like :pattern or lower(v.sku) like :pattern or exists (select 1 from SerialItem sx "
+                    + "where sx.variant.id = v.id and sx.branch.id = br.id and lower(sx.serialNumber) like :pattern))");
         if (branchId != null)
             where.append(" and br.id = :branchId");
         if (lowOnly)

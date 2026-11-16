@@ -4,7 +4,9 @@
   <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <div><h1 class="page-title">Nhập kho</h1>
       <p class="page-sub">Chọn hoặc tạo sản phẩm, tick thuộc tính (màu, CPU, GPU, RAM, ổ cứng) để sinh các biến thể, rồi nhập giá và serial cho từng biến thể.</p></div>
-    <a th:href="@{/staff/warehouse/stock}" class="btn-ghost btn-sm">Xem tồn kho →</a>
+    <div class="flex gap-2">
+      <a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/excel/serial-template.xlsx}">Tải file Excel mẫu</a>
+      <a th:href="@{/staff/warehouse/stock}" class="btn-ghost btn-sm">Xem tồn kho →</a></div>
   </div>
 
   <div id="clientError" class="alert alert-error mb-4" role="alert" hidden="hidden"></div>
@@ -148,7 +150,8 @@
       <td><input class="input-field w-36" type="number" min="0" step="any" inputmode="numeric" data-f="unitCost" placeholder="Giá vốn"/></td>
       <td><input class="input-field w-36" type="number" min="0" step="any" inputmode="numeric" data-f="sellPrice" placeholder="Giá bán"/></td>
       <td><textarea class="input-field w-56 font-mono text-xs" rows="3" data-f="serials" placeholder="SN001&#10;SN002"></textarea>
-        <span class="hint" data-role="count"></span></td>
+        <span class="hint" data-role="count"></span>
+        <button type="button" class="btn-ghost btn-sm mt-1 block" data-excel-target="closest" title="Đọc serial từ file Excel (cột Serial hoặc cột A)">Nhập từ Excel</button></td>
     </tr>
   </template>
 

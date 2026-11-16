@@ -5,7 +5,9 @@
     <div><h1 class="page-title" th:text="${view.productName}">Sản phẩm</h1>
       <p class="page-sub"><span class="font-mono" th:text="${view.sku}">SKU</span> · <span th:text="${view.variantName}">Cấu hình</span>
         · tại <b th:text="${view.branchName}">Chi nhánh</b></p></div>
-    <a th:href="@{/staff/warehouse/stock(q=${view.sku})}" class="btn-ghost btn-sm">← Tồn kho</a>
+    <div class="flex gap-2">
+      <a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/stock/{v}/{b}/serials.xlsx(v=${view.variantId},b=${view.branchId},status=${selectedStatus})}">Xuất Excel</a>
+      <a th:href="@{/staff/warehouse/stock(q=${view.sku})}" class="btn-ghost btn-sm">← Tồn kho</a></div>
   </div>
 
   <div class="mb-5 flex flex-wrap gap-2">
@@ -20,7 +22,8 @@
     <thead><tr><th>Serial</th><th>Trạng thái</th><th>Nhập lúc</th>
       <th class="text-right" th:if="${#authorization.expression('hasAuthority(''COST_VIEW'')')}">Giá vốn</th></tr></thead>
     <tbody><tr th:each="s : ${serialPage.content}">
-      <td class="font-mono text-xs" th:text="${s.serialNumber}">SN</td>
+      <td class="font-mono text-xs"><a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Serial: ' + ${s.serialNumber}"
+           th:href="@{/staff/warehouse/serials/view(sn=${s.serialNumber})}" th:text="${s.serialNumber}">SN</a></td>
       <td><span th:replace="~{fragments/ui :: badge(${s.status})}"></span></td>
       <td th:text="${s.receivedAt}">01/01/2026</td>
       <td class="text-right" th:if="${#authorization.expression('hasAuthority(''COST_VIEW'')')}"><span th:replace="~{fragments/ui :: money(${s.costPrice})}"></span></td></tr></tbody></table></div>

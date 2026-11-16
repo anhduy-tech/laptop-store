@@ -66,6 +66,13 @@ class StockQueryServiceImpl implements StockQueryService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('PORTAL_WAREHOUSE')")
     public StockSerialsView serials(long variantId, long branchId, String status) {
+        return serials(variantId, branchId, status, MAX_SERIALS);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('PORTAL_WAREHOUSE')")
+    public StockSerialsView serials(long variantId, long branchId, String status, int limit) {
         ProductVariant v = em.find(ProductVariant.class, variantId);
         Branch b = em.find(Branch.class, branchId);
         if (v == null || b == null)
@@ -82,9 +89,9 @@ class StockQueryServiceImpl implements StockQueryService {
         var q = em.createQuery(jpql, SerialItem.class).setParameter("v", variantId).setParameter("b", branchId);
         if (status != null)
             q.setParameter("st", status);
-        List<SerialItem> found = q.setMaxResults(MAX_SERIALS + 1).getResultList();
-        boolean truncated = found.size() > MAX_SERIALS;
-        List<StockSerialRow> rows = found.stream().limit(MAX_SERIALS)
+        List<SerialItem> found = q.setMaxResults(limit + 1).getResultList();
+        boolean truncated = found.size() > limit;
+        List<StockSerialRow> rows = found.stream().limit(limit)
                 .map(s -> new StockSerialRow(s.getSerialNumber(), s.getStatus(), s.getCostPrice(),
                         s.getCreatedAt() == null ? "" : DMY.format(s.getCreatedAt())))
                 .toList();

@@ -32,7 +32,8 @@
   <div class="table-wrap"><table class="tbl">
     <thead><tr><th>Serial</th><th>Sản phẩm</th><th>SKU</th><th>Trạng thái máy</th></tr></thead>
     <tbody><tr th:each="i : ${itemPage.content}">
-      <td class="font-mono text-xs font-semibold" th:text="${i.serialNumber}">SN</td>
+      <td class="font-mono text-xs font-semibold"><a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Serial: ' + ${i.serialNumber}"
+           th:href="@{/staff/warehouse/serials/view(sn=${i.serialNumber})}" th:text="${i.serialNumber}">SN</a></td>
       <td><span th:text="${i.productName}">Sản phẩm</span><span class="block text-xs text-slate-400" th:text="${i.variantName}">Cấu hình</span></td>
       <td class="font-mono text-xs" th:text="${i.sku}">SKU</td>
       <td><span th:replace="~{fragments/ui :: badge(${i.serialStatus})}"></span></td></tr></tbody></table></div>
