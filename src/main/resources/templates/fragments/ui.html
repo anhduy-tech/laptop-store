@@ -63,27 +63,51 @@
 </div>
 
 
-<!-- Chân bảng: "Hiển thị a–b trên N" + phân trang có cửa sổ trang. Dùng:
-     <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/duong-dan(q=${q})} + '&')}"></div>
-     base kết thúc bằng ? hoặc &; tablefootp cho phép đổi tên tham số trang (trang có hai bảng). -->
-<div th:fragment="tablefoot(page, base)" th:replace="~{fragments/ui :: tablefootp(${page}, ${base}, 'page')}"></div>
-<div th:fragment="tablefootp(page, base, param)" th:if="${page != null and page.totalElements > 0}" class="table-foot">
+<!-- Chân bảng: "Hiển thị a–b trên N" + phân trang có cửa sổ trang (‹ 1 … 4 5 6 … 20 ›).
+     Dùng:  <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/duong-dan(q=${q})} + '&amp;')}"></div>
+     `base` phải kết thúc bằng ? hoặc & và đã có ít nhất một tham số. Trang có hai bảng dùng tablefootp(page, base, tenThamSo).
+     Hai fragment được viết độc lập (không gọi nhau) và không dùng tên tham số `param` vì trùng biến có sẵn của Thymeleaf. -->
+<div th:fragment="tablefoot(page, base)" th:if="${page != null and page.totalElements gt 0}" class="table-foot"
+     th:with="cur=${page.number}, last=${page.totalPages - 1}">
   <p class="table-foot-info">Hiển thị
-    <b th:text="${page.number * page.size + 1}">1</b>–<b th:text="${page.number * page.size + page.numberOfElements}">12</b>
+    <b th:text="${cur * page.size + 1}">1</b>–<b th:text="${cur * page.size + page.numberOfElements}">12</b>
     trên <b th:text="${page.totalElements}">100</b></p>
-  <nav th:if="${page.totalPages > 1}" class="pager" aria-label="Phân trang">
-    <a th:if="${page.number > 0}" th:href="${base + param + '=' + (page.number - 1)}" class="pager-btn" aria-label="Trang trước">‹</a>
-    <span th:unless="${page.number > 0}" class="pager-btn pager-off" aria-hidden="true">‹</span>
-    <a th:if="${page.number > 2}" th:href="${base + param + '=0'}" class="pager-btn">1</a>
-    <span th:if="${page.number > 3}" class="pager-dots">…</span>
-    <th:block th:each="i : ${#numbers.sequence(page.number > 2 ? page.number - 2 : 0, page.number + 2 < page.totalPages - 1 ? page.number + 2 : page.totalPages - 1)}">
-      <span th:if="${i == page.number}" class="pager-btn pager-on" aria-current="page" th:text="${i + 1}">1</span>
-      <a th:unless="${i == page.number}" th:href="${base + param + '=' + i}" class="pager-btn" th:text="${i + 1}">2</a>
+  <nav th:if="${last gt 0}" class="pager" aria-label="Phân trang"
+       th:with="lo=${cur gt 2 ? cur - 2 : 0}, hi=${cur + 2 gt last ? last : cur + 2}">
+    <a th:if="${cur gt 0}" th:href="${base + 'page' + '=' + (cur - 1)}" class="pager-btn" aria-label="Trang trước">‹</a>
+    <span th:unless="${cur gt 0}" class="pager-btn pager-off" aria-hidden="true">‹</span>
+    <a th:if="${lo gt 0}" th:href="${base + 'page' + '=0'}" class="pager-btn">1</a>
+    <span th:if="${lo gt 1}" class="pager-dots">…</span>
+    <th:block th:each="i : ${#numbers.sequence(lo, hi)}">
+      <span th:if="${i == cur}" class="pager-btn pager-on" aria-current="page" th:text="${i + 1}">1</span>
+      <a th:unless="${i == cur}" th:href="${base + 'page' + '=' + i}" class="pager-btn" th:text="${i + 1}">2</a>
     </th:block>
-    <span th:if="${page.number < page.totalPages - 4}" class="pager-dots">…</span>
-    <a th:if="${page.number < page.totalPages - 3}" th:href="${base + param + '=' + (page.totalPages - 1)}" class="pager-btn" th:text="${page.totalPages}">9</a>
-    <a th:if="${page.number < page.totalPages - 1}" th:href="${base + param + '=' + (page.number + 1)}" class="pager-btn" aria-label="Trang sau">›</a>
-    <span th:unless="${page.number < page.totalPages - 1}" class="pager-btn pager-off" aria-hidden="true">›</span>
+    <span th:if="${last - hi gt 1}" class="pager-dots">…</span>
+    <a th:if="${last gt hi}" th:href="${base + 'page' + '=' + last}" class="pager-btn" th:text="${last + 1}">9</a>
+    <a th:if="${cur lt last}" th:href="${base + 'page' + '=' + (cur + 1)}" class="pager-btn" aria-label="Trang sau">›</a>
+    <span th:unless="${cur lt last}" class="pager-btn pager-off" aria-hidden="true">›</span>
+  </nav>
+</div>
+
+<div th:fragment="tablefootp(page, base, pname)" th:if="${page != null and page.totalElements gt 0}" class="table-foot"
+     th:with="cur=${page.number}, last=${page.totalPages - 1}">
+  <p class="table-foot-info">Hiển thị
+    <b th:text="${cur * page.size + 1}">1</b>–<b th:text="${cur * page.size + page.numberOfElements}">12</b>
+    trên <b th:text="${page.totalElements}">100</b></p>
+  <nav th:if="${last gt 0}" class="pager" aria-label="Phân trang"
+       th:with="lo=${cur gt 2 ? cur - 2 : 0}, hi=${cur + 2 gt last ? last : cur + 2}">
+    <a th:if="${cur gt 0}" th:href="${base + pname + '=' + (cur - 1)}" class="pager-btn" aria-label="Trang trước">‹</a>
+    <span th:unless="${cur gt 0}" class="pager-btn pager-off" aria-hidden="true">‹</span>
+    <a th:if="${lo gt 0}" th:href="${base + pname + '=0'}" class="pager-btn">1</a>
+    <span th:if="${lo gt 1}" class="pager-dots">…</span>
+    <th:block th:each="i : ${#numbers.sequence(lo, hi)}">
+      <span th:if="${i == cur}" class="pager-btn pager-on" aria-current="page" th:text="${i + 1}">1</span>
+      <a th:unless="${i == cur}" th:href="${base + pname + '=' + i}" class="pager-btn" th:text="${i + 1}">2</a>
+    </th:block>
+    <span th:if="${last - hi gt 1}" class="pager-dots">…</span>
+    <a th:if="${last gt hi}" th:href="${base + pname + '=' + last}" class="pager-btn" th:text="${last + 1}">9</a>
+    <a th:if="${cur lt last}" th:href="${base + pname + '=' + (cur + 1)}" class="pager-btn" aria-label="Trang sau">›</a>
+    <span th:unless="${cur lt last}" class="pager-btn pager-off" aria-hidden="true">›</span>
   </nav>
 </div>
 

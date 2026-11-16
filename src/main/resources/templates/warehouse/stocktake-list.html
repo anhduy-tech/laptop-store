@@ -1,0 +1,42 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Kiểm kê kho – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Kiểm kê kho</h1>
+      <p class="page-sub">Đối chiếu máy thực tế với hệ thống theo từng chi nhánh. <span th:text="${page.totalElements}">0</span> phiên.</p></div>
+    <a th:href="@{/staff/warehouse/stocktakes/new}" class="btn-primary btn-sm"
+       th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_STOCKTAKE'')')}">+ Phiên kiểm kê mới</a>
+  </div>
+
+  <form method="get" th:action="@{/staff/warehouse/stocktakes}" class="filter-bar">
+    <div><label class="label" for="status">Trạng thái</label>
+      <select class="input-field" id="status" name="status" onchange="this.form.submit()">
+        <option value="" th:selected="${status == ''}">Tất cả</option>
+        <option value="OPEN" th:selected="${status == 'OPEN'}">Đang kiểm</option>
+        <option value="CLOSED" th:selected="${status == 'CLOSED'}">Đã đóng</option>
+        <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Đã hủy</option>
+      </select></div>
+    <noscript><button class="btn-primary" type="submit">Lọc</button></noscript>
+  </form>
+
+  <th:block th:if="${page.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có phiên kiểm kê nào')}"></div></th:block>
+  <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Mã phiên</th><th>Chi nhánh</th><th>Trạng thái</th><th>Tiến độ</th><th class="text-right">Thiếu</th><th class="text-right">Dư</th><th>Bắt đầu</th><th></th></tr></thead>
+    <tbody><tr th:each="t : ${page.content}">
+      <td class="font-mono text-xs font-semibold">
+        <a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Kiểm kê ' + ${t.code}"
+           th:href="@{/staff/warehouse/stocktakes/{c}(c=${t.code})}" th:text="${t.code}">KK</a>
+        <span class="block font-sans text-[11px] font-normal text-slate-400" th:text="${t.scope}">Phạm vi</span></td>
+      <td th:text="${t.branchName}">CN</td>
+      <td><span class="badge" th:classappend="${t.open()} ? 'badge-amber' : (${t.closed()} ? 'badge-green' : 'badge-gray')" th:text="${t.statusLabel()}">Đang kiểm</span></td>
+      <td class="min-w-40">
+        <div class="h-2 overflow-hidden rounded-full bg-slate-100">
+          <div class="h-full rounded-full bg-brand-500" th:style="'width:' + (${t.expected} > 0 ? ${t.scanned} * 100 / ${t.expected} : 0) + '%'"></div></div>
+        <span class="mt-1 block text-xs text-slate-500"><b th:text="${t.scanned}">0</b> / <span th:text="${t.expected}">0</span> máy</span></td>
+      <td class="text-right tabular-nums" th:classappend="${t.missing > 0} ? 'font-semibold text-red-600'" th:text="${t.missing}">0</td>
+      <td class="text-right tabular-nums" th:classappend="${t.unexpected > 0} ? 'font-semibold text-amber-600'" th:text="${t.unexpected}">0</td>
+      <td><span th:text="${t.startedAt}">01/01/2026</span><span class="block text-xs text-slate-400" th:text="${t.startedBy}">user</span></td>
+      <td class="whitespace-nowrap text-right"><a class="btn-sm" th:classappend="${t.open()} ? 'btn-primary' : 'btn-secondary'" data-newtab="true"
+           th:attr="data-title='Kiểm kê ' + ${t.code}" th:href="@{/staff/warehouse/stocktakes/{c}(c=${t.code})}" th:text="${t.open()} ? 'Tiếp tục' : 'Xem'">Xem</a></td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/staff/warehouse/stocktakes(status=${status})} + '&amp;')}"></div>
+</section></body></html>

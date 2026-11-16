@@ -1,0 +1,42 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="'Tìm: ' + ${q} + ' – Lapstore'">Tìm kiếm – Lapstore</title></head>
+<body><section>
+  <div class="mb-6">
+    <h1 class="page-title">Kết quả tìm kiếm</h1>
+    <p class="page-sub">Cho "<span class="font-mono text-slate-800" th:text="${q}">q</span>" · sản phẩm (tên, SKU) và serial. Gõ đúng nguyên một serial sẽ vào thẳng hồ sơ máy.</p>
+  </div>
+
+  <div class="mb-8">
+    <div class="mb-3 flex items-end justify-between gap-3">
+      <h2 class="font-semibold">Sản phẩm <span class="badge badge-blue ml-1" th:text="${productPage.totalElements}">0</span></h2>
+      <a th:if="${productPage.totalElements > productPage.numberOfElements}" class="text-sm text-brand-700 underline"
+         th:href="@{/staff/warehouse/products(q=${q})}" th:text="'Xem tất cả ' + ${productPage.totalElements} + ' kết quả →'">Xem tất cả →</a></div>
+    <th:block th:if="${productPage.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có sản phẩm nào khớp')}"></div></th:block>
+    <div th:unless="${productPage.content.isEmpty()}" class="table-wrap"><table class="tbl">
+      <thead><tr><th>Sản phẩm</th><th>SKU</th><th>Cấu hình</th><th class="text-right">Giá bán</th><th class="text-right">Tồn / giữ</th></tr></thead>
+      <tbody><tr th:each="r : ${productPage.content}">
+        <td><a class="font-semibold text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title=${r.productName}"
+               th:href="@{/staff/warehouse/products/{id}(id=${r.productId})}" th:text="${r.productName}">Tên</a>
+          <span class="block text-xs text-slate-400" th:text="${r.brandName}">Hãng</span></td>
+        <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
+        <td><span th:text="${r.variantName}">Cấu hình</span><span class="block text-xs text-slate-400" th:text="${r.colorName}">Màu</span></td>
+        <td class="text-right"><span th:replace="~{fragments/ui :: money(${r.price})}"></span></td>
+        <td class="text-right tabular-nums"><b th:text="${r.onHand}">0</b> <span class="text-slate-400">/ <span th:text="${r.held}">0</span></span></td></tr></tbody></table></div>
+  </div>
+
+  <div>
+    <div class="mb-3 flex items-end justify-between gap-3">
+      <h2 class="font-semibold">Serial <span class="badge badge-blue ml-1" th:text="${serialPage.totalElements}">0</span></h2>
+      <a th:if="${serialPage.totalElements > serialPage.numberOfElements}" class="text-sm text-brand-700 underline"
+         th:href="@{/staff/warehouse/serials(q=${q})}" th:text="'Xem tất cả ' + ${serialPage.totalElements} + ' kết quả →'">Xem tất cả →</a></div>
+    <th:block th:if="${serialPage.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có serial nào khớp')}"></div></th:block>
+    <div th:unless="${serialPage.content.isEmpty()}" class="table-wrap"><table class="tbl">
+      <thead><tr><th>Serial</th><th>Sản phẩm</th><th>Chi nhánh</th><th>Trạng thái</th></tr></thead>
+      <tbody><tr th:each="r : ${serialPage.content}">
+        <td class="font-mono text-xs font-semibold"><a class="text-slate-900 hover:text-brand-600" data-newtab="true"
+            th:attr="data-title='Serial: ' + ${r.serialNumber}" th:href="@{/staff/warehouse/serials/view(sn=${r.serialNumber})}" th:text="${r.serialNumber}">SN</a></td>
+        <td><span th:text="${r.productName}">Sản phẩm</span><span class="block font-mono text-[11px] text-slate-400" th:text="${r.sku}">SKU</span></td>
+        <td th:text="${r.branchName}">CN</td>
+        <td><span th:replace="~{fragments/ui :: badge(${r.status})}"></span></td></tr></tbody></table></div>
+  </div>
+</section></body></html>

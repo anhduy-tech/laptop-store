@@ -119,6 +119,7 @@
   .badge-amber { @apply bg-amber-50 text-amber-700; }
   .badge-red   { @apply bg-red-50 text-red-700; }
   .badge-blue  { @apply bg-brand-50 text-brand-700; }
+  .badge-gray  { @apply bg-slate-100 text-slate-600; }
 
   /* ---------- Flash ---------- */
   .alert         { @apply mb-5 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm; }
