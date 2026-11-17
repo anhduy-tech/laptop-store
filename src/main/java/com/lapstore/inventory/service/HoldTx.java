@@ -182,6 +182,28 @@ public class HoldTx {
                 .orElse(false);
     }
 
+    /**
+     * Dọn một hold quá hạn (BR-04, BR-11): ACTIVE -> EXPIRED và trả held_qty. Gọi từ HoldExpiryJob;
+     * hold SERIAL được gọi khi đang giữ KeyedLock của serial. Kiểm lại trạng thái vì giữa lúc job
+     * liệt kê và lúc lấy khóa, hold có thể đã được gia hạn / nhả / chuyển thành đơn.
+     *
+     * @return true nếu hold đã được dọn
+     */
+    @Transactional
+    public boolean expire(long holdId) {
+        Instant now = Instant.now();
+        StockHold h = holds.findById(holdId).orElse(null);
+        if (h == null || !ACTIVE.equals(h.getStatus()) || h.getExpiresAt().isAfter(now))
+            return false;
+        h.setStatus(EXPIRED);
+        h.setReleasedAt(now);
+        Long variantId = h.getVariant().getId();
+        Long branchId = h.getBranch().getId();
+        adjust(variantId, branchId, -h.getQuantity(), now);
+        events.publishEvent(new StockChanged(variantId, branchId));
+        return true;
+    }
+
     /** @return true nếu held_qty đã đổi được (1 dòng bị ảnh hưởng). */
     private boolean adjust(Long variantId, Long branchId, int delta, Instant now) {
         return balances.addHeld(variantId, branchId, delta, now) == 1;

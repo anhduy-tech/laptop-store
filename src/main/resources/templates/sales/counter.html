@@ -1,31 +1,207 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
 <head><title>Bán quầy – Lapstore</title></head>
-<body><section>
-<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Bán quầy</h1><p class="page-sub">Mở đơn, quét serial, thu tiền.</p></div><form th:action="@{/staff/sales/counter/open}" method="post"><button class="btn-primary" type="submit">Mở đơn mới</button></form></div>
-  <div class="grid gap-6 lg:grid-cols-3">
-    <div class="card space-y-4 lg:col-span-2">
-      <div class="flex items-center justify-between"><h2 class="font-semibold">Đơn đang mở</h2>
-        <span th:if="${order != null}" class="badge badge-blue" th:text="${order.code}">CT-001</span></div>
-      <form th:action="@{/staff/sales/counter/hold}" method="post" class="flex gap-2">
-        <input class="input-field font-mono" name="serial" placeholder="Quét / nhập serial..." autofocus="autofocus" th:disabled="${order == null}"/>
-        <button class="btn-primary" type="submit" th:disabled="${order == null}">Giữ</button>
-      </form>
-      <th:block th:if="${order == null}"><div th:replace="~{fragments/ui :: empty('Chưa có đơn — bấm “Mở đơn mới”')}"></div></th:block>
-      <th:block th:if="${order != null and order.lines.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa quét máy nào')}"></div></th:block>
-      <ul th:if="${order != null and !order.lines.isEmpty()}" class="divide-y divide-slate-100">
-        <li th:each="l : ${order.lines}" class="flex items-center justify-between gap-3 py-3 text-sm">
-          <span><span class="font-mono font-semibold" th:text="${l.serial}">SN001</span> · <span th:text="${l.variantName}">Variant</span></span>
-          <span class="font-semibold"><span th:replace="~{fragments/ui :: money(${l.price})}"></span></span>
-        </li>
-      </ul>
-    </div>
-    <form th:action="@{/staff/sales/counter/complete}" method="post" class="card h-fit space-y-4">
-      <h2 class="font-semibold">Khách &amp; thanh toán</h2>
-      <div><label class="label" for="customerName">Tên khách</label><input class="input-field" id="customerName" name="customerName" th:disabled="${order == null}"/></div>
-      <div><label class="label" for="phone">SĐT</label><input class="input-field" id="phone" name="phone" type="tel" th:disabled="${order == null}"/></div>
-      <div class="flex items-center justify-between border-t border-slate-200 pt-4"><span class="text-sm text-slate-600">Tổng</span>
-        <span class="text-2xl font-extrabold text-brand-700"><span th:replace="~{fragments/ui :: money(${order != null ? order.total : 0})}"></span></span></div>
-      <button class="btn-primary btn-lg w-full" type="submit" th:disabled="${order == null or order.lines.isEmpty()}">Thu tiền &amp; hoàn tất</button>
-    </form>
+<body><section class="pos" th:attr="data-order=${order != null ? order.id : ''}, data-api=@{/staff/sales/counter/api}">
+<link rel="stylesheet" th:href="@{/css/pos.css}"/>
+
+  <div class="pos-top">
+    <div><h1 class="page-title">Bán hàng tại quầy</h1><p class="page-sub">Quét serial hoặc chọn sản phẩm, gắn khách, áp giảm giá rồi thu tiền.</p></div>
   </div>
+
+  <!-- Thanh tab các đơn đang mở -->
+  <div class="pos-tabs">
+    <a th:each="o : ${orders}" th:href="@{/staff/sales/counter(order=${o.id})}" class="pos-tab"
+       th:classappend="${order != null and order.id == o.id} ? 'is-active'">
+      <span class="pos-tab-code" th:text="${o.code}">CT-001</span>
+      <span class="pos-tab-meta" th:text="${o.lineCount} + ' máy' + (${o.customerName != null} ? ' · ' + ${o.customerName} : '')">0 máy</span>
+    </a>
+    <form th:action="@{/staff/sales/counter/open}" method="post" class="pos-tab-add" th:if="${orders.size() lt maxOpen}">
+      <button class="btn-primary btn-sm" type="submit">+ Đơn mới</button>
+    </form>
+    <span class="pos-tabs-note" th:if="${orders.size() ge maxOpen}" th:text="'Tối đa ' + ${maxOpen} + ' đơn mở'">Tối đa 5 đơn mở</span>
+  </div>
+
+  <th:block th:if="${order == null}">
+    <div class="card pos-empty">
+      <div th:replace="~{fragments/ui :: empty('Chưa có đơn nào đang mở')}"></div>
+      <form th:action="@{/staff/sales/counter/open}" method="post" class="mt-4 text-center"><button class="btn-primary btn-lg" type="submit">Mở đơn mới</button></form>
+    </div>
+  </th:block>
+
+  <div class="pos-grid" th:if="${order != null}">
+    <!-- ===== Cột trái: giỏ hàng ===== -->
+    <div class="pos-main">
+      <div class="card pos-card">
+        <div class="pos-card-head">
+          <h2 class="pos-h">Giỏ hàng <span class="badge badge-blue" th:text="${order.code}">CT-001</span></h2>
+          <div class="pos-actions">
+            <button type="button" class="btn-secondary btn-sm" id="openProducts">Chọn sản phẩm</button>
+            <form th:action="@{/staff/sales/counter/{id}/renew(id=${order.id})}" method="post" th:if="${!order.lines.isEmpty()}">
+              <button type="submit" class="btn-ghost btn-sm" title="Gia hạn thời gian giữ máy">Gia hạn giữ</button>
+            </form>
+            <form th:action="@{/staff/sales/counter/{id}/cancel(id=${order.id})}" method="post"
+                  onsubmit="return confirm('Đóng đơn này? Các máy đang giữ sẽ được nhả.');">
+              <button type="submit" class="btn-ghost btn-sm pos-danger">Đóng đơn</button>
+            </form>
+          </div>
+        </div>
+
+        <form th:action="@{/staff/sales/counter/{id}/hold(id=${order.id})}" method="post" class="pos-scan">
+          <input class="input-field font-mono" name="serial" placeholder="Quét hoặc nhập serial rồi Enter…" autofocus="autofocus" autocomplete="off"/>
+          <button class="btn-primary" type="submit">Thêm</button>
+        </form>
+
+        <th:block th:if="${order.lines.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có máy nào — quét serial hoặc bấm “Chọn sản phẩm”')}"></div></th:block>
+
+        <div class="table-wrap" th:unless="${order.lines.isEmpty()}">
+          <table class="tbl">
+            <thead><tr><th>Sản phẩm</th><th class="text-right">Đơn giá</th><th class="text-right">Giảm</th><th class="text-right">Thành tiền</th><th class="text-center">Giữ còn</th><th></th></tr></thead>
+            <tbody>
+              <tr th:each="l : ${order.lines}">
+                <td><div class="pos-pname" th:text="${l.variantName}">Variant</div><span class="font-mono pos-sn" th:text="${l.serial}">SN001</span></td>
+                <td class="text-right"><span th:replace="~{fragments/ui :: money(${l.listPrice})}"></span></td>
+                <td class="text-right pos-disc"><span th:if="${l.discount > 0}">−<span th:replace="~{fragments/ui :: money(${l.discount})}"></span></span><span th:unless="${l.discount > 0}" class="pos-muted">—</span></td>
+                <td class="text-right font-semibold"><span th:replace="~{fragments/ui :: money(${l.price})}"></span></td>
+                <td class="text-center"><span class="pos-left" th:attr="data-left=${l.secondsLeft}" th:text="${l.secondsLeft / 60} + ':' + ${l.secondsLeft % 60 lt 10 ? '0' : ''} + ${l.secondsLeft % 60}">0:00</span></td>
+                <td class="text-right">
+                  <form th:action="@{/staff/sales/counter/{id}/release(id=${order.id})}" method="post">
+                    <input type="hidden" name="serial" th:value="${l.serial}"/>
+                    <button type="submit" class="btn-ghost btn-sm pos-danger" title="Bỏ máy khỏi đơn">Xóa</button>
+                  </form>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Cột phải: khách, voucher, thanh toán ===== -->
+    <div class="pos-side">
+      <!-- Khách hàng -->
+      <div class="card pos-card">
+        <h2 class="pos-h">Khách hàng</h2>
+        <div th:if="${order.customer != null}" class="pos-cust">
+          <div><div class="font-semibold" th:text="${order.customer.name}">Nguyễn Văn A</div>
+               <div class="pos-muted" th:text="${order.customer.phone}">0900000000</div></div>
+          <form th:action="@{/staff/sales/counter/{id}/customer(id=${order.id})}" method="post"><button class="btn-ghost btn-sm" type="submit">Bỏ chọn</button></form>
+        </div>
+        <th:block th:unless="${order.customer != null}">
+          <p class="pos-muted pos-walkin">Khách lẻ (chưa chọn khách)</p>
+          <div class="pos-combo">
+            <input class="input-field" id="custQ" placeholder="Tìm theo tên hoặc SĐT…" autocomplete="off"/>
+            <ul class="pos-combo-list" id="custList" hidden="hidden"></ul>
+          </div>
+          <form th:action="@{/staff/sales/counter/{id}/customer(id=${order.id})}" method="post" id="custPick"><input type="hidden" name="customerId" id="custId"/></form>
+          <details class="pos-quick">
+            <summary>+ Thêm nhanh khách mới</summary>
+            <form th:action="@{/staff/sales/counter/{id}/customer/quick(id=${order.id})}" method="post" class="pos-quick-form">
+              <input class="input-field" name="name" placeholder="Tên khách" maxlength="120"/>
+              <input class="input-field" name="phone" type="tel" placeholder="Số điện thoại" required="required"/>
+              <button class="btn-secondary btn-sm" type="submit">Lưu &amp; chọn</button>
+            </form>
+            <p class="pos-muted">SĐT đã có sẽ chọn luôn khách đó.</p>
+          </details>
+        </th:block>
+      </div>
+
+      <!-- Voucher + gợi ý -->
+      <div class="card pos-card" th:if="${!order.lines.isEmpty()}">
+        <h2 class="pos-h">Giảm giá</h2>
+        <ul class="pos-disc-list" th:if="${!order.discounts.isEmpty()}">
+          <li th:each="d : ${order.discounts}">
+            <span><span class="badge" th:classappend="${d.source == 'VOUCHER'} ? 'badge-amber' : 'badge-green'" th:text="${d.source == 'VOUCHER'} ? 'Voucher' : 'Khuyến mãi'">KM</span>
+              <span class="font-medium" th:text="${d.name}">Tên</span><br/><span class="pos-muted" th:text="${d.rule}">Giảm 8%</span></span>
+            <span class="pos-disc font-semibold">−<span th:replace="~{fragments/ui :: money(${d.amount})}"></span></span>
+          </li>
+        </ul>
+        <p class="pos-muted" th:if="${order.discounts.isEmpty()}">Chưa có khuyến mãi nào áp dụng cho đơn này.</p>
+
+        <div class="pos-voucher-applied" th:if="${order.voucher != null}">
+          <span>Đang dùng <b class="font-mono" th:text="${order.voucher.code}">LAP10</b></span>
+          <form th:action="@{/staff/sales/counter/{id}/voucher/remove(id=${order.id})}" method="post"><button class="btn-ghost btn-sm pos-danger" type="submit">Gỡ</button></form>
+        </div>
+
+        <!-- Gợi ý voucher tốt hơn -->
+        <th:block th:if="${suggestions != null and !suggestions.isEmpty()}">
+          <th:block th:with="bestSug=${#lists.isEmpty(suggestions) ? null : suggestions[0]}">
+            <div class="pos-better" th:if="${bestSug != null and bestSug.eligible and !bestSug.applied and bestSug.best and (order.voucher == null or bestSug.discount > order.voucher.discount)}">
+              <span>💡 Dùng <b class="font-mono" th:text="${bestSug.code}">LAP10</b> để tiết kiệm
+                <b><span th:replace="~{fragments/ui :: money(${order.voucher != null ? bestSug.discount - order.voucher.discount : bestSug.discount})}"></span></b><span th:if="${order.voucher != null}"> nữa</span></span>
+              <form th:action="@{/staff/sales/counter/{id}/voucher(id=${order.id})}" method="post"><input type="hidden" name="code" th:value="${bestSug.code}"/><button class="btn-primary btn-sm" type="submit">Áp dụng</button></form>
+            </div>
+          </th:block>
+          <div class="pos-sug-title">Voucher có thể dùng</div>
+          <ul class="pos-sug">
+            <li th:each="s : ${suggestions}" th:classappend="${!s.eligible} ? 'is-off' : (${s.applied} ? 'is-on')">
+              <div>
+                <span class="font-mono font-semibold" th:text="${s.code}">LAP10</span>
+                <span class="badge badge-green" th:if="${s.best and s.eligible}">Tốt nhất</span>
+                <span class="badge badge-blue" th:if="${s.applied}">Đang dùng</span>
+                <div class="pos-muted" th:text="${s.name}">Tên</div>
+                <div class="pos-muted" th:text="${s.eligible} ? ${s.description} : ${s.reason}">Giảm 10%</div>
+              </div>
+              <div class="pos-sug-act">
+                <div class="font-semibold pos-disc" th:if="${s.eligible}">−<span th:replace="~{fragments/ui :: money(${s.discount})}"></span></div>
+                <form th:if="${s.eligible and !s.applied}" th:action="@{/staff/sales/counter/{id}/voucher(id=${order.id})}" method="post">
+                  <input type="hidden" name="code" th:value="${s.code}"/><button class="btn-secondary btn-sm" type="submit">Dùng</button></form>
+              </div>
+            </li>
+          </ul>
+        </th:block>
+        <form th:action="@{/staff/sales/counter/{id}/voucher(id=${order.id})}" method="post" class="pos-voucher-form">
+          <input class="input-field font-mono" name="code" placeholder="Nhập mã voucher khác…" autocomplete="off"/>
+          <button class="btn-secondary" type="submit">Áp dụng</button>
+        </form>
+      </div>
+
+      <!-- Tổng kết -->
+      <div class="card pos-card pos-sum">
+        <div class="pos-row"><span>Tạm tính</span><span th:replace="~{fragments/ui :: money(${order.subtotal})}"></span></div>
+        <div class="pos-row" th:if="${order.campaignDiscount > 0}"><span>Khuyến mãi</span><span class="pos-disc">−<span th:replace="~{fragments/ui :: money(${order.campaignDiscount})}"></span></span></div>
+        <div class="pos-row" th:if="${order.voucherDiscount > 0}"><span>Voucher</span><span class="pos-disc">−<span th:replace="~{fragments/ui :: money(${order.voucherDiscount})}"></span></span></div>
+        <div class="pos-row pos-total"><span>Tổng cộng</span><span th:replace="~{fragments/ui :: money(${order.total})}"></span></div>
+        <a class="btn-primary btn-lg pos-pay" th:classappend="${order.lines.isEmpty()} ? 'is-disabled'" th:attr="aria-disabled=${order.lines.isEmpty()}"
+           th:href="${order.lines.isEmpty()} ? '#' : @{/staff/sales/counter/{id}/confirm(id=${order.id})}">Xem hóa đơn &amp; thanh toán</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Popup chọn sản phẩm ===== -->
+  <dialog id="productDialog" class="pos-dialog" th:if="${order != null}">
+    <div class="pos-dlg-head">
+      <div><h2 class="pos-h pos-h-lg">Chọn sản phẩm</h2><div class="pos-muted">Lọc theo cấu hình, rồi chọn serial cụ thể để thêm vào đơn.</div></div>
+      <button type="button" class="pos-x" id="closeProducts" aria-label="Đóng">✕</button>
+    </div>
+    <div class="pos-filters">
+      <div class="pos-f pos-f-q"><label for="fQ">Tìm kiếm</label><input class="input-field" id="fQ" placeholder="Tên sản phẩm, SKU hoặc serial…" autocomplete="off"/></div>
+      <div class="pos-f"><label for="fBrand">Hãng</label><select class="input-field" id="fBrand"><option value="">Tất cả</option></select></div>
+      <div class="pos-f"><label for="fCpu">CPU</label><select class="input-field" id="fCpu"><option value="">Tất cả</option></select></div>
+      <div class="pos-f"><label for="fRam">RAM</label><select class="input-field" id="fRam"><option value="">Tất cả</option></select></div>
+      <div class="pos-f"><label for="fStorage">Ổ cứng</label><select class="input-field" id="fStorage"><option value="">Tất cả</option></select></div>
+      <div class="pos-f"><label for="fGpu">GPU</label><select class="input-field" id="fGpu"><option value="">Tất cả</option></select></div>
+      <div class="pos-f"><label for="fMin">Giá từ (₫)</label><input class="input-field" id="fMin" type="number" min="0" step="100000" placeholder="0"/></div>
+      <div class="pos-f"><label for="fMax">Giá đến (₫)</label><input class="input-field" id="fMax" type="number" min="0" step="100000" placeholder="Không giới hạn"/></div>
+      <div class="pos-f pos-f-row"><label class="pos-check"><input type="checkbox" id="fAvail" checked="checked"/> Chỉ còn hàng</label>
+        <button type="button" class="btn-ghost btn-sm" id="fClear">Xóa bộ lọc</button></div>
+    </div>
+    <div class="pos-dlg-body">
+      <div class="pos-results">
+        <div class="pos-count" id="resCount">Nhập từ khóa hoặc chọn bộ lọc để tìm.</div>
+        <div class="table-wrap"><table class="tbl">
+          <thead><tr><th>Sản phẩm</th><th>Cấu hình</th><th>Chi nhánh</th><th class="text-right">Giá</th><th class="text-center">Có sẵn</th><th></th></tr></thead>
+          <tbody id="resBody"></tbody></table></div>
+      </div>
+      <div class="pos-serials" id="serialPane" hidden="hidden">
+        <h3 class="font-semibold" id="serialTitle">Chọn serial</h3>
+        <div class="pos-muted" id="serialSub"></div>
+        <div class="pos-serial-tools"><label class="pos-check"><input type="checkbox" id="serialAll"/> Chọn tất cả</label><span class="pos-muted" id="serialCount">0 đã chọn</span></div>
+        <ul class="pos-serial-list" id="serialList"></ul>
+        <form th:action="@{/staff/sales/counter/{id}/hold-many(id=${order.id})}" method="post" id="holdManyForm">
+          <input type="hidden" name="serials" id="holdManySerials"/>
+          <button type="submit" class="btn-primary w-full" id="addSerials" disabled="disabled">Thêm vào đơn</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+  <script th:src="@{/js/pos.js}" defer="defer"></script>
 </section></body></html>

@@ -13,9 +13,7 @@ import com.lapstore.chat.service.ChatService;
 import com.lapstore.common.exception.ServiceNotReadyException;
 import com.lapstore.inventory.service.StockHoldService;
 import com.lapstore.reporting.service.ReportingService;
-import com.lapstore.sales.service.CampaignService;
 import com.lapstore.sales.service.CartService;
-import com.lapstore.sales.service.CounterCheckoutService;
 import com.lapstore.sales.service.OnlineOrderService;
 import com.lapstore.sales.service.OrderQueryService;
 import com.lapstore.sales.service.OrderService;
@@ -73,18 +71,6 @@ class ServiceStubConfig {
     @ConditionalOnMissingBean
     OrderService orderService() {
         return stub(OrderService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    CounterCheckoutService counterCheckoutService() {
-        return stub(CounterCheckoutService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    CampaignService campaignService() {
-        return stub(CampaignService.class);
     }
 
     @Bean

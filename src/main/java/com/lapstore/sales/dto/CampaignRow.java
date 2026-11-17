@@ -1,4 +1,5 @@
 package com.lapstore.sales.dto;
 
-/** period đã định dạng, vd "01/11 – 30/11". */
-public record CampaignRow(String name, String type, String period, String status) {}
+/** value/scope/period đã định dạng, vd "Giảm 8%, tối đa 2.000.000đ", "Hãng ASUS", "01/11 – 30/11". status: trạng thái hiển thị. */
+public record CampaignRow(Long id, String code, String name, String type, String value, String scope, String period,
+                          String status, int priority, boolean stackable, boolean canToggle) {}

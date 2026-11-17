@@ -51,4 +51,13 @@ public interface PriceHistoryRepository extends JpaRepository<PriceHistory, Long
         and ph.price <> v.currentPrice
       """)
   List<PriceHistory> findDueForActivation(@Param("now") Instant now);
+
+  /** Mức giá APPROVED đang hiệu lực tại thời điểm {@code now} (BR-06) — dùng để chốt giá lên đơn. */
+  @Query("""
+      select ph from PriceHistory ph
+      where ph.variant.id = :variantId and ph.status = 'APPROVED'
+        and ph.effectiveFrom <= :now and (ph.effectiveTo is null or ph.effectiveTo > :now)
+      order by ph.effectiveFrom desc
+      """)
+  List<PriceHistory> findEffective(@Param("variantId") Long variantId, @Param("now") Instant now);
 }

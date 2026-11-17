@@ -1,26 +1,96 @@
 <html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
 <head><title>Campaign &amp; voucher – Lapstore</title></head>
 <body><section class="space-y-8">
-<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Campaign &amp; voucher</h1><p class="page-sub">Quản lý chương trình khuyến mãi.</p></div><a th:href="@{/staff/warehouse}" class="btn-ghost btn-sm">← Menu kho</a></div>
+<link rel="stylesheet" th:href="@{/css/pos.css}"/>
+<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Campaign &amp; voucher</h1>
+  <p class="page-sub">Campaign đang chạy được tự áp ở màn bán quầy; voucher được gợi ý theo từng đơn.</p></div>
+  <a th:href="@{/staff/warehouse}" class="btn-ghost btn-sm">← Menu kho</a></div>
+
+  <!-- ===== Campaign ===== -->
   <details class="card">
     <summary class="cursor-pointer font-semibold text-brand-700">+ Tạo campaign</summary>
     <form th:action="@{/staff/warehouse/campaigns}" method="post" class="mt-4 grid gap-4 sm:grid-cols-4">
-      <div class="sm:col-span-2"><label class="label" for="name">Tên *</label><input class="input-field" id="name" name="name" required="required"/></div>
-      <div><label class="label" for="type">Loại</label><select class="input-field" id="type" name="type"><option value="PERCENT">Giảm %</option><option value="AMOUNT">Giảm tiền</option></select></div>
-      <div><label class="label" for="value">Giá trị</label><input class="input-field" id="value" name="value" type="number" min="0"/></div>
-      <div><label class="label" for="startAt">Từ ngày</label><input class="input-field" id="startAt" name="startAt" type="date"/></div>
-      <div><label class="label" for="endAt">Đến ngày</label><input class="input-field" id="endAt" name="endAt" type="date"/></div>
-      <div class="flex items-end"><button class="btn-primary" type="submit">Tạo</button></div>
+      <div class="sm:col-span-2"><label class="label" for="c-name">Tên *</label><input class="input-field" id="c-name" name="name" required="required" maxlength="150"/></div>
+      <div><label class="label" for="c-type">Loại giảm</label><select class="input-field" id="c-type" name="type">
+        <option value="PERCENT">Giảm % trên từng máy</option><option value="AMOUNT">Giảm số tiền cho cả đơn</option><option value="FIXED_PRICE">Đồng giá mỗi máy</option></select></div>
+      <div><label class="label" for="c-value">Giá trị * <span class="pos-muted" id="c-unit">(%)</span></label><input class="input-field" id="c-value" name="value" type="number" min="1" required="required"/></div>
+      <div><label class="label" for="c-max">Giảm tối đa (₫)</label><input class="input-field" id="c-max" name="maxDiscount" type="number" min="0" step="1000" placeholder="Không giới hạn"/></div>
+      <div><label class="label" for="c-min">Đơn tối thiểu (₫)</label><input class="input-field" id="c-min" name="minOrder" type="number" min="0" step="1000" placeholder="0"/></div>
+      <div><label class="label" for="c-scope">Áp dụng cho</label><select class="input-field" id="c-scope" name="scopeType">
+        <option value="ALL">Tất cả sản phẩm</option><option value="BRAND">Một hãng</option><option value="CATEGORY">Một danh mục</option></select></div>
+      <div><label class="label" for="c-target">Hãng / danh mục</label>
+        <select class="input-field" id="c-target" name="scopeTargetId" disabled="disabled"><option value="">—</option></select>
+        <select hidden="hidden" id="c-brands"><option th:each="b : ${scope.brands}" th:value="${b.id}" th:text="${b.name}">ASUS</option></select>
+        <select hidden="hidden" id="c-cats"><option th:each="b : ${scope.categories}" th:value="${b.id}" th:text="${b.name}">Gaming</option></select></div>
+      <div><label class="label" for="c-start">Từ ngày *</label><input class="input-field" id="c-start" name="startAt" type="date" required="required"/></div>
+      <div><label class="label" for="c-end">Đến ngày *</label><input class="input-field" id="c-end" name="endAt" type="date" required="required"/></div>
+      <div><label class="label" for="c-prio">Ưu tiên</label><input class="input-field" id="c-prio" name="priority" type="number" value="0"/></div>
+      <div class="flex items-end"><label class="pos-check"><input type="checkbox" name="stackable" value="true"/> Cộng dồn với campaign khác</label></div>
+      <div class="sm:col-span-4"><button class="btn-primary" type="submit">Tạo campaign</button>
+        <span class="pos-muted ml-3">Mỗi máy chỉ nhận một campaign không cộng dồn (cái giảm nhiều nhất) + mọi campaign cộng dồn được.</span></div>
     </form>
   </details>
+
   <div><h2 class="mb-3 font-semibold">Campaign</h2>
     <th:block th:if="${campaigns.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có campaign')}"></div></th:block>
-    <div th:unless="${campaigns.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Tên</th><th>Loại</th><th>Hiệu lực</th><th>Trạng thái</th></tr></thead>
-      <tbody><tr th:each="c : ${campaigns}"><td class="font-medium" th:text="${c.name}">KM</td><td th:text="${c.type}">PERCENT</td><td th:text="${c.period}">01/11 – 30/11</td><td><span th:replace="~{fragments/ui :: badge(${c.status})}"></span></td></tr></tbody></table></div>
+    <div th:unless="${campaigns.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Campaign</th><th>Giảm</th><th>Phạm vi</th><th>Hiệu lực</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody><tr th:each="c : ${campaigns}">
+        <td><div class="font-medium" th:text="${c.name}">KM</div><div class="pos-muted"><span class="font-mono" th:text="${c.code}">CP1</span> · <span th:text="${c.type}">Giảm %</span><span th:if="${c.stackable}"> · cộng dồn</span> · ưu tiên <span th:text="${c.priority}">0</span></div></td>
+        <td th:text="${c.value}">8%</td><td th:text="${c.scope}">Tất cả</td><td th:text="${c.period}">01/11 – 30/11</td>
+        <td><span class="badge" th:classappend="${c.status == 'ACTIVE'} ? 'badge-green' : (${c.status == 'SCHEDULED'} ? 'badge-blue' : (${c.status == 'ENDED'} ? 'badge-gray' : 'badge-red'))"
+              th:text="${c.status == 'ACTIVE'} ? 'Đang chạy' : (${c.status == 'SCHEDULED'} ? 'Sắp diễn ra' : (${c.status == 'ENDED'} ? 'Đã kết thúc' : 'Tạm dừng'))">Đang chạy</span></td>
+        <td class="text-right"><form th:if="${c.canToggle}" th:action="@{/staff/warehouse/campaigns/{id}/toggle(id=${c.id})}" method="post">
+          <input type="hidden" name="active" th:value="${c.status == 'CANCELLED'}"/>
+          <button class="btn-ghost btn-sm" type="submit" th:text="${c.status == 'CANCELLED'} ? 'Bật lại' : 'Tạm dừng'">Tạm dừng</button></form></td></tr></tbody></table></div>
       <div th:replace="~{fragments/ui :: tablefootp(${campaignsPage}, @{/staff/warehouse/campaigns(vpage=${vouchersPage != null ? vouchersPage.number : 0})} + '&amp;', 'cpage')}"></div></div>
+
+  <!-- ===== Voucher ===== -->
+  <details class="card">
+    <summary class="cursor-pointer font-semibold text-brand-700">+ Tạo voucher</summary>
+    <form th:action="@{/staff/warehouse/campaigns/vouchers}" method="post" class="mt-4 grid gap-4 sm:grid-cols-4">
+      <div><label class="label" for="v-code">Mã *</label><input class="input-field font-mono uppercase" id="v-code" name="code" required="required" maxlength="30" pattern="[A-Za-z0-9_-]{3,30}" title="3–30 ký tự chữ, số, gạch"/></div>
+      <div class="sm:col-span-3"><label class="label" for="v-name">Tên *</label><input class="input-field" id="v-name" name="name" required="required" maxlength="150"/></div>
+      <div><label class="label" for="v-type">Loại giảm</label><select class="input-field" id="v-type" name="type"><option value="PERCENT">Giảm %</option><option value="AMOUNT">Giảm số tiền</option></select></div>
+      <div><label class="label" for="v-value">Giá trị * <span class="pos-muted" id="v-unit">(%)</span></label><input class="input-field" id="v-value" name="value" type="number" min="1" required="required"/></div>
+      <div><label class="label" for="v-max">Giảm tối đa (₫)</label><input class="input-field" id="v-max" name="maxDiscount" type="number" min="0" step="1000" placeholder="Không giới hạn"/></div>
+      <div><label class="label" for="v-min">Đơn tối thiểu (₫)</label><input class="input-field" id="v-min" name="minOrder" type="number" min="0" step="1000" placeholder="0"/></div>
+      <div><label class="label" for="v-total">Tổng số lượt</label><input class="input-field" id="v-total" name="totalLimit" type="number" min="1" placeholder="Không giới hạn"/></div>
+      <div><label class="label" for="v-per">Lượt / khách</label><input class="input-field" id="v-per" name="perCustomerLimit" type="number" min="1" value="1"/></div>
+      <div><label class="label" for="v-start">Từ ngày *</label><input class="input-field" id="v-start" name="startAt" type="date" required="required"/></div>
+      <div><label class="label" for="v-end">Đến ngày *</label><input class="input-field" id="v-end" name="endAt" type="date" required="required"/></div>
+      <div class="sm:col-span-4 flex flex-wrap items-center gap-4"><label class="pos-check"><input type="checkbox" name="stackableWithCampaign" value="true"/> Dùng chung với campaign đang giảm</label>
+        <button class="btn-primary" type="submit">Tạo voucher</button></div>
+    </form>
+  </details>
+
   <div><h2 class="mb-3 font-semibold">Voucher</h2>
     <th:block th:if="${vouchers.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có voucher')}"></div></th:block>
-    <div th:unless="${vouchers.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Mã</th><th class="text-center">Đã dùng</th><th class="text-center">Đang giữ</th><th class="text-center">Giới hạn</th><th>Trạng thái</th></tr></thead>
-      <tbody><tr th:each="v : ${vouchers}"><td class="font-mono font-semibold" th:text="${v.code}">LAP10</td><td class="text-center" th:text="${v.used}">0</td><td class="text-center" th:text="${v.reserved}">0</td><td class="text-center" th:text="${v.limit}">100</td><td><span th:replace="~{fragments/ui :: badge(${v.status})}"></span></td></tr></tbody></table></div>
+    <div th:unless="${vouchers.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Voucher</th><th>Giảm</th><th>Hiệu lực</th><th class="text-center">Đã dùng</th><th class="text-center">Đang giữ</th><th class="text-center">Giới hạn</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody><tr th:each="v : ${vouchers}">
+        <td><div class="font-mono font-semibold" th:text="${v.code}">LAP10</div><div class="pos-muted"><span th:text="${v.name}">Tên</span><span th:if="${v.stackable}"> · dùng chung KM</span></div></td>
+        <td th:text="${v.value}">10%</td><td th:text="${v.period}">01/11 – 30/11</td>
+        <td class="text-center" th:text="${v.used}">0</td><td class="text-center" th:text="${v.reserved}">0</td><td class="text-center" th:text="${v.limit}">100</td>
+        <td><span class="badge" th:classappend="${v.status == 'ACTIVE'} ? 'badge-green' : (${v.status == 'SCHEDULED'} ? 'badge-blue' : (${v.status == 'ENDED'} ? 'badge-gray' : 'badge-red'))"
+              th:text="${v.status == 'ACTIVE'} ? 'Đang chạy' : (${v.status == 'SCHEDULED'} ? 'Sắp diễn ra' : (${v.status == 'ENDED'} ? 'Đã kết thúc' : 'Tạm dừng'))">Đang chạy</span></td>
+        <td class="text-right"><form th:if="${v.canToggle}" th:action="@{/staff/warehouse/campaigns/vouchers/{id}/toggle(id=${v.id})}" method="post">
+          <input type="hidden" name="active" th:value="${v.status == 'CLOSED'}"/>
+          <button class="btn-ghost btn-sm" type="submit" th:text="${v.status == 'CLOSED'} ? 'Bật lại' : 'Tạm dừng'">Tạm dừng</button></form></td></tr></tbody></table></div>
       <div th:replace="~{fragments/ui :: tablefootp(${vouchersPage}, @{/staff/warehouse/campaigns(cpage=${campaignsPage != null ? campaignsPage.number : 0})} + '&amp;', 'vpage')}"></div></div>
+
+<script>
+(function () {
+  var type = document.getElementById('c-type'), unit = document.getElementById('c-unit');
+  type.addEventListener('change', function () { unit.textContent = type.value === 'PERCENT' ? '(%)' : '(₫)'; });
+  var vt = document.getElementById('v-type'), vu = document.getElementById('v-unit');
+  vt.addEventListener('change', function () { vu.textContent = vt.value === 'PERCENT' ? '(%)' : '(₫)'; });
+  var scope = document.getElementById('c-scope'), target = document.getElementById('c-target');
+  scope.addEventListener('change', function () {
+    target.innerHTML = '';
+    if (scope.value === 'ALL') { target.disabled = true; target.appendChild(new Option('—', '')); return; }
+    var src = document.getElementById(scope.value === 'BRAND' ? 'c-brands' : 'c-cats');
+    Array.prototype.forEach.call(src.options, function (o) { target.appendChild(new Option(o.text, o.value)); });
+    target.disabled = false;
+  });
+})();
+</script>
 </section></body></html>

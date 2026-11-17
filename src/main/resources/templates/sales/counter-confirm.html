@@ -1,0 +1,63 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="'Hóa đơn ' + ${order.code} + ' – Lapstore'">Hóa đơn – Lapstore</title></head>
+<body><section class="pos" th:attr="data-total=${order.total}">
+<link rel="stylesheet" th:href="@{/css/pos.css}"/>
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Xem hóa đơn &amp; thanh toán</h1><p class="page-sub">Kiểm tra lại đơn trước khi thu tiền — sau khi xác nhận không sửa được.</p></div>
+    <a th:href="@{/staff/sales/counter(order=${order.id})}" class="btn-ghost btn-sm">← Quay lại đơn</a>
+  </div>
+
+  <div class="pos-grid pos-grid-confirm">
+    <!-- Hóa đơn xem trước -->
+    <div class="card pos-receipt">
+      <div class="pos-receipt-head">
+        <div><div class="pos-receipt-brand">LAPSTORE</div><div class="pos-muted">Hóa đơn bán lẻ tại quầy (xem trước)</div></div>
+        <div class="text-right"><div class="font-mono font-semibold" th:text="${order.code}">CT-001</div><div class="pos-muted" th:text="${#dates.format(#dates.createNow(), 'dd/MM/yyyy HH:mm')}">01/01/2026</div></div>
+      </div>
+      <div class="pos-receipt-cust">
+        <span class="pos-muted">Khách hàng:</span>
+        <b th:text="${order.customer != null} ? ${order.customer.name} + ' · ' + ${order.customer.phone} : 'Khách lẻ'">Khách lẻ</b>
+      </div>
+      <div class="table-wrap"><table class="tbl">
+        <thead><tr><th>Sản phẩm</th><th>Serial</th><th class="text-right">Đơn giá</th><th class="text-right">Giảm</th><th class="text-right">Thành tiền</th></tr></thead>
+        <tbody><tr th:each="l : ${order.lines}">
+          <td th:text="${l.variantName}">Tên</td><td class="font-mono" th:text="${l.serial}">SN</td>
+          <td class="text-right"><span th:replace="~{fragments/ui :: money(${l.listPrice})}"></span></td>
+          <td class="text-right pos-disc"><span th:if="${l.discount > 0}">−<span th:replace="~{fragments/ui :: money(${l.discount})}"></span></span><span th:unless="${l.discount > 0}" class="pos-muted">—</span></td>
+          <td class="text-right font-semibold"><span th:replace="~{fragments/ui :: money(${l.price})}"></span></td></tr></tbody></table></div>
+      <div class="pos-receipt-sum">
+        <div class="pos-row"><span>Tạm tính</span><span th:replace="~{fragments/ui :: money(${order.subtotal})}"></span></div>
+        <div class="pos-row" th:each="d : ${order.discounts}"><span th:text="${d.source == 'VOUCHER'} ? 'Voucher ' + ${d.name} : 'KM: ' + ${d.name}">KM</span><span class="pos-disc">−<span th:replace="~{fragments/ui :: money(${d.amount})}"></span></span></div>
+        <div class="pos-row pos-total"><span>Khách phải trả</span><span th:replace="~{fragments/ui :: money(${order.total})}"></span></div>
+      </div>
+      <p class="pos-muted pos-receipt-note" th:if="${order.secondsLeft > 0}">Máy được giữ thêm khoảng <b th:text="${order.secondsLeft / 60}">10</b> phút — hãy chốt trước khi hết hạn.</p>
+    </div>
+
+    <!-- Thanh toán -->
+    <form th:action="@{/staff/sales/counter/{id}/complete(id=${order.id})}" method="post" class="card pos-card pos-pay-card" id="payForm">
+      <h2 class="pos-h">Thanh toán</h2>
+      <div class="pos-methods" role="radiogroup">
+        <label class="pos-method"><input type="radio" name="method" value="CASH" checked="checked"/><span>Tiền mặt</span></label>
+        <label class="pos-method"><input type="radio" name="method" value="BANK_TRANSFER"/><span>Chuyển khoản</span></label>
+        <label class="pos-method"><input type="radio" name="method" value="CARD_POS"/><span>Quẹt thẻ</span></label>
+      </div>
+
+      <div id="cashBox">
+        <label class="label" for="tendered">Khách đưa (₫)</label>
+        <input class="input-field pos-big" id="tendered" name="tendered" type="number" min="0" step="1000" inputmode="numeric" autocomplete="off" th:value="${order.total}"/>
+        <div class="pos-quickcash" id="quickCash"></div>
+        <div class="pos-row pos-change"><span id="changeLabel">Tiền thối</span><b id="changeVal">0 ₫</b></div>
+      </div>
+
+      <div id="refBox" hidden="hidden">
+        <label class="label" for="reference">Mã giao dịch (nếu có)</label>
+        <input class="input-field font-mono" id="reference" name="reference" maxlength="60" autocomplete="off"/>
+        <p class="pos-muted">Chỉ xác nhận khi đã nhận đủ tiền / giao dịch thành công.</p>
+      </div>
+
+      <div class="pos-row pos-total"><span>Cần thu</span><span th:replace="~{fragments/ui :: money(${order.total})}"></span></div>
+      <button class="btn-primary btn-lg w-full" type="submit" id="payBtn">Xác nhận đã thu tiền &amp; hoàn tất</button>
+    </form>
+  </div>
+  <script th:src="@{/js/pos.js}" defer="defer"></script>
+</section></body></html>

@@ -1,3 +1,4 @@
 package com.lapstore.sales.dto;
 
-public record VoucherRow(String code, Integer used, Integer reserved, Integer limit, String status) {}
+public record VoucherRow(Long id, String code, String name, String value, String period, Integer used, Integer reserved,
+                         String limit, String status, boolean stackable, boolean canToggle) {}

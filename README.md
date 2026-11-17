@@ -304,13 +304,13 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [x] `KeyedLock` trong `common/lock` (khóa theo `serial:ID`, bọc ngoài transaction)
 - [x] `StockHoldService.hold` / `release` (BR-02, BR-03)
 - [x] Ràng buộc unique "một hold ACTIVE cho một serial" ở mức DB
-- [ ] Job `@Scheduled` hết hạn hold (BR-04, BR-11)
+- [x] Job `@Scheduled` hết hạn hold (BR-04, BR-11): `HoldExpiryJob` + `HoldTx.expire`, chu kỳ `app.hold.expiry-interval-ms` (mặc định 30s) *(chưa chạy thử)*
 - [ ] Test tranh chấp: hai quầy cùng giữ một serial
   *Xong khi: đúng một luồng thành công, luồng còn lại nhận lỗi nghiệp vụ rõ ràng.*
 
 ### Bước 8 · Đơn hàng
 
-- [ ] `CounterCheckoutService`: mở đơn quầy (mỗi nhân viên tối đa 1 đơn đang mở), thu tiền, hold -> `CONVERTED`, serial -> `SOLD`
+- [x] `CounterCheckoutService`: mở đơn quầy (mỗi nhân viên tối đa 5 đơn mở cùng lúc (tab)), thu tiền (tiền mặt có khách đưa/tiền thối, chuyển khoản, quẹt thẻ), chọn khách, voucher + khuyến mãi, popup chọn sản phẩm theo cấu hình, xem trước hóa đơn, hold -> `CONVERTED`, serial -> `SOLD`, chốt giá snapshot từ `price_history` APPROVED đang hiệu lực, bảo hành, trừ `on_hand`/`held_qty`, `order_status_history` *(chưa chạy thử; chưa có BR-10: chấm công/ca)*
 - [ ] `CartService` và giỏ hàng khách (session)
 - [ ] `OnlineOrderService`: checkout không cần đăng nhập, giữ số lượng, snapshot giá từng dòng
 - [ ] `OrderService`: xác nhận · gán serial · hoàn tất · hủy (kèm lý do), ghi `order_status_history`
@@ -321,9 +321,9 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 9 · Khuyến mãi & voucher
 
-- [ ] `CampaignService`: tạo campaign theo phạm vi sản phẩm/hãng, tạo voucher có hạn mức và thời hạn
-- [ ] `PricingEngine`: tính giảm giá (Strategy + chuỗi xử lý)
-- [ ] Giữ lượt voucher nguyên tử: reserve -> commit -> release (BR-07)
+- [x] `CampaignService`: tạo campaign theo phạm vi tất cả/hãng/danh mục, tạo voucher có hạn mức và thời hạn, tạm dừng/bật lại *(chưa chạy thử)*
+- [x] `PricingEngine`: tính giảm giá campaign (%, số tiền, đồng giá, trần, cộng dồn, loại trừ) + voucher + gợi ý voucher tốt nhất; có `PricingEngineTest`
+- [x] Giữ lượt voucher nguyên tử: reserve -> commit -> release (BR-07) — đã nối vào bán quầy *(chưa chạy thử; chưa nối vào đơn online)*
 - [ ] Test tranh chấp: voucher giới hạn 3 lượt, 10 người dùng cùng lúc
   *Xong khi: đúng 3 người thành công.*
 
