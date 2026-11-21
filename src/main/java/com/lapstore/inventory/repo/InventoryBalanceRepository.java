@@ -1,6 +1,7 @@
 package com.lapstore.inventory.repo;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -54,4 +55,9 @@ public interface InventoryBalanceRepository extends JpaRepository<InventoryBalan
             """)
     int addOnHand(@Param("variantId") Long variantId, @Param("branchId") Long branchId,
             @Param("delta") int delta, @Param("now") Instant now);
+
+    @Query("select coalesce(sum(b.onHand - b.heldQty), 0) from InventoryBalance b where b.id.variantId = :variantId")
+    long sumAvailableByVariantId(@Param("variantId") Long variantId);
+
+    List<InventoryBalance> findById_VariantId(Long variantId);
 }
