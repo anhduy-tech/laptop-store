@@ -1,7 +1,9 @@
 package com.lapstore.inventory.repo;
 
+import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.lapstore.inventory.domain.StockHold;
@@ -23,4 +25,7 @@ public interface StockHoldRepository extends JpaRepository<StockHold, Long> {
 
     /** Máy đang có hold ACTIVE (kể cả hold đã quá hạn nhưng job chưa dọn). */
     boolean existsBySerial_IdAndStatus(Long serialId, String status);
+
+    @EntityGraph(attributePaths = { "serial", "variant", "variant.product", "branch", "orderItem" })
+    List<StockHold> findByOrder_IdAndStatusOrderByIdAsc(Long orderId, String status);
 }
