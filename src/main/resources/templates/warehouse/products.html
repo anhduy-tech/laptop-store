@@ -12,8 +12,8 @@
   </div>
 
   <form method="get" th:action="@{/staff/warehouse/products}" class="filter-bar">
-    <div class="min-w-56 flex-1"><label class="label" for="q">Tìm theo tên hoặc SKU</label>
-      <input class="input-field" id="q" name="q" th:value="${q}" placeholder="VD: MacBook, SWIFTGO14..."/></div>
+    <div class="min-w-56 flex-1"><label class="label" for="q">Tìm theo tên, SKU hoặc serial</label>
+      <input class="input-field" id="q" name="q" th:value="${q}" placeholder="VD: MacBook, SWIFTGO14, serial..."/></div>
     <div><label class="label" for="brand">Hãng</label>
       <select class="input-field" id="brand" name="brand">
         <option value="">Tất cả</option>

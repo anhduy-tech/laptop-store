@@ -56,9 +56,15 @@
       <a th:href="@{/staff/warehouse/stock}" class="nav-link" data-tab="true" title="Tồn kho" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/stock')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
         <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg><span class="nav-label">Tồn kho</span></a>
+      <a th:href="@{/staff/warehouse/serials}" class="nav-link" data-tab="true" title="Tra cứu serial" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/serials') or #strings.startsWith(navPath, '/staff/warehouse/search')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg><span class="nav-label">Tra cứu serial</span></a>
       <a th:href="@{/staff/warehouse/attributes}" class="nav-link" data-tab="true" title="Thuộc tính" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/attributes')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
         <svg th:replace="~{fragments/ui :: icon('tag','size-5')}"></svg><span class="nav-label">Thuộc tính</span></a>
+      <a th:href="@{/staff/warehouse/stocktakes}" class="nav-link" data-tab="true" title="Kiểm kê" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/stocktakes')} ? 'nav-active'"
+         th:if="${preview == true or #authorization.expression('hasAuthority(''PORTAL_WAREHOUSE'')')}">
+        <svg th:replace="~{fragments/ui :: icon('check','size-5')}"></svg><span class="nav-label">Kiểm kê</span></a>
       <a th:href="@{/staff/warehouse/receipts}" class="nav-link" data-tab="true" title="Nhập kho" th:classappend="${#strings.startsWith(navPath, '/staff/warehouse/receipts')} ? 'nav-active'"
          th:if="${preview == true or #authorization.expression('hasAuthority(''STOCK_RECEIVE'')')}">
         <svg th:replace="~{fragments/ui :: icon('box','size-5')}"></svg><span class="nav-label">Nhập kho</span></a>
@@ -131,9 +137,9 @@
     <button type="button" id="navToggle" class="app-icon-btn" aria-label="Mở hoặc đóng menu" title="Mở/đóng menu">
       <svg th:replace="~{fragments/ui :: icon('list','size-5')}"></svg></button>
     <div id="tabStrip" class="tab-strip" role="tablist" aria-label="Các tab đang mở"></div>
-    <form id="quickSearch" class="tab-search" data-open="false" th:if="${nav == 'warehouse'}" th:action="@{/staff/warehouse/products}" method="get" role="search">
-      <input class="search-input" type="search" name="q" placeholder="Tìm sản phẩm, SKU..." aria-label="Tìm sản phẩm theo tên hoặc SKU" tabindex="-1" autocomplete="off"/>
-      <button type="button" class="app-icon-btn search-toggle" aria-label="Tìm kiếm" aria-expanded="false" title="Tìm sản phẩm">
+    <form id="quickSearch" class="tab-search" data-open="false" th:if="${nav == 'warehouse'}" th:action="@{/staff/warehouse/search}" method="get" role="search">
+      <input class="search-input" type="search" name="q" placeholder="Tìm sản phẩm, SKU, serial..." aria-label="Tìm theo tên sản phẩm, SKU hoặc serial" tabindex="-1" autocomplete="off"/>
+      <button type="button" class="app-icon-btn search-toggle" aria-label="Tìm kiếm" aria-expanded="false" title="Tìm sản phẩm, serial">
         <svg th:replace="~{fragments/ui :: icon('search','size-5')}"></svg></button>
     </form>
   </div>
@@ -185,6 +191,7 @@
 </dialog>
 
 <script th:src="@{/js/app.js}" defer="defer"></script>
+<script th:src="@{/js/excel-import.js}" defer="defer"></script>
 <script th:src="@{/js/workspace.js}" defer="defer"></script>
 </body>
 </html>

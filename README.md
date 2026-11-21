@@ -369,7 +369,11 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [x] Xem danh sách sản phẩm/biến thể đang dùng một giá trị thuộc tính (`/staff/warehouse/attributes/{id}/usage`, bấm vào số ở màn Thuộc tính) *(chưa chạy thử)*
 - [x] Nhận hàng chuyển kho: danh sách phiếu (`/staff/warehouse/transfers/list`, mặc định "đang vận chuyển") và chi tiết phiếu kèm nút "Đã nhận đủ hàng" (`/staff/warehouse/transfers/{code}`) *(chưa chạy thử)*
 - [x] Tab chi tiết/sửa sản phẩm ghi rõ tên sản phẩm/SKU; điều hướng sang trang đã có tab khác thì gộp tab; nút thu gọn nằm trong sidebar; thanh tìm kiếm là kính lúp bấm mới mở; top menu căn lề theo nội dung, bỏ thanh cuộn ngang
-- [ ] Danh sách phiếu nhập kho, ràng buộc chỉ chi nhánh đích mới được nhận hàng, upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel
+- [x] Nhập/xuất Excel bằng Apache POI: nút "Nhập từ Excel" đọc serial (nhập kho từng dòng biến thể, chuyển kho, kiểm kê; tự nhận cột theo tiêu đề, bỏ trùng/dòng trống, giữ số dài), tải file mẫu, xuất tồn kho / serial của một cấu hình (cột giá vốn theo quyền COST_VIEW) / kết quả kiểm kê *(chưa chạy thử)*
+- [x] Kiểm kê (WH-08, `/staff/warehouse/stocktakes`): tạo phiên theo chi nhánh (chụp danh sách máy hệ thống ghi đang còn hàng) → quét serial nhiều lần → đóng (chưa quét = Thiếu, máy ngoài danh sách = Dư) → áp dụng điều chỉnh (dư ở chi nhánh khác chuyển về; thiếu chuyển DEFECTIVE và trừ tồn vì schema chưa có trạng thái "mất"); quyền `STOCK_STOCKTAKE` (V5) *(chưa chạy thử)*
+- [x] Bộ kịch bản thử nhập kho/Excel/chuyển kho/kiểm kê kèm dữ liệu và file Excel mẫu: `docs/test-nhap-kho/`
+- [x] Tra cứu serial (WH-09): trang `/staff/warehouse/serials` (tìm một phần serial, lọc trạng thái, phân trang) và hồ sơ máy `/staff/warehouse/serials/view?sn=` (vị trí, cấu hình, phiếu nhập/NCC, đơn đã bán + hạn bảo hành, hold đang giữ, dòng thời gian trạng thái, phiếu chuyển, kiểm kê). Ô kính lúp tìm gộp sản phẩm + serial và quét đúng nguyên một serial thì vào thẳng hồ sơ máy; Tồn kho và Sản phẩm cũng tìm được theo serial *(chưa chạy thử)*
+- [ ] Danh sách phiếu nhập kho, ràng buộc chỉ chi nhánh đích mới được nhận hàng, trạng thái "mất" cho serial, upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel
 - [ ] Đưa WH-05 và AU-02 vào `/shop/_ui` và tài liệu thiết kế UI (hiện thiết kế gốc chỉ có 26 màn, thiếu hai màn này)
 
 - [ ] Gỡ stub trong `ServiceStubConfig` khi service tương ứng đã cài xong

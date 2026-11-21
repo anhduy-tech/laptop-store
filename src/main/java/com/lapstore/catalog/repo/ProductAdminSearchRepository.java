@@ -28,7 +28,8 @@ public class ProductAdminSearchRepository {
     public Page<ProductAdminRowData> search(String q, String brand, String status, Pageable pageable) {
         StringBuilder where = new StringBuilder(" where p.deletedAt is null");
         if (q != null)
-            where.append(" and (lower(p.name) like :pattern or lower(v.sku) like :pattern)");
+            where.append(" and (lower(p.name) like :pattern or lower(v.sku) like :pattern or exists (select 1 from SerialItem sx "
+                    + "where sx.variant.id = v.id and lower(sx.serialNumber) like :pattern))");
         if (brand != null)
             where.append(" and b.name = :brand");
         if (status != null)

@@ -1,0 +1,83 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title th:text="'Kiểm kê ' + ${view.header.code} + ' – Lapstore'">Kiểm kê – Lapstore</title></head>
+<body><section>
+  <div class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div><h1 class="page-title"><span class="font-mono" th:text="${view.header.code}">KK</span></h1>
+      <p class="page-sub"><b th:text="${view.header.branchName}">CN</b> · <span th:text="${view.header.scope}">Phạm vi</span> ·
+        bắt đầu <span th:text="${view.header.startedAt}">01/01/2026</span> (<span th:text="${view.header.startedBy}">user</span>)
+        <span class="badge ml-2" th:classappend="${view.header.open()} ? 'badge-amber' : (${view.header.closed()} ? 'badge-green' : 'badge-gray')" th:text="${view.header.statusLabel()}">Đang kiểm</span></p></div>
+    <div class="flex gap-2">
+      <a class="btn-secondary btn-sm" th:href="@{/staff/warehouse/stocktakes/{c}/export.xlsx(c=${view.header.code})}">Xuất Excel</a>
+      <a th:href="@{/staff/warehouse/stocktakes}" class="btn-ghost btn-sm">← Danh sách</a></div>
+  </div>
+
+  <div class="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="card"><p class="hint">Cần kiểm (hệ thống ghi)</p><p class="text-2xl font-bold" th:text="${view.header.expected}">0</p></div>
+    <div class="card"><p class="hint">Đã quét khớp</p><p class="text-2xl font-bold text-emerald-600" th:text="${view.header.scanned}">0</p></div>
+    <div class="card"><p class="hint" th:text="${view.header.open()} ? 'Chưa quét' : 'Thiếu'">Chưa quét</p>
+      <p class="text-2xl font-bold" th:classappend="${view.header.remaining() > 0} ? 'text-red-600'" th:text="${view.header.remaining()}">0</p></div>
+    <div class="card"><p class="hint">Dư (không thuộc danh sách)</p>
+      <p class="text-2xl font-bold" th:classappend="${view.header.unexpected > 0} ? 'text-amber-600'" th:text="${view.header.unexpected}">0</p></div>
+  </div>
+
+  <!-- Đang kiểm: quét serial + đóng/hủy -->
+  <div th:if="${view.header.open() and (preview == true or #authorization.expression('hasAuthority(''STOCK_STOCKTAKE'')'))}" class="mb-6 grid gap-5 lg:grid-cols-3">
+    <form th:action="@{/staff/warehouse/stocktakes/{c}/scan(c=${view.header.code})}" method="post" class="form-section space-y-3 lg:col-span-2">
+      <div class="form-section-head"><h2 class="form-section-title">Quét serial thực tế</h2>
+        <p class="form-section-desc">Dán hoặc quét mỗi serial một dòng, hoặc nhập từ file Excel. Quét nhiều lần được, serial đã quét sẽ bỏ qua.</p></div>
+      <textarea class="input-field font-mono text-sm" id="serials" name="serials" rows="7" required="required" placeholder="Mỗi dòng một serial"></textarea>
+      <div class="flex flex-wrap items-center gap-3">
+        <button class="btn-primary" type="submit">Ghi nhận</button>
+        <button type="button" class="btn-secondary" data-excel-target="#serials">Nhập từ Excel</button>
+        <a class="text-sm text-brand-700 underline" th:href="@{/staff/warehouse/excel/serial-template.xlsx}">Tải file mẫu</a>
+      </div>
+    </form>
+    <div class="space-y-4">
+      <form th:action="@{/staff/warehouse/stocktakes/{c}/close(c=${view.header.code})}" method="post" class="form-section"
+            onsubmit="return confirm('Đóng phiên? Máy chưa quét sẽ được ghi là THIẾU và không quét thêm được nữa.');">
+        <h2 class="form-section-title">Đóng phiên</h2>
+        <p class="form-section-desc mb-3">Khi quét xong. <b th:text="${view.header.remaining()}">0</b> máy chưa quét sẽ thành "Thiếu".</p>
+        <button class="btn-primary w-full" type="submit">Đóng phiên kiểm kê</button></form>
+      <form th:action="@{/staff/warehouse/stocktakes/{c}/cancel(c=${view.header.code})}" method="post" class="form-section"
+            onsubmit="return confirm('Hủy phiên kiểm kê này? Kết quả quét sẽ không được dùng.');">
+        <h2 class="form-section-title">Hủy phiên</h2>
+        <p class="form-section-desc mb-3">Bỏ phiên (nhập nhầm chi nhánh...). Không đổi tồn kho.</p>
+        <button class="btn-secondary w-full" type="submit">Hủy phiên</button></form>
+    </div>
+  </div>
+
+  <!-- Đã đóng: áp dụng điều chỉnh -->
+  <div th:if="${view.header.closed() and view.adjustable > 0 and (preview == true or #authorization.expression('hasAuthority(''STOCK_STOCKTAKE'')'))}"
+       class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-5"
+       >
+    <div class="max-w-2xl"><p class="font-semibold text-slate-900">Còn <span th:text="${view.adjustable}">0</span> dòng thiếu/dư chưa điều chỉnh</p>
+      <p class="hint">Máy <b>dư</b> đang còn hàng ở chi nhánh khác được chuyển về chi nhánh này. Máy <b>thiếu</b> chuyển sang trạng thái DEFECTIVE và trừ tồn
+        (hệ thống chưa có trạng thái "mất"). Máy đang giữ cho đơn hoặc đã đổi trạng thái được bỏ qua và liệt kê lại.</p></div>
+    <form th:action="@{/staff/warehouse/stocktakes/{c}/adjust(c=${view.header.code})}" method="post"
+          onsubmit="return confirm('Áp dụng điều chỉnh tồn kho theo kết quả kiểm kê?');">
+      <button class="btn-primary" type="submit">Áp dụng điều chỉnh</button></form>
+  </div>
+
+  <div class="mb-4 flex flex-wrap gap-2">
+    <a class="badge" th:classappend="${filter == ''} ? 'badge-green'" th:href="@{/staff/warehouse/stocktakes/{c}(c=${view.header.code})}">Tất cả</a>
+    <a class="badge" th:classappend="${filter == 'MATCHED'} ? 'badge-green'" th:href="@{/staff/warehouse/stocktakes/{c}(c=${view.header.code},filter='MATCHED')}">Khớp <b th:text="${view.header.scanned}">0</b></a>
+    <a class="badge" th:classappend="${filter == 'PENDING'} ? 'badge-green'" th:href="@{/staff/warehouse/stocktakes/{c}(c=${view.header.code},filter='PENDING')}"><span th:text="${view.header.open()} ? 'Chưa quét' : 'Thiếu'">Chưa quét</span> <b th:text="${view.header.remaining()}">0</b></a>
+    <a class="badge" th:classappend="${filter == 'UNEXPECTED'} ? 'badge-green'" th:href="@{/staff/warehouse/stocktakes/{c}(c=${view.header.code},filter='UNEXPECTED')}">Dư <b th:text="${view.header.unexpected}">0</b></a>
+  </div>
+
+  <th:block th:if="${itemPage.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có dòng nào')}"></div></th:block>
+  <div th:unless="${itemPage.content.isEmpty()}" class="table-wrap"><table class="tbl">
+    <thead><tr><th>Serial</th><th>Sản phẩm</th><th>Kết quả</th><th>Hệ thống ghi</th><th>Quét lúc</th><th>Ghi chú</th></tr></thead>
+    <tbody><tr th:each="i : ${itemPage.content}">
+      <td class="font-mono text-xs font-semibold"><a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Serial: ' + ${i.serialNumber}"
+           th:href="@{/staff/warehouse/serials/view(sn=${i.serialNumber})}" th:text="${i.serialNumber}">SN</a></td>
+      <td><span th:text="${i.productName}">Sản phẩm</span><span class="block font-mono text-[11px] text-slate-400" th:text="${i.sku}">SKU</span></td>
+      <td><span class="badge" th:text="${i.resultLabel()}"
+                th:classappend="${i.result == 'MATCHED'} ? 'badge-green' : (${i.result == 'MISSING'} ? 'badge-red' : (${i.result == 'UNEXPECTED'} ? 'badge-amber' : 'badge-gray'))">Khớp</span>
+        <span th:if="${i.adjusted}" class="badge badge-blue ml-1">Đã điều chỉnh</span></td>
+      <td class="text-sm"><span th:replace="~{fragments/ui :: badge(${i.systemStatus})}"></span>
+        <span class="block text-xs text-slate-400" th:text="${i.systemBranch}">CN</span></td>
+      <td class="text-sm" th:text="${i.scannedAt != ''} ? ${i.scannedAt} : '—'">01/01/2026</td>
+      <td class="max-w-xs text-xs text-slate-500" th:text="${i.note}">Ghi chú</td></tr></tbody></table></div>
+  <div th:replace="~{fragments/ui :: tablefoot(${itemPage}, @{/staff/warehouse/stocktakes/{c}(c=${view.header.code},filter=${filter})} + '&amp;')}"></div>
+</section></body></html>

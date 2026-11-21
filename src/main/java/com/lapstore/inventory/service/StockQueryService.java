@@ -21,6 +21,9 @@ public interface StockQueryService {
      */
     StockSerialsView serials(long variantId, long branchId, String status);
 
+    /** Như trên nhưng cho phép lấy tới `limit` máy (xuất Excel). */
+    StockSerialsView serials(long variantId, long branchId, String status, int limit);
+
     /** Danh sách phiếu chuyển, mới nhất trước. @param status IN_TRANSIT | RECEIVED; null = tất cả */
     Page<TransferRow> transfers(String status, Pageable pageable);
 

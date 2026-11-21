@@ -1,0 +1,48 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Tra cứu serial – Lapstore</title></head>
+<body><section>
+  <div class="mb-6">
+    <h1 class="page-title">Tra cứu serial</h1>
+    <p class="page-sub">Tìm máy theo một phần serial (không phân biệt hoa/thường) để biết máy đang ở đâu, trạng thái gì, nhập từ phiếu nào, đã bán cho đơn nào. Bấm vào serial để xem hồ sơ và lịch sử.</p>
+  </div>
+
+  <form method="get" th:action="@{/staff/warehouse/serials}" class="filter-bar" role="search">
+    <div class="min-w-64 flex-1"><label class="label" for="q">Serial</label>
+      <input class="input-field font-mono" id="q" name="q" th:value="${q}" autofocus="autofocus" autocomplete="off"
+             placeholder="Quét mã vạch hoặc gõ một phần serial, VD SWIFTGO14-I5"/></div>
+    <div><label class="label" for="status">Trạng thái</label>
+      <select class="input-field" id="status" name="status">
+        <option value="" th:selected="${status == ''}">Tất cả</option>
+        <option value="IN_STOCK" th:selected="${status == 'IN_STOCK'}">Còn hàng</option>
+        <option value="IN_TRANSIT" th:selected="${status == 'IN_TRANSIT'}">Đang chuyển kho</option>
+        <option value="SOLD" th:selected="${status == 'SOLD'}">Đã bán</option>
+        <option value="WARRANTY" th:selected="${status == 'WARRANTY'}">Đang bảo hành</option>
+        <option value="RETURNED" th:selected="${status == 'RETURNED'}">Đã trả lại</option>
+        <option value="DEFECTIVE" th:selected="${status == 'DEFECTIVE'}">Hỏng / mất</option>
+      </select></div>
+    <button class="btn-primary" type="submit">Tìm</button>
+    <a th:href="@{/staff/warehouse/serials}" class="btn-ghost">Xóa lọc</a>
+  </form>
+
+  <div th:if="${q == null}" class="card text-center text-sm text-slate-500">Nhập serial để bắt đầu tìm. Từ khóa tối thiểu 2 ký tự.</div>
+  <div th:if="${tooShort}" class="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Từ khóa quá ngắn, nhập ít nhất 2 ký tự.</div>
+
+  <th:block th:if="${q != null and !tooShort}">
+    <p class="mb-3 text-sm text-slate-500">Tìm thấy <b class="text-slate-800" th:text="${page.totalElements}">0</b> máy cho
+      "<span class="font-mono text-slate-800" th:text="${q}">q</span>".</p>
+    <th:block th:if="${page.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có serial nào khớp')}"></div></th:block>
+    <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
+      <thead><tr><th>Serial</th><th>Sản phẩm</th><th>SKU</th><th>Chi nhánh</th><th>Trạng thái</th><th>Nhập lúc</th></tr></thead>
+      <tbody><tr th:each="r : ${page.content}">
+        <td class="font-mono text-xs font-semibold">
+          <a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Serial: ' + ${r.serialNumber}"
+             th:href="@{/staff/warehouse/serials/view(sn=${r.serialNumber})}" th:text="${r.serialNumber}">SN</a></td>
+        <td><span th:text="${r.productName}">Sản phẩm</span>
+          <span class="block text-xs text-slate-400"><span th:text="${r.variantName}">Cấu hình</span> · <span th:text="${r.colorName}">Màu</span></span></td>
+        <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
+        <td th:text="${r.branchName}">CN</td>
+        <td><span th:replace="~{fragments/ui :: badge(${r.status})}"></span></td>
+        <td class="text-sm" th:text="${r.receivedAt}">01/01/2026</td></tr></tbody></table></div>
+    <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/staff/warehouse/serials(q=${q},status=${status})} + '&amp;')}"></div>
+  </th:block>
+</section></body></html>

@@ -14,7 +14,10 @@
     </div>
     <div><label class="label" for="serials">Danh sách serial *</label>
       <textarea class="input-field font-mono text-sm" id="serials" name="serials" rows="8" required="required" placeholder="Mỗi dòng một serial&#10;SN001&#10;SN002"></textarea>
-      <p class="hint">Tối đa 500 serial mỗi phiếu.</p></div>
+      <div class="mt-2 flex flex-wrap items-center gap-3">
+        <button type="button" class="btn-secondary btn-sm" data-excel-target="#serials">Nhập từ Excel</button>
+        <a class="text-sm text-brand-700 underline" th:href="@{/staff/warehouse/excel/serial-template.xlsx}">Tải file mẫu</a>
+        <span class="hint mt-0">Tối đa 500 serial mỗi phiếu.</span></div></div>
     <div class="form-actions"><button class="btn-primary" type="submit">Chuyển kho</button></div>
   </form>
 </section></body></html>

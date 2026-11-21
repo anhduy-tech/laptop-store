@@ -1,0 +1,19 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Phiên kiểm kê mới – Lapstore</title></head>
+<body><section class="max-w-2xl">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+    <div><h1 class="page-title">Phiên kiểm kê mới</h1>
+      <p class="page-sub">Hệ thống chụp danh sách máy đang còn hàng tại chi nhánh, bạn quét thực tế rồi đối chiếu.</p></div>
+    <a th:href="@{/staff/warehouse/stocktakes}" class="btn-ghost btn-sm">← Danh sách</a>
+  </div>
+  <form th:action="@{/staff/warehouse/stocktakes}" method="post" class="form-section space-y-4">
+    <div class="form-section-head"><h2 class="form-section-title">Thông tin phiên</h2>
+      <p class="form-section-desc">Mỗi chi nhánh chỉ có một phiên đang mở.</p></div>
+    <div><label class="label" for="branchId">Chi nhánh *</label>
+      <select class="input-field" id="branchId" name="branchId" required="required"><option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">CN</option></select></div>
+    <div><label class="label" for="scope">Ghi chú / phạm vi</label>
+      <input class="input-field" id="scope" name="scope" maxlength="100" placeholder="VD: Kiểm kê cuối tháng 11 (để trống = toàn bộ chi nhánh)"/></div>
+    <div class="rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Nên tạm dừng nhập, chuyển kho và bán tại chi nhánh trong lúc kiểm: máy thay đổi sau khi tạo phiên sẽ bị tính là thiếu hoặc dư.</div>
+    <div class="form-actions"><a th:href="@{/staff/warehouse/stocktakes}" class="btn-secondary">Hủy</a><button class="btn-primary" type="submit">Bắt đầu kiểm kê</button></div>
+  </form>
+</section></body></html>
