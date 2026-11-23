@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDate;
 
 import com.lapstore.common.web.FormErrors;
 import com.lapstore.staff.dto.ShiftAssignCommand;
@@ -29,6 +30,8 @@ class AdminShiftController {
 
     @GetMapping
     String view(@RequestParam(defaultValue = "0") int page, Model model) {
+        model.addAttribute("form", new ShiftForm());
+        model.addAttribute("minWorkDate", LocalDate.now().toString());
         model.addAttribute("users", staff.userOptions());
         model.addAttribute("templates", staff.shiftTemplates());
         model.addAttribute("branches", staff.branchOptions());
@@ -44,8 +47,8 @@ class AdminShiftController {
             ra.addFlashAttribute("error", FormErrors.first(br));
             return "redirect:/admin/shifts";
         }
-        staff.assignShift(new ShiftAssignCommand(form.getUserId(), form.getTemplateId(),
-                form.getBranchId(), form.getWorkDate()));
+        staff.assignShift(new ShiftAssignCommand(form.getUserId(), form.getTemplateId(), form.getBranchId(),
+                form.getWorkDate()));
         ra.addFlashAttribute("success", "Đã phân ca.");
         return "redirect:/admin/shifts";
     }

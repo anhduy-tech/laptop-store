@@ -14,7 +14,8 @@ public enum Portal {
     private static final List<String> SHARED =
         List.of("/css/", "/js/", "/img/", "/webjars/", "/error", "/ws/",
                 "/login", "/logout", "/actuator",
-                "/staff/login", "/staff/logout", "/admin/login", "/admin/logout");
+                "/staff/login", "/staff/logout", "/staff/attendance",
+                "/admin/login", "/admin/logout");
 
     private final int port;
     private final String prefix;

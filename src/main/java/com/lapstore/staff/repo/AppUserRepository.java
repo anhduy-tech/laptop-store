@@ -25,4 +25,7 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     @EntityGraph(attributePaths = "branch")
     List<AppUser> findByDeletedAtIsNullOrderByUsernameAsc();
+
+    @EntityGraph(attributePaths = "branch")
+    List<AppUser> findByBranch_IdAndActiveTrueAndDeletedAtIsNullOrderByFullNameAsc(Long branchId);
 }

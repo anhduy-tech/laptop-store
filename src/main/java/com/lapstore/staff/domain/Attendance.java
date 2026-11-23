@@ -1,5 +1,6 @@
 package com.lapstore.staff.domain;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.lapstore.common.persistence.AuditableEntity;
@@ -26,6 +27,9 @@ public class Attendance extends AuditableEntity {
     @Column(name = "late_minutes")
     private Integer lateMinutes = 0;
 
+    @Column(name = "opening_cash", nullable = false, precision = 15, scale = 2)
+    private BigDecimal openingCash = BigDecimal.ZERO;
+
     @Column(name = "note", length = 255)
     private String note;
 
@@ -46,6 +50,9 @@ public class Attendance extends AuditableEntity {
 
     public Integer getLateMinutes() { return lateMinutes; }
     public void setLateMinutes(Integer lateMinutes) { this.lateMinutes = lateMinutes; }
+
+    public BigDecimal getOpeningCash() { return openingCash; }
+    public void setOpeningCash(BigDecimal openingCash) { this.openingCash = openingCash; }
 
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }

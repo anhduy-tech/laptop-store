@@ -1,0 +1,123 @@
+<html th:replace="~{layout/staff :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
+<head><title>Giao ca &amp; chấm công – Lapstore</title></head>
+<body><section class="space-y-6">
+  <div>
+    <h1 class="page-title">Giao ca &amp; chấm công</h1>
+    <p class="page-sub">Chấm công theo ca được phân, đối soát tiền mặt và xác nhận bàn giao.</p>
+  </div>
+
+  <section class="space-y-4">
+    <h2 class="text-lg font-semibold">Ca làm hôm nay</h2>
+    <div th:if="${shifts.isEmpty()}" class="card">
+      <p class="font-medium">Bạn chưa được phân ca hôm nay.</p>
+      <p class="hint mt-1">Liên hệ quản lý để được xếp ca trước khi bán tại quầy.</p>
+    </div>
+    <div th:each="shift : ${shifts}" class="card grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)] lg:items-center">
+      <div>
+        <div class="flex flex-wrap items-center gap-2">
+          <h3 class="font-semibold" th:text="${shift.shiftName}">Ca sáng</h3>
+          <span class="badge" th:text="${shift.status}">Chưa vào ca</span>
+        </div>
+        <p class="hint mt-1"><span th:text="${shift.date}">2026-11-23</span> · <span th:text="${shift.hours}">08:00 – 12:00</span> · <span th:text="${shift.branchName}">Chi nhánh</span></p>
+        <p class="mt-3 text-sm" th:if="${shift.checkIn != null}">
+          Vào ca: <b th:text="${shift.checkIn}">08:02</b>
+          <span class="text-amber-600" th:if="${shift.lateMinutes > 0}" th:text="' · Muộn ' + ${shift.lateMinutes} + ' phút'"></span>
+          <span th:if="${shift.checkOut != null}" th:text="' · Ra ca: ' + ${shift.checkOut}"></span>
+        </p>
+      </div>
+
+      <form th:if="${shift.canCheckIn}" th:action="@{/staff/attendance/check-in}" method="post" class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+        <input type="hidden" name="assignmentId" th:value="${shift.assignmentId}"/>
+        <div th:if="${canManageCash}">
+          <label class="label" th:for="'opening-' + ${shift.assignmentId}">Tiền đầu ca trong ngăn kéo (₫)</label>
+          <input class="input-field" type="number" min="0" step="0.01" value="0" required="required"
+                 name="openingCash" th:id="'opening-' + ${shift.assignmentId}"/>
+        </div>
+        <input th:unless="${canManageCash}" type="hidden" name="openingCash" value="0"/>
+        <button class="btn-primary" type="submit" th:text="${canManageCash ? 'Chấm công vào ca' : 'Bắt đầu ca'}">Chấm công vào ca</button>
+      </form>
+
+      <form th:if="${shift.canCheckOut}" th:action="@{/staff/attendance/check-out}" method="post"
+            class="grid gap-3 sm:grid-cols-2" data-confirm="Chốt tiền cuối ca và gửi thông tin bàn giao?">
+        <input type="hidden" name="assignmentId" th:value="${shift.assignmentId}"/>
+        <div th:if="${canManageCash}">
+          <label class="label" th:for="'counted-' + ${shift.assignmentId}">Tiền mặt thực đếm cuối ca (₫)</label>
+          <input class="input-field" type="number" min="0" step="0.01" required="required"
+                 name="countedCash" th:id="'counted-' + ${shift.assignmentId}"/>
+        </div>
+        <input th:unless="${canManageCash}" type="hidden" name="countedCash" value="0"/>
+        <div th:if="${canManageCash}">
+          <label class="label" th:for="'receiver-' + ${shift.assignmentId}">Bàn giao cho (không bắt buộc)</label>
+          <select class="input-field" name="receiverId" th:id="'receiver-' + ${shift.assignmentId}">
+            <option value="">Chỉ chốt ca, không bàn giao</option>
+            <option th:each="receiver : ${shift.receivers}" th:value="${receiver.id}" th:text="${receiver.name}">Nhân viên</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2" th:if="${canManageCash}">
+          <label class="label" th:for="'handover-note-' + ${shift.assignmentId}">Ghi chú bàn giao</label>
+          <input class="input-field" name="note" maxlength="255" th:id="'handover-note-' + ${shift.assignmentId}"
+                 placeholder="Ghi chú tiền quỹ, đơn đang chờ hoặc sự cố…"/>
+        </div>
+        <div class="sm:col-span-2 flex flex-wrap items-center justify-between gap-3">
+          <p class="hint" th:if="${canManageCash}">Tiền dự kiến = tiền đầu ca + doanh thu tiền mặt đã thu trong ca. Cần đóng các đơn quầy đang mở trước khi kết ca.</p>
+          <p class="hint" th:unless="${canManageCash}">Cần xử lý các đơn quầy đang mở trước khi kết ca.</p>
+          <button class="btn-primary" type="submit" th:text="${canManageCash ? 'Chốt ca & bàn giao' : 'Kết thúc ca'}">Chốt ca &amp; bàn giao</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="space-y-4" th:if="${!pendingHandovers.isEmpty()}">
+    <h2 class="text-lg font-semibold">Bàn giao đang chờ bạn xác nhận</h2>
+    <article th:each="handover : ${pendingHandovers}" class="card space-y-4">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 class="font-semibold" th:text="${handover.fromStaff} + ' · ' + ${handover.shift}">Người giao · Ca chiều</h3>
+          <p class="hint" th:text="${handover.branch} + ' · ' + ${handover.createdAt}">Chi nhánh · thời gian</p>
+        </div>
+        <span class="badge badge-amber">Chờ xác nhận</span>
+      </div>
+      <div class="grid gap-2 text-sm sm:grid-cols-3">
+        <p>Tiền dự kiến: <b th:replace="~{fragments/ui :: money(${handover.expectedCash})}"></b></p>
+        <p>Người giao đếm: <b th:replace="~{fragments/ui :: money(${handover.handedCash})}"></b></p>
+        <p>Chênh lệch: <b th:replace="~{fragments/ui :: money(${handover.cashVariance})}"></b></p>
+      </div>
+      <p class="hint" th:if="${handover.note != null}" th:text="'Ghi chú: ' + ${handover.note}"></p>
+      <form th:action="@{/staff/attendance/handover/{id}/confirm(id=${handover.id})}" method="post" class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] sm:items-end">
+        <div>
+          <label class="label" th:for="'received-' + ${handover.id}">Tiền thực nhận (₫)</label>
+          <input class="input-field" type="number" min="0" step="0.01" required="required"
+                 name="receivedCash" th:id="'received-' + ${handover.id}" th:value="${handover.handedCash}"/>
+        </div>
+        <div>
+          <label class="label" th:for="'receive-note-' + ${handover.id}">Ghi chú xác nhận / chênh lệch</label>
+          <input class="input-field" name="note" maxlength="255" th:id="'receive-note-' + ${handover.id}"
+                 placeholder="Ghi lại nếu số tiền thực nhận khác biên bản"/>
+        </div>
+        <button class="btn-primary" type="submit">Xác nhận nhận ca</button>
+      </form>
+    </article>
+  </section>
+
+  <section class="space-y-4" th:if="${!handoverHistory.isEmpty()}">
+    <h2 class="text-lg font-semibold">Giao ca gần đây</h2>
+    <div class="table-wrap">
+      <table class="tbl">
+        <thead><tr><th>Thời gian</th><th>Ca / chi nhánh</th><th>Bàn giao cho</th><th class="text-right">Dự kiến</th><th class="text-right">Đã đếm</th><th class="text-right">Chênh lệch giao</th><th class="text-right">Người nhận đếm</th><th class="text-right">Chênh lệch nhận</th><th>Trạng thái</th></tr></thead>
+        <tbody>
+          <tr th:each="handover : ${handoverHistory}">
+            <td th:text="${handover.createdAt}">Thời gian</td>
+            <td><span th:text="${handover.shift}">Ca</span><br/><span class="hint" th:text="${handover.branch}">Chi nhánh</span></td>
+            <td th:text="${handover.receiver != null ? handover.receiver : '—'}">Nhân viên</td>
+            <td class="text-right"><span th:replace="~{fragments/ui :: money(${handover.expectedCash})}"></span></td>
+            <td class="text-right"><span th:replace="~{fragments/ui :: money(${handover.handedCash})}"></span></td>
+            <td class="text-right"><span th:replace="~{fragments/ui :: money(${handover.cashVariance})}"></span></td>
+            <td class="text-right"><th:block th:if="${handover.receivedCash != null}"><span th:replace="~{fragments/ui :: money(${handover.receivedCash})}"></span></th:block><span th:if="${handover.receivedCash == null}">—</span></td>
+            <td class="text-right"><th:block th:if="${handover.receiveVariance != null}"><span th:replace="~{fragments/ui :: money(${handover.receiveVariance})}"></span></th:block><span th:if="${handover.receiveVariance == null}">—</span></td>
+            <td th:text="${handover.status}">Đã chốt</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section></body></html>

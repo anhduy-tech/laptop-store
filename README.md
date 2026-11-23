@@ -310,7 +310,7 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 ### Bước 8 · Đơn hàng
 
-- [x] `CounterCheckoutService`: mở đơn quầy (mỗi nhân viên tối đa 5 đơn mở cùng lúc (tab)), thu tiền (tiền mặt có khách đưa/tiền thối, chuyển khoản, quẹt thẻ), chọn khách, voucher + khuyến mãi, popup chọn sản phẩm theo cấu hình, xem trước hóa đơn, hold -> `CONVERTED`, serial -> `SOLD`, chốt giá snapshot từ `price_history` APPROVED đang hiệu lực, bảo hành, trừ `on_hand`/`held_qty`, `order_status_history` *(chưa chạy thử; chưa có BR-10: chấm công/ca)*
+- [x] `CounterCheckoutService`: mở đơn nháp quầy (mỗi nhân viên tối đa 5 đơn mở cùng lúc (tab), không bắt buộc chấm công), thu tiền (tiền mặt có khách đưa/tiền thối, chuyển khoản, quẹt thẻ; cần chấm công trước khi chốt), chọn khách, voucher + khuyến mãi, popup chọn sản phẩm theo cấu hình, xem trước hóa đơn, hold -> `CONVERTED`, serial -> `SOLD`, chốt giá snapshot từ `price_history` APPROVED đang hiệu lực, bảo hành, trừ `on_hand`/`held_qty`, `order_status_history` *(chưa chạy thử)*
 - [x] `CartService` và giỏ hàng khách (session) *(chưa chạy thử)*
 - [x] `OnlineOrderService`: checkout không cần đăng nhập, giữ số lượng, snapshot giá từng dòng *(chưa chạy thử)*
 - [x] `OrderService`: xác nhận · gán serial · hoàn tất · hủy (kèm lý do), ghi `order_status_history` *(chưa chạy thử)*
@@ -338,7 +338,7 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 
 - [x] `StaffService`: tạo/khóa user, gán role, băm mật khẩu BCrypt (UC-A01)
 - [x] Xếp ca, chặn trùng khung giờ (UC-A02) — hiện ném `BusinessException`, chưa có lớp `ShiftConflictException` riêng
-- [ ] Chấm công; chưa chấm công thì không mở được đơn quầy (BR-10)
+- [x] Chấm công vào/ra theo ca, đối soát tiền đầu ca/doanh thu tiền mặt và xác nhận giao ca; cần chấm công vào ca trước khi chốt đơn quầy (BR-10)
 - [ ] `ReportingService`: báo cáo doanh thu/lãi ước tính theo ngày và chi nhánh, job tổng hợp `daily_sales_summary`
 - [ ] Dashboard admin hiển thị KPI thật
 - [ ] Xuất báo cáo Excel (`/admin/reports/export.xlsx`)

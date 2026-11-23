@@ -54,6 +54,8 @@ import com.lapstore.sales.repo.CustomerRepository;
 import com.lapstore.sales.repo.VoucherRedemptionRepository;
 import com.lapstore.sales.repo.VoucherRepository;
 import com.lapstore.staff.domain.AppUser;
+import com.lapstore.staff.domain.ShiftAssignment;
+import com.lapstore.staff.service.StaffAttendanceService;
 
 import jakarta.persistence.EntityManager;
 
@@ -82,10 +84,12 @@ public class CounterTx {
     private final VoucherRepository vouchers;
     private final VoucherRedemptionRepository redemptions;
     private final CustomerRepository customers;
+    private final StaffAttendanceService attendance;
 
     CounterTx(EntityManager em, StockHoldRepository holds, InventoryBalanceRepository balances,
             PriceHistoryRepository prices, ApplicationEventPublisher events, PricingService pricing,
-            VoucherRepository vouchers, VoucherRedemptionRepository redemptions, CustomerRepository customers) {
+            VoucherRepository vouchers, VoucherRedemptionRepository redemptions, CustomerRepository customers,
+            StaffAttendanceService attendance) {
         this.em = em;
         this.holds = holds;
         this.balances = balances;
@@ -95,6 +99,7 @@ public class CounterTx {
         this.vouchers = vouchers;
         this.redemptions = redemptions;
         this.customers = customers;
+        this.attendance = attendance;
     }
 
     // ------------------------------------------------------------------ xem
@@ -277,6 +282,11 @@ public class CounterTx {
         Instant now = Instant.now();
         AppUser u = user(username);
         CustomerOrder o = loadOpen(orderId, u);
+        ShiftAssignment activeAssignment = attendance.requireActiveAssignment(username);
+        if (o.getShiftAssignment() != null && !o.getShiftAssignment().getId().equals(activeAssignment.getId())) {
+            throw new BusinessException("Đơn này không thuộc ca đang chấm công của bạn.");
+        }
+        o.setShiftAssignment(activeAssignment);
         String pm = method == null || method.isBlank() ? "CASH" : method.trim();
         if (!METHODS.contains(pm)) throw new BusinessException("Phương thức thanh toán không hợp lệ.");
 

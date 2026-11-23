@@ -2,6 +2,7 @@ package com.lapstore.web;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -18,6 +19,11 @@ class StaffNavAdvice {
     @ModelAttribute("nav")
     String nav(HttpServletRequest req) {
         String p = req.getRequestURI();
+        if (p.startsWith("/staff/attendance") && req.getUserPrincipal() instanceof Authentication authentication) {
+            if (authentication.getAuthorities().stream().anyMatch(a -> "PORTAL_SALES".equals(a.getAuthority()))) return "sales";
+            if (authentication.getAuthorities().stream().anyMatch(a -> "PORTAL_CONSULT".equals(a.getAuthority()))) return "consult";
+            if (authentication.getAuthorities().stream().anyMatch(a -> "PORTAL_WAREHOUSE".equals(a.getAuthority()))) return "warehouse";
+        }
         if (p.startsWith("/staff/sales")) return "sales";
         if (p.startsWith("/staff/consult")) return "consult";
         if (p.startsWith("/staff/warehouse")) return "warehouse";
