@@ -22,7 +22,7 @@
   <form th:if="${view.header.inTransit() and (preview == true or #authorization.expression('hasAuthority(''STOCK_TRANSFER'')'))}"
         th:action="@{/staff/warehouse/transfers/{c}/receive(c=${view.header.code})}" method="post"
         class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-200 bg-brand-50/60 p-5"
-        onsubmit="return confirm('Xác nhận đã nhận đủ máy của phiếu này?');">
+        data-confirm="Xác nhận đã nhận đủ máy của phiếu này?">
     <div><p class="font-semibold text-slate-900">Xác nhận nhận hàng tại <span th:text="${view.header.toBranch}">CN B</span></p>
       <p class="hint">Kiểm đủ <b th:text="${view.header.itemCount}">0</b> máy dưới đây rồi xác nhận: máy chuyển sang "Còn hàng" tại chi nhánh đích và tồn kho được cộng.</p></div>
     <button class="btn-primary" type="submit">Đã nhận đủ hàng</button>

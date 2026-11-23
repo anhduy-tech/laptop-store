@@ -2,13 +2,16 @@
 <head><title>Giỏ hàng – Lapstore</title></head>
 <body>
 <section>
-  <h1 class="page-title mb-6">Giỏ hàng</h1>
+  <div class="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-4">
+    <div><p class="catalog-kicker">Đơn hàng của bạn</p><h1 class="catalog-title">Giỏ hàng</h1></div>
+    <a th:href="@{/shop}" class="text-sm font-medium text-brand-800 hover:text-brand-900">Tiếp tục mua sắm</a>
+  </div>
   <div th:if="${items == null or items.isEmpty()}">
     <div th:replace="~{fragments/ui :: empty('Giỏ hàng đang trống')}"></div>
-    <div class="mt-6 text-center"><a th:href="@{/shop}" class="btn-primary">Tiếp tục mua sắm</a></div>
+    <div class="mt-4"><a th:href="@{/shop}" class="btn-primary">Xem laptop</a></div>
   </div>
-  <div th:if="${items != null and !items.isEmpty()}" class="grid gap-6 lg:grid-cols-3">
-    <div class="table-wrap lg:col-span-2">
+  <div th:if="${items != null and !items.isEmpty()}" class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="table-wrap">
       <table class="tbl">
         <thead><tr><th>Sản phẩm</th><th class="text-right">Đơn giá</th><th class="text-center">SL</th><th class="text-right">Thành tiền</th><th></th></tr></thead>
         <tbody>
@@ -19,7 +22,7 @@
             <td class="text-right font-semibold"><span th:replace="~{fragments/ui :: money(${i.unitPrice * i.quantity})}"></span></td>
             <td class="text-right">
               <form th:action="@{/shop/cart/items/{id}/delete(id=${i.id})}" method="post">
-                <button class="btn-ghost btn-sm !text-red-600" type="submit" aria-label="Xóa"><svg th:replace="~{fragments/ui :: icon('trash','!size-4')}\"></svg></button>
+                <button class="btn-ghost btn-sm !text-red-600" type="submit" aria-label="Xóa"><svg th:replace="~{fragments/ui :: icon('trash','!size-4')}"></svg></button>
               </form>
             </td>
           </tr>
@@ -27,9 +30,10 @@
       </table>
     </div>
     <aside class="card h-fit space-y-4">
-      <h2 class="font-semibold">Tạm tính</h2>
+      <h2 class="border-b border-slate-200 pb-3 font-semibold">Tóm tắt đơn hàng</h2>
       <div class="flex justify-between text-sm text-slate-600"><span>Tổng cộng</span>
-        <span class="text-xl font-extrabold text-slate-900"><span th:replace="~{fragments/ui :: money(${total})}"></span></span></div>
+        <span class="text-lg font-bold tabular-nums text-slate-900"><span th:replace="~{fragments/ui :: money(${total})}"></span></span></div>
+      <p class="text-xs leading-5 text-slate-500">Giá được xác nhận lần cuối trước khi đặt hàng. Chọn nhận tại cửa hàng hoặc giao hàng ở bước thanh toán.</p>
       <a th:href="@{/shop/checkout}" class="btn-primary btn-lg w-full">Thanh toán</a>
       <a th:href="@{/shop}" class="btn-secondary w-full">Tiếp tục mua sắm</a>
     </aside>

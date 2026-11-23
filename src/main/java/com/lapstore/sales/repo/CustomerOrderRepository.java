@@ -1,5 +1,7 @@
 package com.lapstore.sales.repo;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,10 +15,23 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 
     boolean existsByOrderCode(String orderCode);
 
+    long countByPlacedAtGreaterThanEqualAndPlacedAtLessThanAndStatusNot(
+            Instant from, Instant to, String excludedStatus);
+
+    @Query("""
+            select coalesce(sum(o.totalAmount), 0)
+            from CustomerOrder o
+            where o.status = 'COMPLETED'
+              and o.completedAt >= :from and o.completedAt < :to
+            """)
+    BigDecimal sumCompletedRevenueBetween(@Param("from") Instant from, @Param("to") Instant to);
+
     Optional<CustomerOrder> findByOrderCodeIgnoreCaseAndCustomerPhone(String orderCode, String customerPhone);
 
     Optional<CustomerOrder> findFirstByChannelAndStatusAndHandledBy_UsernameOrderByIdDesc(
             String channel, String status, String username);
+
+    long countByHandledBy_IdAndChannelAndStatus(Long staffId, String channel, String status);
 
     @Query("""
             select o from CustomerOrder o

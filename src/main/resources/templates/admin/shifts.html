@@ -2,12 +2,15 @@
 <head><title>Xếp ca – Lapstore Admin</title></head>
 <body><section class="space-y-6">
 <div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h1 class="page-title">Xếp ca</h1><p class="page-sub">Phân ca làm việc cho nhân viên.</p></div></div>
-  <form th:action="@{/admin/shifts}" method="post" class="card grid gap-4 sm:grid-cols-5 sm:items-end">
-    <div><label class="label" for="userId">Nhân viên</label><select class="input-field" id="userId" name="userId"><option th:each="u : ${users}" th:value="${u.id}" th:text="${u.fullName}">NV</option></select></div>
-    <div><label class="label" for="templateId">Mẫu ca</label><select class="input-field" id="templateId" name="templateId"><option th:each="t : ${templates}" th:value="${t.id}" th:text="${t.name}">Ca sáng</option></select></div>
-    <div><label class="label" for="branchId">Chi nhánh</label><select class="input-field" id="branchId" name="branchId"><option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">CN</option></select></div>
-    <div><label class="label" for="workDate">Ngày</label><input class="input-field" id="workDate" name="workDate" type="date" required="required"/></div>
+  <form th:action="@{/admin/shifts}" th:object="${form}" method="post" class="card grid gap-4 sm:grid-cols-2 xl:grid-cols-5 sm:items-end">
+    <div><label class="label" for="userId">Nhân viên</label><select class="input-field" id="userId" th:field="*{userId}" required="required"><option value="" disabled="disabled">Chọn nhân viên</option><option th:each="u : ${users}" th:value="${u.id}" th:text="${u.name}">NV</option></select></div>
+    <div><label class="label" for="templateId">Mẫu ca</label><select class="input-field" id="templateId" th:field="*{templateId}" required="required"><option value="" disabled="disabled">Chọn ca</option><option th:each="t : ${templates}" th:value="${t.id}" th:text="${t.name}">Ca sáng</option></select></div>
+    <div><label class="label" for="branchId">Chi nhánh</label><select class="input-field" id="branchId" th:field="*{branchId}" required="required"><option value="" disabled="disabled">Chọn chi nhánh</option><option th:each="b : ${branches}" th:value="${b.id}" th:text="${b.name}">CN</option></select></div>
+    <div><label class="label" for="workDate">Ngày</label><input class="input-field" id="workDate" th:field="*{workDate}" type="date" required="required" th:min="${minWorkDate}"/></div>
     <button class="btn-primary" type="submit">Phân ca</button></form>
+  <p class="hint" th:if="${users.isEmpty() or templates.isEmpty() or branches.isEmpty()}">
+    Chưa đủ dữ liệu để phân ca: cần có nhân viên đang hoạt động, mẫu ca và chi nhánh đang mở.
+  </p>
   <th:block th:if="${assignments.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Chưa có phân ca')}"></div></th:block>
   <div th:unless="${assignments.isEmpty()}" class="table-wrap"><table class="tbl"><thead><tr><th>Ngày</th><th>Nhân viên</th><th>Ca</th><th>Chi nhánh</th></tr></thead>
     <tbody><tr th:each="a : ${assignments}"><td th:text="${a.date}">05/11</td><td class="font-medium" th:text="${a.userName}">NV</td><td th:text="${a.shift}">Ca sáng</td><td th:text="${a.branch}">CN</td></tr></tbody></table></div>

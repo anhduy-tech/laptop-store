@@ -40,6 +40,7 @@ class ShopCatalogController {
         ProductDetail product = catalog.getProduct(id);
         model.addAttribute("product", product);
         model.addAttribute("variants", product.variants());
+        model.addAttribute("hasAvailableVariant", product.variants().stream().anyMatch(v -> v.available()));
         return "shop/product-detail";
     }
 }

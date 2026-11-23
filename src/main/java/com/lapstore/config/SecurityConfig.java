@@ -36,6 +36,8 @@ public class SecurityConfig {
                 http.securityMatcher("/staff/**")
                                 .authorizeHttpRequests(a -> a
                                                 .requestMatchers("/staff/login").permitAll()
+                                                .requestMatchers("/staff/attendance", "/staff/attendance/**")
+                                                .hasAnyAuthority("PORTAL_SALES", "PORTAL_CONSULT", "PORTAL_WAREHOUSE")
                                                 .requestMatchers("/staff/sales/**").hasAuthority("PORTAL_SALES")
                                                 .requestMatchers("/staff/consult/**").hasAuthority("PORTAL_CONSULT")
                                                 .requestMatchers("/staff/warehouse/**").hasAuthority("PORTAL_WAREHOUSE")

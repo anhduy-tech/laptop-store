@@ -24,6 +24,7 @@ import com.lapstore.catalog.repo.ProductRow;
 import com.lapstore.catalog.repo.ProductSearchRepository;
 import com.lapstore.catalog.repo.ProductVariantRepository;
 import com.lapstore.common.exception.NotFoundException;
+import com.lapstore.inventory.repo.InventoryBalanceRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,13 +43,16 @@ class CatalogServiceImpl implements CatalogService {
     private final ProductRepository products;
     private final ProductVariantRepository variants;
     private final PriceHistoryRepository prices;
+    private final InventoryBalanceRepository balances;
 
     CatalogServiceImpl(ProductSearchRepository search, ProductRepository products,
-                       ProductVariantRepository variants, PriceHistoryRepository prices) {
+                       ProductVariantRepository variants, PriceHistoryRepository prices,
+                       InventoryBalanceRepository balances) {
         this.search = search;
         this.products = products;
         this.variants = variants;
         this.prices = prices;
+        this.balances = balances;
     }
 
     @Override
@@ -69,9 +73,26 @@ class CatalogServiceImpl implements CatalogService {
     public ProductDetail getProduct(long productId) {
         Product p = products.findByIdAndStatusAndDeletedAtIsNull(productId, ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Không tìm thấy sản phẩm " + productId));
-        List<VariantOption> options = variants.findByProduct_IdAndStatusOrderByCurrentPriceAsc(productId, ACTIVE).stream()
-                .map(v -> new VariantOption(v.getId(), v.getVariantName(), v.getCurrentPrice().longValue()))
-                .toList();
+        var productVariants = variants.findByProduct_IdAndStatusOrderByCurrentPriceAsc(productId, ACTIVE);
+        Map<Long, Long> available = new LinkedHashMap<>();
+        Map<Long, PriceHistory> effectivePrices = new LinkedHashMap<>();
+        if (!productVariants.isEmpty()) {
+            for (Object[] row : balances.sumAvailableByVariantIds(
+                    productVariants.stream().map(ProductVariant::getId).toList())) {
+                available.put((Long) row[0], ((Number) row[1]).longValue());
+            }
+            Instant now = Instant.now();
+            for (PriceHistory price : prices.findEffectiveByVariantIds(
+                    productVariants.stream().map(ProductVariant::getId).toList(), now)) {
+                effectivePrices.putIfAbsent(price.getVariant().getId(), price);
+            }
+        }
+        List<VariantOption> options = productVariants.stream().map(v -> {
+            PriceHistory effective = effectivePrices.get(v.getId());
+            BigDecimal price = effective == null ? v.getCurrentPrice() : effective.getPrice();
+            return new VariantOption(v.getId(), v.getVariantName(), price.longValue(),
+                    available.getOrDefault(v.getId(), 0L) > 0);
+        }).toList();
         return new ProductDetail(p.getId(), p.getName(), p.getBrand().getName(), p.getDescription(),
                 p.getThumbnailUrl(), options);
     }

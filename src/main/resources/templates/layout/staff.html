@@ -11,6 +11,8 @@
     (function () {
       var d = document.documentElement;
       try {
+        var savedTheme = document.cookie.match(/(?:^|; )lap_theme=(dark|light)(?:;|$)/);
+        d.dataset.theme = savedTheme ? savedTheme[1] : (localStorage.getItem('lap_theme') === 'dark' ? 'dark' : 'light');
         if (window.self !== window.top) { d.classList.add('embedded'); return; }
         d.dataset.layout = localStorage.getItem('lap_layout') === 'topmenu' ? 'topmenu' : 'sidebar';
         d.dataset.collapsed = localStorage.getItem('lap_collapsed') === '1' ? '1' : '0';
@@ -29,7 +31,7 @@
 <aside id="appNav" class="app-nav">
   <a th:href="@{/}" class="app-brand">
     <span class="app-brand-mark"><svg th:replace="~{fragments/ui :: icon('laptop','size-5')}"></svg></span>
-    <span class="app-brand-text">Lap<span class="text-brand-300">store</span></span>
+    <span class="app-brand-text">Lap<span class="text-brand-600">store</span></span>
   </a>
   <div class="app-nav-scroll">
     <p class="nav-section"
@@ -99,6 +101,11 @@
         <svg th:replace="~{fragments/ui :: icon('chart','size-5')}"></svg><span class="nav-label">Báo cáo</span></a>
     </th:block>
     </nav>
+    <nav class="nav-group" th:if="${nav != 'admin' and (preview == true or #authorization.expression('hasAnyAuthority(''PORTAL_SALES'', ''PORTAL_CONSULT'', ''PORTAL_WAREHOUSE'')'))}">
+      <a th:href="@{/staff/attendance}" class="nav-link" data-tab="true" title="Giao ca &amp; chấm công"
+         th:classappend="${#strings.startsWith(navPath, '/staff/attendance')} ? 'nav-active'">
+        <svg th:replace="~{fragments/ui :: icon('calendar','size-5')}"></svg><span class="nav-label">Giao ca &amp; chấm công</span></a>
+    </nav>
     <p class="nav-section">Chuyển phân hệ</p>
     <nav class="nav-group">
       <a data-path="/staff/sales" data-port="8081" th:href="@{/staff/sales}" class="nav-link" title="Bán hàng"
@@ -124,6 +131,8 @@
       <svg th:replace="~{fragments/ui :: icon('chevron-left','size-5 collapse-icon')}"></svg><span class="nav-label">Thu gọn menu</span></button>
     <button type="button" class="nav-link" data-act="openSettings" title="Cài đặt giao diện">
       <svg th:replace="~{fragments/ui :: icon('sliders','size-5')}"></svg><span class="nav-label">Cài đặt</span></button>
+    <button type="button" class="nav-link" data-act="toggleTheme" title="Chuyển sáng / tối">
+      <svg th:replace="~{fragments/ui :: icon('moon','size-5')}"></svg><span class="nav-label theme-label">Giao diện tối</span></button>
     <form th:action="@{${nav == 'admin' ? '/admin/logout' : '/staff/logout'}}" method="post">
       <button type="submit" class="nav-link w-full cursor-pointer" title="Đăng xuất">
         <svg th:replace="~{fragments/ui :: icon('logout','size-5')}"></svg><span class="nav-label">Đăng xuất</span></button>
@@ -146,7 +155,7 @@
 
   <div class="app-content">
     <main id="ownContent" class="min-w-0">
-      <div class="mx-auto max-w-7xl p-6 lg:p-8">
+      <div class="mx-auto w-full max-w-[1600px] p-4 lg:p-6">
         <div th:replace="~{fragments/alerts :: flash}"></div>
         <th:block th:insert="${content}"></th:block>
       </div>
@@ -157,6 +166,17 @@
 </div>
 
 <div id="toasts" class="toasts" aria-live="polite"></div>
+<dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmTitle">
+  <form method="dialog" class="confirm-dialog-body">
+    <span class="confirm-icon"><svg th:replace="~{fragments/ui :: icon('alert','size-5')}"></svg></span>
+    <h2 id="confirmTitle">Xác nhận thao tác</h2>
+    <p id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button value="cancel" class="btn-secondary">Hủy</button>
+      <button value="confirm" class="btn-primary">Tiếp tục</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="settingsDialog" class="settings" aria-labelledby="settingsTitle">
   <div class="settings-body">

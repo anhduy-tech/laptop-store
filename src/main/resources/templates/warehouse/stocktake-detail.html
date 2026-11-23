@@ -34,12 +34,12 @@
     </form>
     <div class="space-y-4">
       <form th:action="@{/staff/warehouse/stocktakes/{c}/close(c=${view.header.code})}" method="post" class="form-section"
-            onsubmit="return confirm('Đóng phiên? Máy chưa quét sẽ được ghi là THIẾU và không quét thêm được nữa.');">
+            data-confirm="Đóng phiên? Máy chưa quét sẽ được ghi là THIẾU và không quét thêm được nữa.">
         <h2 class="form-section-title">Đóng phiên</h2>
         <p class="form-section-desc mb-3">Khi quét xong. <b th:text="${view.header.remaining()}">0</b> máy chưa quét sẽ thành "Thiếu".</p>
         <button class="btn-primary w-full" type="submit">Đóng phiên kiểm kê</button></form>
       <form th:action="@{/staff/warehouse/stocktakes/{c}/cancel(c=${view.header.code})}" method="post" class="form-section"
-            onsubmit="return confirm('Hủy phiên kiểm kê này? Kết quả quét sẽ không được dùng.');">
+            data-confirm="Hủy phiên kiểm kê này? Kết quả quét sẽ không được dùng.">
         <h2 class="form-section-title">Hủy phiên</h2>
         <p class="form-section-desc mb-3">Bỏ phiên (nhập nhầm chi nhánh...). Không đổi tồn kho.</p>
         <button class="btn-secondary w-full" type="submit">Hủy phiên</button></form>
@@ -54,7 +54,7 @@
       <p class="hint">Máy <b>dư</b> đang còn hàng ở chi nhánh khác được chuyển về chi nhánh này. Máy <b>thiếu</b> chuyển sang trạng thái DEFECTIVE và trừ tồn
         (hệ thống chưa có trạng thái "mất"). Máy đang giữ cho đơn hoặc đã đổi trạng thái được bỏ qua và liệt kê lại.</p></div>
     <form th:action="@{/staff/warehouse/stocktakes/{c}/adjust(c=${view.header.code})}" method="post"
-          onsubmit="return confirm('Áp dụng điều chỉnh tồn kho theo kết quả kiểm kê?');">
+          data-confirm="Áp dụng điều chỉnh tồn kho theo kết quả kiểm kê?">
       <button class="btn-primary" type="submit">Áp dụng điều chỉnh</button></form>
   </div>
 

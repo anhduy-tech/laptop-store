@@ -60,4 +60,14 @@ public interface PriceHistoryRepository extends JpaRepository<PriceHistory, Long
       order by ph.effectiveFrom desc
       """)
   List<PriceHistory> findEffective(@Param("variantId") Long variantId, @Param("now") Instant now);
+
+  @EntityGraph(attributePaths = "variant")
+  @Query("""
+      select ph from PriceHistory ph
+      where ph.variant.id in :variantIds and ph.status = 'APPROVED'
+        and ph.effectiveFrom <= :now and (ph.effectiveTo is null or ph.effectiveTo > :now)
+      order by ph.variant.id, ph.effectiveFrom desc
+      """)
+  List<PriceHistory> findEffectiveByVariantIds(@Param("variantIds") Collection<Long> variantIds,
+      @Param("now") Instant now);
 }

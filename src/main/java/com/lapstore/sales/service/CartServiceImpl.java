@@ -12,6 +12,7 @@ import com.lapstore.catalog.domain.PriceHistory;
 import com.lapstore.catalog.domain.ProductVariant;
 import com.lapstore.catalog.repo.PriceHistoryRepository;
 import com.lapstore.common.exception.BusinessException;
+import com.lapstore.inventory.repo.InventoryBalanceRepository;
 import com.lapstore.sales.domain.Cart;
 import com.lapstore.sales.domain.CartItem;
 import com.lapstore.sales.dto.CartItemView;
@@ -32,10 +33,12 @@ class CartServiceImpl implements CartService {
 
     private final EntityManager em;
     private final PriceHistoryRepository prices;
+    private final InventoryBalanceRepository balances;
 
-    CartServiceImpl(EntityManager em, PriceHistoryRepository prices) {
+    CartServiceImpl(EntityManager em, PriceHistoryRepository prices, InventoryBalanceRepository balances) {
         this.em = em;
         this.prices = prices;
+        this.balances = balances;
     }
 
     @Override
@@ -75,6 +78,14 @@ class CartServiceImpl implements CartService {
         if (v == null || !"ACTIVE".equals(v.getStatus()))
             throw new BusinessException("Sản phẩm này hiện không bán.");
         Cart cart = find(cartToken);
+        List<CartItem> existing = cart == null ? List.of()
+                : em.createQuery("select i from CartItem i where i.cart.id = :c and i.variant.id = :v",
+                        CartItem.class).setParameter("c", cart.getId()).setParameter("v", variantId).getResultList();
+        int currentQuantity = existing.isEmpty() ? 0 : existing.get(0).getQuantity();
+        int targetQuantity = Math.min(MAX_PER_ITEM, currentQuantity + quantity);
+        if (balances.maxAvailableByVariantId(variantId) < targetQuantity) {
+            throw new BusinessException("Cấu hình " + v.getVariantName() + " hiện không đủ hàng.");
+        }
         if (cart == null) {
             if (cartToken == null || !TOKEN.matcher(cartToken).matches())
                 throw new BusinessException("Phiên giỏ hàng không hợp lệ.");
@@ -84,8 +95,6 @@ class CartServiceImpl implements CartService {
             em.persist(cart);
         }
         cart.setExpiresAt(Instant.now().plus(14, ChronoUnit.DAYS));
-        List<CartItem> existing = em.createQuery("select i from CartItem i where i.cart.id = :c and i.variant.id = :v",
-                CartItem.class).setParameter("c", cart.getId()).setParameter("v", variantId).getResultList();
         if (!existing.isEmpty()) {
             CartItem i = existing.get(0);
             i.setQuantity(Math.min(MAX_PER_ITEM, i.getQuantity() + quantity));

@@ -1,11 +1,21 @@
 <html th:replace="~{layout/shop :: layout(~{::title}, ~{::section})}" xmlns:th="http://www.thymeleaf.org">
 <head><title>Thanh toán – Lapstore</title></head>
 <body>
-<section>
-  <h1 class="page-title mb-6">Thanh toán</h1>
-  <form th:action="@{/shop/checkout}" method="post" class="grid gap-6 lg:grid-cols-3">
-    <div class="card space-y-5 lg:col-span-2">
-      <h2 class="font-semibold">Thông tin người nhận</h2>
+<section class="mx-auto max-w-6xl">
+  <div class="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 pb-4">
+    <div><p class="catalog-kicker">Hoàn tất đơn hàng</p><h1 class="catalog-title">Thông tin nhận hàng</h1></div>
+    <a th:href="@{/shop/cart}" class="text-sm font-medium text-brand-800 hover:text-brand-900">Quay lại giỏ hàng</a>
+  </div>
+  <ol class="mb-5 flex items-center gap-2 text-xs font-medium text-slate-500" aria-label="Các bước đặt hàng">
+    <li class="text-brand-800">01 <span class="ml-1">Giỏ hàng</span></li>
+    <li aria-hidden="true" class="text-slate-300">/</li>
+    <li class="font-semibold text-slate-900">02 <span class="ml-1">Thông tin nhận hàng</span></li>
+    <li aria-hidden="true" class="text-slate-300">/</li>
+    <li>03 <span class="ml-1">Xác nhận</span></li>
+  </ol>
+  <form th:action="@{/shop/checkout}" method="post" class="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="card space-y-4">
+      <h2 class="border-b border-slate-200 pb-3 font-semibold">Thông tin người nhận</h2>
       <div class="grid gap-4 sm:grid-cols-2">
         <div th:replace="~{fragments/ui :: field('Họ tên','fullName',${form?.fullName},${errors?.get('fullName')},'text',true)}"></div>
         <div th:replace="~{fragments/ui :: field('Số điện thoại','phone',${form?.phone},${errors?.get('phone')},'tel',true)}"></div>
@@ -14,10 +24,10 @@
       <div>
         <p class="label">Hình thức nhận hàng</p>
         <div class="grid gap-3 sm:grid-cols-2">
-          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+          <label class="flex cursor-pointer items-center gap-3 rounded-md border border-slate-300 p-3 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50">
             <input type="radio" name="receiveMethod" value="PICKUP" class="accent-brand-600" th:checked="${form?.receiveMethod != 'DELIVERY'}"/>
             <span><span class="block text-sm font-medium">Nhận tại cửa hàng</span><span class="hint !mt-0">Miễn phí</span></span></label>
-          <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-300 p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
+          <label class="flex cursor-pointer items-center gap-3 rounded-md border border-slate-300 p-3 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50">
             <input type="radio" name="receiveMethod" value="DELIVERY" class="accent-brand-600" th:checked="${form?.receiveMethod == 'DELIVERY'}"/>
             <span><span class="block text-sm font-medium">Giao tận nơi</span><span class="hint !mt-0">Nhập địa chỉ bên dưới</span></span></label>
         </div>
@@ -35,7 +45,7 @@
     </div>
 
     <aside class="card h-fit space-y-4">
-      <h2 class="font-semibold">Đơn hàng</h2>
+      <h2 class="border-b border-slate-200 pb-3 font-semibold">Tóm tắt đơn hàng</h2>
       <ul class="divide-y divide-slate-100 text-sm">
         <li th:each="i : ${items}" class="flex justify-between gap-3 py-2">
           <span><span th:text="${i.variantName}">Variant</span> <span class="text-slate-400">× <span th:text="${i.quantity}">1</span></span></span>
@@ -43,7 +53,7 @@
         </li>
       </ul>
       <div class="flex justify-between border-t border-slate-200 pt-4"><span class="text-sm text-slate-600">Tổng cộng</span>
-        <span class="text-xl font-extrabold"><span th:replace="~{fragments/ui :: money(${total})}"></span></span></div>
+        <span class="text-lg font-bold tabular-nums"><span th:replace="~{fragments/ui :: money(${total})}"></span></span></div>
       <button class="btn-primary btn-lg w-full" type="submit">Đặt hàng</button>
     </aside>
   </form>

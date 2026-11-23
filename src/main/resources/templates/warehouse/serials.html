@@ -46,7 +46,7 @@
         <td class="text-sm" th:text="${r.receivedAt}">01/01/2026</td>
         <td class="text-right"><form th:if="${r.held and (preview == true or #authorization.expression('hasAuthority(''STOCK_HOLD_RELEASE'')'))}"
               th:action="@{/staff/warehouse/serials/release}" method="post"
-              onsubmit="return confirm('Nhả giữ máy này? Máy sẽ bị gỡ khỏi đơn đang lên.');">
+              data-confirm="Nhả giữ máy này? Máy sẽ bị gỡ khỏi đơn đang lên.">
             <input type="hidden" name="sn" th:value="${r.serialNumber}"/><input type="hidden" name="back" th:value="${backUrl}"/>
             <button type="submit" class="btn-ghost btn-sm inline-flex items-center gap-1.5" title="Nhả giữ máy">
               <svg th:replace="~{fragments/ui :: icon('unlock','size-4')}"></svg> Nhả</button></form></td></tr></tbody></table></div>

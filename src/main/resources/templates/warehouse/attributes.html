@@ -54,7 +54,7 @@
       <td class="text-right">
         <form th:if="${preview == true or #authorization.expression('hasAuthority(''PRODUCT_MANAGE'')')}"
               th:action="@{/staff/warehouse/attributes/{id}/delete(id=${r.id})}" method="post"
-              onsubmit="return confirm('Xóa giá trị này?');">
+              data-confirm="Xóa giá trị này?">
           <input type="hidden" name="kind" th:value="${kind.name()}"/>
           <button class="btn-ghost btn-sm text-red-600" type="submit" th:disabled="${!r.deletable()}"
                   th:title="${r.deletable()} ? 'Xóa giá trị' : 'Đang có sản phẩm dùng, không xóa được'">Xóa</button>

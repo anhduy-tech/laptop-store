@@ -16,4 +16,16 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
     /** Ca của một nhân viên trong ngày (trừ ca đã hủy), để kiểm tra trùng giờ. */
     @EntityGraph(attributePaths = "shiftTemplate")
     List<ShiftAssignment> findByStaff_IdAndWorkDateAndStatusNot(Long staffId, LocalDate workDate, String status);
+
+    @EntityGraph(attributePaths = { "staff", "shiftTemplate", "branch" })
+    List<ShiftAssignment> findByStaff_UsernameAndWorkDateAndStatusNotOrderByIdAsc(
+            String username, LocalDate workDate, String status);
+
+    @EntityGraph(attributePaths = { "staff", "shiftTemplate", "branch" })
+    java.util.Optional<ShiftAssignment> findByIdAndStaff_UsernameAndWorkDateAndStatus(
+            Long id, String username, LocalDate workDate, String status);
+
+    @EntityGraph(attributePaths = { "staff", "shiftTemplate", "branch" })
+    java.util.Optional<ShiftAssignment> findByIdAndStaff_Username(Long id, String username);
+
 }
