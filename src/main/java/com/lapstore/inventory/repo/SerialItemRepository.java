@@ -26,4 +26,8 @@ public interface SerialItemRepository extends JpaRepository<SerialItem, Long> {
 
     @EntityGraph(attributePaths = { "variant", "branch" })
     List<SerialItem> findBySerialNumberIn(Collection<String> serialNumbers);
+
+    @EntityGraph(attributePaths = { "variant", "branch", "orderItem" })
+    List<SerialItem> findByOrderItem_IdIn(Collection<Long> orderItemIds);
+
 }
