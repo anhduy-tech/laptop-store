@@ -311,11 +311,11 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 ### Bước 8 · Đơn hàng
 
 - [x] `CounterCheckoutService`: mở đơn quầy (mỗi nhân viên tối đa 5 đơn mở cùng lúc (tab)), thu tiền (tiền mặt có khách đưa/tiền thối, chuyển khoản, quẹt thẻ), chọn khách, voucher + khuyến mãi, popup chọn sản phẩm theo cấu hình, xem trước hóa đơn, hold -> `CONVERTED`, serial -> `SOLD`, chốt giá snapshot từ `price_history` APPROVED đang hiệu lực, bảo hành, trừ `on_hand`/`held_qty`, `order_status_history` *(chưa chạy thử; chưa có BR-10: chấm công/ca)*
-- [ ] `CartService` và giỏ hàng khách (session)
-- [ ] `OnlineOrderService`: checkout không cần đăng nhập, giữ số lượng, snapshot giá từng dòng
-- [ ] `OrderService`: xác nhận · gán serial · hoàn tất · hủy (kèm lý do), ghi `order_status_history`
-- [ ] `OrderQueryService`: danh sách đơn, chi tiết, tra cứu theo mã đơn + SĐT (BR-08)
-- [ ] Hóa đơn PDF (`/staff/sales/orders/{id}/invoice.pdf`) bằng OpenPDF
+- [x] `CartService` và giỏ hàng khách (session) *(chưa chạy thử)*
+- [x] `OnlineOrderService`: checkout không cần đăng nhập, giữ số lượng, snapshot giá từng dòng *(chưa chạy thử)*
+- [x] `OrderService`: xác nhận · gán serial · hoàn tất · hủy (kèm lý do), ghi `order_status_history` *(chưa chạy thử)*
+- [x] `OrderQueryService`: danh sách đơn, chi tiết, tra cứu theo mã đơn + SĐT (BR-08) *(chưa chạy thử)*
+- [x] Hóa đơn PDF (`/staff/sales/orders/{id}/invoice.pdf`) bằng OpenPDF, font DejaVu nhúng ở `resources/fonts` (đơn COMPLETED) *(chưa chạy thử)*
 - [ ] Test tranh chấp: nhiều đơn online cùng tranh vài máy cuối
   *Xong khi: đặt online 1 máy -> `held_qty` +1; nhân viên xác nhận và gán serial -> serial `SOLD`, lịch sử trạng thái đủ dòng.*
 
@@ -371,6 +371,8 @@ Thứ tự bên dưới bám theo **12 bước dựng dự án** và thứ tự 
 - [x] Tab chi tiết/sửa sản phẩm ghi rõ tên sản phẩm/SKU; điều hướng sang trang đã có tab khác thì gộp tab; nút thu gọn nằm trong sidebar; thanh tìm kiếm là kính lúp bấm mới mở; top menu căn lề theo nội dung, bỏ thanh cuộn ngang
 - [x] Nhập/xuất Excel bằng Apache POI: nút "Nhập từ Excel" đọc serial (nhập kho từng dòng biến thể, chuyển kho, kiểm kê; tự nhận cột theo tiêu đề, bỏ trùng/dòng trống, giữ số dài), tải file mẫu, xuất tồn kho / serial của một cấu hình (cột giá vốn theo quyền COST_VIEW) / kết quả kiểm kê *(chưa chạy thử)*
 - [x] Kiểm kê (WH-08, `/staff/warehouse/stocktakes`): tạo phiên theo chi nhánh (chụp danh sách máy hệ thống ghi đang còn hàng) → quét serial nhiều lần → đóng (chưa quét = Thiếu, máy ngoài danh sách = Dư) → áp dụng điều chỉnh (dư ở chi nhánh khác chuyển về; thiếu chuyển DEFECTIVE và trừ tồn vì schema chưa có trạng thái "mất"); quyền `STOCK_STOCKTAKE` (V5) *(chưa chạy thử)*
+- [x] Nhả giữ máy thủ công (`/staff/warehouse/serials/view` → nút "Nhả giữ máy", `POST /serials/release`): kho nhả hold ACTIVE của một serial khi nhân viên lỡ đóng trang lúc lên đơn quầy; `SerialHoldAdminService` lấy KeyedLock `serial:SN` rồi gọi `HoldTx.forceRelease`; chỉ nhả hold của đơn DRAFT hoặc hold không gắn đơn; quyền `STOCK_HOLD_RELEASE` (V6); danh sách `/serials` có nhãn "Đang giữ" và nút "Nhả" ngay trên dòng (quay lại đúng trang tìm kiếm) *(chưa chạy thử)*
+- [x] POS: thay emoji/ký tự bằng icon SVG (`fragments/ui :: icon`: plus, user-plus, bulb, clock, unlock, refresh, receipt, ticket…)
 - [x] Bộ kịch bản thử nhập kho/Excel/chuyển kho/kiểm kê kèm dữ liệu và file Excel mẫu: `docs/test-nhap-kho/`
 - [x] Tra cứu serial (WH-09): trang `/staff/warehouse/serials` (tìm một phần serial, lọc trạng thái, phân trang) và hồ sơ máy `/staff/warehouse/serials/view?sn=` (vị trí, cấu hình, phiếu nhập/NCC, đơn đã bán + hạn bảo hành, hold đang giữ, dòng thời gian trạng thái, phiếu chuyển, kiểm kê). Ô kính lúp tìm gộp sản phẩm + serial và quét đúng nguyên một serial thì vào thẳng hồ sơ máy; Tồn kho và Sản phẩm cũng tìm được theo serial *(chưa chạy thử)*
 - [ ] Danh sách phiếu nhập kho, ràng buộc chỉ chi nhánh đích mới được nhận hàng, trạng thái "mất" cho serial, upload ảnh sản phẩm, thêm màu/danh mục mới, màn nhận hàng chuyển kho, danh sách phiếu nhập/chuyển, nhập serial bằng Excel

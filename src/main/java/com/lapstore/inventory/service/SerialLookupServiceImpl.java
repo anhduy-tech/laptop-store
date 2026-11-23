@@ -5,6 +5,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -72,10 +74,17 @@ class SerialLookupServiceImpl implements SerialLookupService {
             data.setParameter("st", status);
             count.setParameter("st", status);
         }
-        List<SerialSearchRow> rows = data.setFirstResult((int) pageable.getOffset())
-                .setMaxResults(pageable.getPageSize()).getResultList().stream()
+        var raw = data.setFirstResult((int) pageable.getOffset()).setMaxResults(pageable.getPageSize())
+                .getResultList();
+        Set<String> held = raw.isEmpty() ? Set.of()
+                : new HashSet<>(em.createQuery("select h.serial.serialNumber from StockHold h "
+                        + "where h.status = 'ACTIVE' and h.serial.serialNumber in :sns", String.class)
+                        .setParameter("sns", raw.stream().map(SerialRowData::serialNumber).toList())
+                        .getResultList());
+        List<SerialSearchRow> rows = raw.stream()
                 .map(d -> new SerialSearchRow(d.serialNumber(), d.productName(), d.sku(), d.variantName(),
-                        d.colorName(), d.branchName(), d.status(), fmt(d.createdAt())))
+                        d.colorName(), d.branchName(), d.status(), fmt(d.createdAt()),
+                        held.contains(d.serialNumber())))
                 .toList();
         return new PageImpl<>(rows, pageable, count.getSingleResult());
     }
@@ -120,6 +129,14 @@ class SerialLookupServiceImpl implements SerialLookupService {
                     h.getChangedBy() == null ? "" : h.getChangedBy().getUsername()));
         }
 
+        // Máy đã bán nhưng thiếu dòng "SOLD" (dữ liệu bán từ bản cũ / nhập tay): dựng từ sold_at + đơn để lịch sử không hụt.
+        if (s.getSoldAt() != null && s.getOrderItem() != null
+                && history.stream().noneMatch(h -> "SOLD".equals(h.toStatus()))) {
+            String soldFrom = history.isEmpty() ? "" : history.get(history.size() - 1).toBranch();
+            history.add(new HistoryRow(fmt(s.getSoldAt()), "IN_STOCK", "SOLD", soldFrom, "", "ORDER",
+                    s.getOrderItem().getOrder().getOrderCode(), ""));
+        }
+
         List<StocktakeRef> stocktakes = em.createQuery("select i from StocktakeItem i join fetch i.stocktake st "
                 + "join fetch st.branch where i.serial.id = :id order by st.startedAt desc", StocktakeItem.class)
                 .setParameter("id", s.getId()).getResultList().stream()
@@ -162,6 +179,8 @@ class SerialLookupServiceImpl implements SerialLookupService {
             case "RECEIPT" -> codeOf(GoodsReceipt.class, refId);
             case "TRANSFER" -> codeOf(StockTransfer.class, refId);
             case "STOCKTAKE" -> codeOf(Stocktake.class, refId);
+            case "ORDER" -> em.createQuery("select o.orderCode from CustomerOrder o where o.id = :id", String.class)
+                    .setParameter("id", refId).getResultStream().findFirst().orElse(null);
             default -> null;
         };
     }

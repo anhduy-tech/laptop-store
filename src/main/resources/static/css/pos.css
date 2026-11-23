@@ -168,3 +168,13 @@
 /* số tiền / thời gian không xuống dòng */
 .pos .tbl td.text-right, .pos .tbl td.text-center, .pos .tbl th { white-space:nowrap; }
 .pos-results .tbl td:first-child { min-width:190px; }
+
+/* ===== Icon SVG ===== */
+.pos svg.size-4 { width:16px; height:16px; }
+.pos svg.size-5 { width:20px; height:20px; }
+.pos .btn-primary, .pos .btn-secondary, .pos .btn-ghost { display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.pos-quick summary { display:inline-flex; align-items:center; gap:6px; }
+.pos-x { display:inline-flex; align-items:center; justify-content:center; padding:0; }
+.pos-better-t { display:flex; align-items:flex-start; gap:8px; color:#047857; }
+.pos-better-t svg { margin-top:1px; color:#059669; }
+.pos-danger svg { color:inherit; }

@@ -166,6 +166,35 @@ public class HoldTx {
         events.publishEvent(new StockChanged(s.getVariant().getId(), s.getBranch().getId()));
     }
 
+    /**
+     * Nhả thủ công hold ACTIVE của một máy, bất kể thuộc đơn nào (kho dùng khi nhân viên bán hàng lỡ đóng
+     * trang giữa chừng). Chỉ nhả hold của đơn quầy còn nháp hoặc hold không gắn đơn; đơn đã xác nhận /
+     * đang xử lý thì từ chối vì máy đó đã được gán cho khách.
+     *
+     * @return mã đơn bị nhả (chuỗi rỗng nếu hold không gắn đơn); null nếu máy không có hold ACTIVE
+     */
+    @Transactional
+    public String forceRelease(String serialNumber) {
+        Instant now = Instant.now();
+        SerialItem s = serials.findBySerialNumber(serialNumber)
+                .orElseThrow(() -> new NotFoundException("Không tìm thấy serial " + serialNumber));
+        StockHold h = holds.findBySerial_IdAndStatus(s.getId(), ACTIVE).orElse(null);
+        if (h == null)
+            return null;
+        String orderCode = "";
+        if (h.getOrder() != null) {
+            if (!"DRAFT".equals(h.getOrder().getStatus()))
+                throw new BusinessException("Máy " + serialNumber + " đang gắn với đơn " + h.getOrder().getOrderCode()
+                        + " (" + h.getOrder().getStatus() + "), không nhả thủ công được. Hãy hủy đơn đó trước.");
+            orderCode = h.getOrder().getOrderCode();
+        }
+        h.setStatus(RELEASED);
+        h.setReleasedAt(now);
+        adjust(s.getVariant().getId(), s.getBranch().getId(), -h.getQuantity(), now);
+        events.publishEvent(new StockChanged(s.getVariant().getId(), s.getBranch().getId()));
+        return orderCode;
+    }
+
     @Transactional
     public boolean renew(String serialNumber, long orderId) {
         Instant now = Instant.now();

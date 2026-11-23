@@ -13,10 +13,6 @@ import com.lapstore.chat.service.ChatService;
 import com.lapstore.common.exception.ServiceNotReadyException;
 import com.lapstore.inventory.service.StockHoldService;
 import com.lapstore.reporting.service.ReportingService;
-import com.lapstore.sales.service.CartService;
-import com.lapstore.sales.service.OnlineOrderService;
-import com.lapstore.sales.service.OrderQueryService;
-import com.lapstore.sales.service.OrderService;
 import com.lapstore.staff.service.StaffService;
 
 @Configuration
@@ -47,30 +43,6 @@ class ServiceStubConfig {
     @ConditionalOnMissingBean
     PriceHistoryService priceHistoryService() {
         return stub(PriceHistoryService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    CartService cartService() {
-        return stub(CartService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    OnlineOrderService onlineOrderService() {
-        return stub(OnlineOrderService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    OrderQueryService orderQueryService() {
-        return stub(OrderQueryService.class);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    OrderService orderService() {
-        return stub(OrderService.class);
     }
 
     @Bean

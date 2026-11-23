@@ -32,7 +32,7 @@
       "<span class="font-mono text-slate-800" th:text="${q}">q</span>".</p>
     <th:block th:if="${page.content.isEmpty()}"><div th:replace="~{fragments/ui :: empty('Không có serial nào khớp')}"></div></th:block>
     <div th:unless="${page.content.isEmpty()}" class="table-wrap"><table class="tbl">
-      <thead><tr><th>Serial</th><th>Sản phẩm</th><th>SKU</th><th>Chi nhánh</th><th>Trạng thái</th><th>Nhập lúc</th></tr></thead>
+      <thead><tr><th>Serial</th><th>Sản phẩm</th><th>SKU</th><th>Chi nhánh</th><th>Trạng thái</th><th>Nhập lúc</th><th class="w-px"></th></tr></thead>
       <tbody><tr th:each="r : ${page.content}">
         <td class="font-mono text-xs font-semibold">
           <a class="text-slate-900 hover:text-brand-600" data-newtab="true" th:attr="data-title='Serial: ' + ${r.serialNumber}"
@@ -41,8 +41,15 @@
           <span class="block text-xs text-slate-400"><span th:text="${r.variantName}">Cấu hình</span> · <span th:text="${r.colorName}">Màu</span></span></td>
         <td class="font-mono text-xs" th:text="${r.sku}">SKU</td>
         <td th:text="${r.branchName}">CN</td>
-        <td><span th:replace="~{fragments/ui :: badge(${r.status})}"></span></td>
-        <td class="text-sm" th:text="${r.receivedAt}">01/01/2026</td></tr></tbody></table></div>
+        <td><span th:replace="~{fragments/ui :: badge(${r.status})}"></span>
+          <span th:if="${r.held}" class="badge badge-amber ml-1">Đang giữ</span></td>
+        <td class="text-sm" th:text="${r.receivedAt}">01/01/2026</td>
+        <td class="text-right"><form th:if="${r.held and (preview == true or #authorization.expression('hasAuthority(''STOCK_HOLD_RELEASE'')'))}"
+              th:action="@{/staff/warehouse/serials/release}" method="post"
+              onsubmit="return confirm('Nhả giữ máy này? Máy sẽ bị gỡ khỏi đơn đang lên.');">
+            <input type="hidden" name="sn" th:value="${r.serialNumber}"/><input type="hidden" name="back" th:value="${backUrl}"/>
+            <button type="submit" class="btn-ghost btn-sm inline-flex items-center gap-1.5" title="Nhả giữ máy">
+              <svg th:replace="~{fragments/ui :: icon('unlock','size-4')}"></svg> Nhả</button></form></td></tr></tbody></table></div>
     <div th:replace="~{fragments/ui :: tablefoot(${page}, @{/staff/warehouse/serials(q=${q},status=${status})} + '&amp;')}"></div>
   </th:block>
 </section></body></html>

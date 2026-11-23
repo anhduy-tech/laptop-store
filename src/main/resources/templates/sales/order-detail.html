@@ -21,6 +21,7 @@
     </div>
     <aside class="card h-fit space-y-3">
       <div class="flex justify-between"><span class="text-sm text-slate-600">Tổng</span><span class="text-xl font-extrabold"><span th:replace="~{fragments/ui :: money(${order.total})}"></span></span></div>
+      <a th:if="${order.status == 'COMPLETED'}" class="btn-secondary w-full text-center" target="_blank" th:href="@{/staff/sales/orders/{id}/invoice.pdf(id=${order.id})}">Tải hóa đơn PDF</a>
       <form th:if="${order.status == 'NEW'}" th:action="@{/staff/sales/orders/{id}/confirm(id=${order.id})}" method="post"><button class="btn-primary w-full" type="submit">Xác nhận đơn</button></form>
       <form th:if="${order.status == 'CONFIRMED'}" th:action="@{/staff/sales/orders/{id}/complete(id=${order.id})}" method="post"><button class="btn-primary w-full" type="submit">Hoàn tất</button></form>
       <form th:if="${order.status == 'NEW' or order.status == 'CONFIRMED'}" th:action="@{/staff/sales/orders/{id}/cancel(id=${order.id})}" method="post" data-confirm="Hủy đơn này?" class="space-y-2 border-t border-slate-200 pt-3">

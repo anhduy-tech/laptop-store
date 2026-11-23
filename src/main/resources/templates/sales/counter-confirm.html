@@ -4,7 +4,7 @@
 <link rel="stylesheet" th:href="@{/css/pos.css}"/>
   <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <div><h1 class="page-title">Xem hóa đơn &amp; thanh toán</h1><p class="page-sub">Kiểm tra lại đơn trước khi thu tiền — sau khi xác nhận không sửa được.</p></div>
-    <a th:href="@{/staff/sales/counter(order=${order.id})}" class="btn-ghost btn-sm">← Quay lại đơn</a>
+    <a th:href="@{/staff/sales/counter(order=${order.id})}" class="btn-ghost btn-sm"><svg th:replace="~{fragments/ui :: icon('back','size-4')}"></svg> Quay lại đơn</a>
   </div>
 
   <div class="pos-grid pos-grid-confirm">

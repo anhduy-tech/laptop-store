@@ -15,7 +15,7 @@
       <span class="pos-tab-meta" th:text="${o.lineCount} + ' máy' + (${o.customerName != null} ? ' · ' + ${o.customerName} : '')">0 máy</span>
     </a>
     <form th:action="@{/staff/sales/counter/open}" method="post" class="pos-tab-add" th:if="${orders.size() lt maxOpen}">
-      <button class="btn-primary btn-sm" type="submit">+ Đơn mới</button>
+      <button class="btn-primary btn-sm" type="submit"><svg th:replace="~{fragments/ui :: icon('plus','size-4')}"></svg> Đơn mới</button>
     </form>
     <span class="pos-tabs-note" th:if="${orders.size() ge maxOpen}" th:text="'Tối đa ' + ${maxOpen} + ' đơn mở'">Tối đa 5 đơn mở</span>
   </div>
@@ -34,9 +34,9 @@
         <div class="pos-card-head">
           <h2 class="pos-h">Giỏ hàng <span class="badge badge-blue" th:text="${order.code}">CT-001</span></h2>
           <div class="pos-actions">
-            <button type="button" class="btn-secondary btn-sm" id="openProducts">Chọn sản phẩm</button>
+            <button type="button" class="btn-secondary btn-sm" id="openProducts"><svg th:replace="~{fragments/ui :: icon('search','size-4')}"></svg> Chọn sản phẩm</button>
             <form th:action="@{/staff/sales/counter/{id}/renew(id=${order.id})}" method="post" th:if="${!order.lines.isEmpty()}">
-              <button type="submit" class="btn-ghost btn-sm" title="Gia hạn thời gian giữ máy">Gia hạn giữ</button>
+              <button type="submit" class="btn-ghost btn-sm" title="Gia hạn thời gian giữ máy"><svg th:replace="~{fragments/ui :: icon('refresh','size-4')}"></svg> Gia hạn giữ</button>
             </form>
             <form th:action="@{/staff/sales/counter/{id}/cancel(id=${order.id})}" method="post"
                   onsubmit="return confirm('Đóng đơn này? Các máy đang giữ sẽ được nhả.');">
@@ -65,7 +65,7 @@
                 <td class="text-right">
                   <form th:action="@{/staff/sales/counter/{id}/release(id=${order.id})}" method="post">
                     <input type="hidden" name="serial" th:value="${l.serial}"/>
-                    <button type="submit" class="btn-ghost btn-sm pos-danger" title="Bỏ máy khỏi đơn">Xóa</button>
+                    <button type="submit" class="btn-ghost btn-sm pos-danger" title="Bỏ máy khỏi đơn" aria-label="Bỏ máy khỏi đơn"><svg th:replace="~{fragments/ui :: icon('trash','size-4')}"></svg></button>
                   </form>
                 </td>
               </tr>
@@ -93,7 +93,7 @@
           </div>
           <form th:action="@{/staff/sales/counter/{id}/customer(id=${order.id})}" method="post" id="custPick"><input type="hidden" name="customerId" id="custId"/></form>
           <details class="pos-quick">
-            <summary>+ Thêm nhanh khách mới</summary>
+            <summary><svg th:replace="~{fragments/ui :: icon('user-plus','size-4')}"></svg> Thêm nhanh khách mới</summary>
             <form th:action="@{/staff/sales/counter/{id}/customer/quick(id=${order.id})}" method="post" class="pos-quick-form">
               <input class="input-field" name="name" placeholder="Tên khách" maxlength="120"/>
               <input class="input-field" name="phone" type="tel" placeholder="Số điện thoại" required="required"/>
@@ -125,8 +125,8 @@
         <th:block th:if="${suggestions != null and !suggestions.isEmpty()}">
           <th:block th:with="bestSug=${#lists.isEmpty(suggestions) ? null : suggestions[0]}">
             <div class="pos-better" th:if="${bestSug != null and bestSug.eligible and !bestSug.applied and bestSug.best and (order.voucher == null or bestSug.discount > order.voucher.discount)}">
-              <span>💡 Dùng <b class="font-mono" th:text="${bestSug.code}">LAP10</b> để tiết kiệm
-                <b><span th:replace="~{fragments/ui :: money(${order.voucher != null ? bestSug.discount - order.voucher.discount : bestSug.discount})}"></span></b><span th:if="${order.voucher != null}"> nữa</span></span>
+              <span class="pos-better-t"><svg th:replace="~{fragments/ui :: icon('bulb','size-5')}"></svg><span>Dùng <b class="font-mono" th:text="${bestSug.code}">LAP10</b> để tiết kiệm
+                <b><span th:replace="~{fragments/ui :: money(${order.voucher != null ? bestSug.discount - order.voucher.discount : bestSug.discount})}"></span></b><span th:if="${order.voucher != null}"> nữa</span></span></span>
               <form th:action="@{/staff/sales/counter/{id}/voucher(id=${order.id})}" method="post"><input type="hidden" name="code" th:value="${bestSug.code}"/><button class="btn-primary btn-sm" type="submit">Áp dụng</button></form>
             </div>
           </th:block>
@@ -170,7 +170,7 @@
   <dialog id="productDialog" class="pos-dialog" th:if="${order != null}">
     <div class="pos-dlg-head">
       <div><h2 class="pos-h pos-h-lg">Chọn sản phẩm</h2><div class="pos-muted">Lọc theo cấu hình, rồi chọn serial cụ thể để thêm vào đơn.</div></div>
-      <button type="button" class="pos-x" id="closeProducts" aria-label="Đóng">✕</button>
+      <button type="button" class="pos-x" id="closeProducts" aria-label="Đóng"><svg th:replace="~{fragments/ui :: icon('close','size-4')}"></svg></button>
     </div>
     <div class="pos-filters">
       <div class="pos-f pos-f-q"><label for="fQ">Tìm kiếm</label><input class="input-field" id="fQ" placeholder="Tên sản phẩm, SKU hoặc serial…" autocomplete="off"/></div>
