@@ -59,6 +59,21 @@ public interface InventoryBalanceRepository extends JpaRepository<InventoryBalan
     @Query("select coalesce(sum(b.onHand - b.heldQty), 0) from InventoryBalance b where b.id.variantId = :variantId")
     long sumAvailableByVariantId(@Param("variantId") Long variantId);
 
+    @Query("""
+            select b.id.variantId, sum(b.onHand - b.heldQty)
+            from InventoryBalance b
+            where b.id.variantId in :variantIds and b.branch.active = true
+            group by b.id.variantId
+            """)
+    List<Object[]> sumAvailableByVariantIds(@Param("variantIds") List<Long> variantIds);
+
+    @Query("""
+            select coalesce(max(b.onHand - b.heldQty), 0)
+            from InventoryBalance b
+            where b.id.variantId = :variantId and b.branch.active = true
+            """)
+    long maxAvailableByVariantId(@Param("variantId") Long variantId);
+
     List<InventoryBalance> findById_VariantId(Long variantId);
 
 }

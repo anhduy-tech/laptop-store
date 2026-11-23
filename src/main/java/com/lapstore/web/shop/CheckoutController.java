@@ -41,6 +41,7 @@ class CheckoutController {
         }
         model.addAttribute("items", cart.items());
         model.addAttribute("total", cart.total());
+        CartSession.rememberCheckoutSubtotal(session, cart.total());
         if (!model.containsAttribute("form")) model.addAttribute("form", new CheckoutForm());
         return "shop/checkout";
     }
@@ -58,7 +59,8 @@ class CheckoutController {
             String code = orders.placeOrder(CartSession.token(session), new CheckoutRequest(
                     form.getFullName().trim(), form.getPhone().trim(), Text.blankToNull(form.getEmail()),
                     form.getReceiveMethod(), delivery ? form.getAddress().trim() : null,
-                    Text.blankToNull(form.getVoucherCode())));
+                    Text.blankToNull(form.getVoucherCode()), CartSession.checkoutSubtotal(session)));
+            CartSession.clearCheckoutSubtotal(session);
             ra.addFlashAttribute("orderCode", code);
             return "redirect:/shop/orders/success";
         } catch (BusinessException e) {

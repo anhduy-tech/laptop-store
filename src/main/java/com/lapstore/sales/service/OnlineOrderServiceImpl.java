@@ -119,6 +119,9 @@ class OnlineOrderServiceImpl implements OnlineOrderService {
                     ci.getQuantity()));
         }
         Result res = PricingEngine.price(lines, pricing.runningCampaigns(now));
+        if (req.expectedSubtotal() != null && req.expectedSubtotal() != res.subtotal()) {
+            throw new BusinessException("Giá sản phẩm đã thay đổi. Vui lòng kiểm tra giá mới trước khi đặt hàng.");
+        }
 
         // 3) Khách (theo SĐT) và voucher
         String phone = req.phone().trim();
