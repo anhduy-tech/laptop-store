@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.lapstore.reporting.dto.DashboardKpi;
+
 /**
  * Xem trước 26 màn hình bằng DỮ LIỆU GIẢ — chỉ bật khi chạy profile "ui".
  * mvnw spring-boot:run -Dspring-boot.run.profiles=ui
@@ -244,7 +246,7 @@ class UiPreviewController {
             }
             case "ad-00" -> {
                 model.addAttribute("pendingPrices", 3);
-                model.addAttribute("kpi", m("revenue", 121000000L, "orders", 4, "onDuty", 5));
+                model.addAttribute("kpi", new DashboardKpi(121000000L, 4, 5));
             }
             case "ad-01" -> model.addAttribute("users", e ? List.of()
                     : List.of(

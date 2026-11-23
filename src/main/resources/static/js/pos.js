@@ -27,6 +27,9 @@
       return r.json();
     });
   }
+  function notifyError(message) {
+    if (window.LapToast) window.LapToast(message, 'error');
+  }
   function fmtLeft(s) {
     if (s <= 0) return 'Hết hạn';
     var m = Math.floor(s / 60), x = s % 60;
@@ -51,7 +54,7 @@
   // ------------------------------------------------------------------ 2) tìm khách
   var custQ = $('#custQ');
   if (custQ) {
-    var list = $('#custList'), hot = -1, hits = [];
+    var list = $('#custList'), hot = -1, hits = [], lastCustomerError = 0;
     var close = function () { list.hidden = true; hot = -1; };
     var pick = function (c) { $('#custId').value = c.id; $('#custPick').submit(); };
     var render = function () {
@@ -71,8 +74,13 @@
     var search = debounce(function () {
       var q = custQ.value.trim();
       if (q.length < 2) { close(); return; }
-      getJson(api + '/customers?q=' + encodeURIComponent(q)).then(function (r) { hits = r; hot = -1; render(); })
-        .catch(function () { close(); });
+      getJson(api + '/customers?q=' + encodeURIComponent(q)).then(function (r) {
+        hits = r; hot = -1; lastCustomerError = 0; render();
+      }).catch(function () {
+        close();
+        if (Date.now() - lastCustomerError > 3000) notifyError('Không thể tìm khách hàng lúc này. Hãy thử lại.');
+        lastCustomerError = Date.now();
+      });
     }, 250);
     custQ.addEventListener('input', search);
     custQ.addEventListener('blur', function () { setTimeout(close, 120); });
@@ -112,7 +120,10 @@
         fill(f.gpu, o.gpus);
         fill(f.ram, o.rams, function (v) { return v + ' GB'; });
         fill(f.storage, o.storages, function (v) { return v >= 1024 && v % 1024 === 0 ? (v / 1024) + ' TB' : v + ' GB'; });
-      }).catch(function () { optionsLoaded = false; });
+      }).catch(function () {
+        optionsLoaded = false;
+        notifyError('Không tải được danh sách bộ lọc sản phẩm. Hãy thử mở lại.');
+      });
     };
 
     var query = function () {
@@ -159,7 +170,10 @@
           c6.appendChild(b); tr.appendChild(c6);
           body.appendChild(tr);
         });
-      }).catch(function () { count.textContent = 'Không tải được danh sách, thử lại.'; });
+      }).catch(function () {
+        count.textContent = 'Không tải được danh sách, thử lại.';
+        notifyError('Không tải được danh sách sản phẩm. Hãy thử lại.');
+      });
     };
     var runSoon = debounce(run, 300);
 
@@ -189,7 +203,10 @@
           lb.appendChild(cb); lb.appendChild(el('span', '', s.serial));
           li.appendChild(lb); ul.appendChild(li);
         });
-      }).catch(function () { ul.innerHTML = ''; ul.appendChild(el('li', 'pos-muted', 'Không tải được serial.')); });
+      }).catch(function () {
+        ul.innerHTML = ''; ul.appendChild(el('li', 'pos-muted', 'Không tải được serial.'));
+        notifyError('Không tải được serial của sản phẩm. Hãy thử lại.');
+      });
     };
     $('#serialAll').addEventListener('change', function (e) {
       selected = {};

@@ -39,7 +39,7 @@
               <button type="submit" class="btn-ghost btn-sm" title="Gia hạn thời gian giữ máy"><svg th:replace="~{fragments/ui :: icon('refresh','size-4')}"></svg> Gia hạn giữ</button>
             </form>
             <form th:action="@{/staff/sales/counter/{id}/cancel(id=${order.id})}" method="post"
-                  onsubmit="return confirm('Đóng đơn này? Các máy đang giữ sẽ được nhả.');">
+                  data-confirm="Đóng đơn này? Các máy đang giữ sẽ được nhả.">
               <button type="submit" class="btn-ghost btn-sm pos-danger">Đóng đơn</button>
             </form>
           </div>

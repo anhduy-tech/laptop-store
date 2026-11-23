@@ -115,6 +115,10 @@
   }
 
   function toast(msg, kind) {
+    if (window.LapToast) {
+      window.LapToast(msg, kind);
+      return;
+    }
     var box = $('#toasts');
     if (!box) return;
     var t = document.createElement('div');
@@ -292,8 +296,13 @@
     activate(res.activeId);
   }
 
-  function closeTabById(id) {
-    if (isDirty(id) && !confirm('Tab này có dữ liệu chưa lưu. Đóng và bỏ dữ liệu?')) return;
+  async function closeTabById(id) {
+    if (isDirty(id)) {
+      var approved = window.LapConfirm
+        ? await window.LapConfirm('Tab này có dữ liệu chưa lưu. Đóng và bỏ dữ liệu?')
+        : false;
+      if (!approved) return;
+    }
     var f = frames[id];
     if (f && f.parentNode) f.parentNode.removeChild(f);
     delete frames[id];
@@ -302,9 +311,14 @@
     activate(res.activeId);
   }
 
-  function closeAll() {
+  async function closeAll() {
     var dirty = state.tabs.some(function (t) { return isDirty(t.id); });
-    if (dirty && !confirm('Có tab chứa dữ liệu chưa lưu. Đóng tất cả và bỏ dữ liệu?')) return;
+    if (dirty) {
+      var approved = window.LapConfirm
+        ? await window.LapConfirm('Có tab chứa dữ liệu chưa lưu. Đóng tất cả và bỏ dữ liệu?')
+        : false;
+      if (!approved) return;
+    }
     Object.keys(frames).forEach(function (k) { if (frames[k].parentNode) frames[k].parentNode.removeChild(frames[k]); });
     frames = {};
     state.tabs = [];
@@ -401,7 +415,7 @@
   desktop.addEventListener('change', function () { setDrawer(false); });
 
   var dlg = $('#settingsDialog');
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', async function (e) {
     var choice = e.target.closest('[data-layout-choice]');
     if (choice) { setLayout(choice.dataset.layoutChoice); return; }
     var act = e.target.closest('[data-act]');
@@ -410,7 +424,7 @@
       case 'openSettings': renderStrip(); if (dlg && dlg.showModal) dlg.showModal(); setDrawer(false); break;
       case 'closeSettings': if (dlg) dlg.close(); break;
       case 'toggleCollapse': toggleCollapsed(); break;
-      case 'closeAllTabs': if (enabled) { closeAll(); if (dlg) dlg.close(); } break;
+      case 'closeAllTabs': if (enabled) { await closeAll(); if (dlg) dlg.close(); } break;
       default: break;
     }
   });

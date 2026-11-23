@@ -546,8 +546,8 @@
     function showError(msg) {
       var box = $('#clientError');
       box.textContent = msg;
-      box.hidden = false;
-      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      box.hidden = true;
+      if (window.LapToast) window.LapToast(msg, 'error');
     }
 
     form.addEventListener('submit', function (e) {
@@ -576,7 +576,7 @@
     var restored = false;
     try {
       var raw = sessionStorage.getItem(DRAFT_KEY);
-      if (raw && document.querySelector('.alert-error')) {
+      if (raw && (document.documentElement.dataset.flashError === '1' || document.querySelector('.alert-error'))) {
         var d = JSON.parse(raw);
         ['supplierId', 'branchId', 'note'].forEach(function (k) { if (d[k] != null) form.elements[k].value = d[k]; });
         KINDS.forEach(function (k) {
