@@ -4,7 +4,7 @@ spring:
   datasource:
     url: jdbc:oracle:thin:@//localhost:1521/LAPTOP
     username: laptop_admin
-    password: ${DB_PASSWORD:123456}
+    password: ${DB_PASSWORD:12345678}
     driver-class-name: oracle.jdbc.OracleDriver
   jpa:
     open-in-view: false
