@@ -29,6 +29,10 @@ public interface StockHoldRepository extends JpaRepository<StockHold, Long> {
     /** Máy đang có hold ACTIVE (kể cả hold đã quá hạn nhưng job chưa dọn). */
     boolean existsBySerial_IdAndStatus(Long serialId, String status);
 
+    /** Mọi hold của một đơn theo trạng thái (main). */
+    @EntityGraph(attributePaths = { "serial", "variant", "variant.product", "branch", "orderItem" })
+    List<StockHold> findByOrder_IdAndStatusOrderByIdAsc(Long orderId, String status);
+
     /** Id các hold ACTIVE đã quá hạn (cho job dọn, BR-04). */
     @Query("select h.id from StockHold h where h.status = 'ACTIVE' and h.expiresAt <= :now order by h.expiresAt")
     List<Long> findExpiredIds(@Param("now") Instant now);
